@@ -71,6 +71,40 @@ const Icons = {
       <path d="M22 12A10 10 0 0 0 12 2v10z" />
     </svg>
   ),
+  sunburst: (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="4" />
+      <circle cx="12" cy="12" r="8" />
+      <line x1="12" y1="2" x2="12" y2="4" />
+      <line x1="12" y1="20" x2="12" y2="22" />
+      <line x1="2" y1="12" x2="4" y2="12" />
+      <line x1="20" y1="12" x2="22" y2="12" />
+    </svg>
+  ),
+  bubble: (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="7" cy="15" r="3" />
+      <circle cx="16" cy="9" r="5" />
+    </svg>
+  ),
   statistical: (
     <svg
       width="13"
@@ -103,6 +137,23 @@ const Icons = {
       <rect x="17" y="7" width="4" height="14" rx="1" />
     </svg>
   ),
+  heatmap: (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <rect x="3" y="3" width="7" height="7" rx="1" />
+      <rect x="14" y="3" width="7" height="7" rx="1" />
+      <rect x="3" y="14" width="7" height="7" rx="1" />
+      <rect x="14" y="14" width="7" height="7" rx="1" />
+    </svg>
+  ),
   filled: (
     <svg
       width="13"
@@ -116,52 +167,6 @@ const Icons = {
     >
       <path d="M3 18 Q8 6 12 10 Q16 14 21 4" />
       <path d="M3 18 Q8 14 12 16 Q16 18 21 12" />
-    </svg>
-  ),
-  contour: (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <ellipse cx="12" cy="12" rx="9" ry="4" />
-      <ellipse cx="12" cy="12" rx="6" ry="2.5" />
-      <circle cx="12" cy="12" r="1.5" />
-    </svg>
-  ),
-  scientific: (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M9 3H5l7 18 7-18h-4" />
-      <line x1="5" y1="9" x2="19" y2="9" />
-    </svg>
-  ),
-  financial: (
-    <svg
-      width="13"
-      height="13"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="3 7 8 2 14 8 21 3" />
-      <polyline points="3 17 8 12 14 18 21 13" />
     </svg>
   ),
   threeD: (
@@ -180,6 +185,120 @@ const Icons = {
       <path d="M2 12l10 5 10-5" />
     </svg>
   ),
+  map: (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+      <line x1="8" y1="2" x2="8" y2="18" />
+      <line x1="16" y1="6" x2="16" y2="22" />
+    </svg>
+  ),
+  financial: (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="3 7 8 2 14 8 21 3" />
+      <polyline points="3 17 8 12 14 18 21 13" />
+    </svg>
+  ),
+  scientific: (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9 3H5l7 18 7-18h-4" />
+      <line x1="5" y1="9" x2="19" y2="9" />
+    </svg>
+  ),
+  sankey: (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3 6h4c2 0 3 2 5 4s3 4 5 4h4" />
+      <path d="M3 18h4c2 0 3-2 5-4" strokeOpacity="0.5" />
+      <line x1="3" y1="4" x2="3" y2="20" />
+      <line x1="21" y1="8" x2="21" y2="16" />
+    </svg>
+  ),
+  indicator: (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M12 22V12" />
+      <path d="M5 12A7 7 0 0 1 19 12" />
+      <circle cx="12" cy="12" r="1.5" />
+    </svg>
+  ),
+  polar: (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5" />
+      <line x1="12" y1="3" x2="12" y2="21" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+    </svg>
+  ),
+  parallel: (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <line x1="5" y1="3" x2="5" y2="21" />
+      <line x1="12" y1="3" x2="12" y2="21" />
+      <line x1="19" y1="3" x2="19" y2="21" />
+      <path d="M5 8 Q9 10 12 7 Q15 4 19 9" />
+      <path d="M5 15 Q9 12 12 16 Q15 19 19 14" />
+    </svg>
+  ),
 };
 
 const CHART_GROUPS: ChartGroup[] = [
@@ -189,9 +308,13 @@ const CHART_GROUPS: ChartGroup[] = [
     icon: Icons.line,
     color: "#3b82f6",
     description: "Trends, correlations, time series",
-    noAiChoice: true,
     subtypes: [
+      { label: "AI Choice", prompt: null },
       { label: "Line & Scatter Plot", prompt: "Line and Scatter Plot" },
+      { label: "Basic Line Plot", prompt: "Basic Line Plot" },
+      { label: "Named Lines", prompt: "Adding Names to Line and Scatter Plot" },
+      { label: "Stylized Line & Scatter", prompt: "Line and Scatter Stylized" },
+      { label: "Styled Line Plot", prompt: "Styling Line Plot" },
       {
         label: "Data Labels Hover",
         prompt: "Line and Scatter Plot Data Labels Hover",
@@ -205,17 +328,13 @@ const CHART_GROUPS: ChartGroup[] = [
         prompt: "Scatter Plot with a Color Dimension",
       },
       { label: "Grouped Scatter", prompt: "Grouped Scatter Plot" },
-      { label: "Basic Line Plot", prompt: "Basic Line Plot" },
-      { label: "Named Lines", prompt: "Adding Names to Line and Scatter Plot" },
-      { label: "Stylized Line & Scatter", prompt: "Line and Scatter Stylized" },
-      { label: "Styled Line Plot", prompt: "Styling Line Plot" },
       { label: "Colored Scatter", prompt: "Colored and Styled Scatter Plot" },
       {
         label: "Line Shape Interpolation",
         prompt: "Line Shape Options for Interpolation",
       },
       { label: "Line Dash", prompt: "Line Dash" },
-      { label: "Connect Gaps", prompt: "line chart Connect Gaps Between Data" },
+      { label: "Connect Gaps", prompt: "Line chart Connect Gaps Between Data" },
       { label: "Annotated Lines", prompt: "Labelling Lines with Annotations" },
     ],
   },
@@ -230,6 +349,7 @@ const CHART_GROUPS: ChartGroup[] = [
       { label: "Basic Bar Chart", prompt: "Basic Bar Chart" },
       { label: "Grouped Bar", prompt: "Grouped Bar Chart" },
       { label: "Stacked Bar", prompt: "Stacked Bar Chart" },
+      { label: "Horizontal Bar", prompt: "Horizontal Bar Chart" },
       { label: "Bar with Hover Text", prompt: "Bar Chart with Hover Text" },
       {
         label: "Bar with Direct Labels",
@@ -249,16 +369,52 @@ const CHART_GROUPS: ChartGroup[] = [
     ],
   },
   {
-    id: "pie-bubble",
-    label: "Pie & Bubble",
+    id: "pie-donut",
+    label: "Pie & Donut",
     icon: Icons.pie,
     color: "#ec4899",
-    description: "Proportions, distributions, sizes",
-    noAiChoice: true,
+    description: "Part-to-whole proportions",
     subtypes: [
+      { label: "AI Choice", prompt: null },
       { label: "Basic Pie Chart", prompt: "Basic Pie Chart" },
       { label: "Donut Chart", prompt: "Donut Chart" },
-      { label: "Bubble Chart", prompt: "bubble chart" },
+      {
+        label: "Styled Pie Chart",
+        prompt: "Styled Pie Chart with custom colors",
+      },
+      { label: "Pie with Pull", prompt: "Pie Chart with pulled slice" },
+    ],
+  },
+  {
+    id: "sunburst-treemap",
+    label: "Sunburst & Treemap",
+    icon: Icons.sunburst,
+    color: "#f97316",
+    description: "Hierarchical part-to-whole data",
+    subtypes: [
+      { label: "AI Choice", prompt: null },
+      { label: "Basic Sunburst", prompt: "Basic Sunburst Chart" },
+      { label: "Multilevel Sunburst", prompt: "Multilevel Sunburst Chart" },
+      { label: "Branchvalues Sunburst", prompt: "Sunburst with Branchvalues" },
+      { label: "Basic Treemap", prompt: "Basic Treemap Chart" },
+      { label: "Nested Treemap", prompt: "Nested Treemap Chart" },
+      {
+        label: "Treemap with Colorscale",
+        prompt: "Treemap Chart with Colorscale",
+      },
+      { label: "Basic Icicle", prompt: "Basic Icicle Chart" },
+      { label: "Multilevel Icicle", prompt: "Multilevel Icicle Chart" },
+    ],
+  },
+  {
+    id: "bubble",
+    label: "Bubble Charts",
+    icon: Icons.bubble,
+    color: "#a855f7",
+    description: "Three-variable scatter with sized markers",
+    noAiChoice: true,
+    subtypes: [
+      { label: "Basic Bubble Chart", prompt: "bubble chart" },
       { label: "Bubble Marker Size", prompt: "Marker Size on Bubble Charts" },
       {
         label: "Bubble Size + Color",
@@ -267,7 +423,7 @@ const CHART_GROUPS: ChartGroup[] = [
       { label: "Bubble Hover Text", prompt: "Hover Text on Bubble Charts" },
       { label: "Bubble Size Scaling", prompt: "Bubble Size Scaling on Charts" },
       {
-        label: "Marker Array (Beautiful)",
+        label: "Marker Array",
         prompt: "Marker Size, Color, and Symbol as an Array",
       },
     ],
@@ -277,13 +433,9 @@ const CHART_GROUPS: ChartGroup[] = [
     label: "Statistical",
     icon: Icons.statistical,
     color: "#f59e0b",
-    description: "Distributions, errors, outliers",
+    description: "Distributions, box plots, violin, error bars",
     subtypes: [
       { label: "AI Choice", prompt: null },
-      { label: "Symmetric Error Bars", prompt: "Basic Symmetric Error Bars" },
-      { label: "Bar with Error Bars", prompt: "Bar Chart with Error Bars" },
-      { label: "Horizontal Error Bars", prompt: "Horizontal Error Bars" },
-      { label: "Asymmetric Error Bars", prompt: "Asymmetric Error Bars" },
       { label: "Basic Box Plot", prompt: "Basic Box Plot" },
       {
         label: "Box + Underlying Data",
@@ -294,6 +446,22 @@ const CHART_GROUPS: ChartGroup[] = [
       { label: "Box Styled Outliers", prompt: "Box Plot Styling Outliers" },
       { label: "Fully Styled Box Plot", prompt: "Fully Styled Box Plot" },
       { label: "Rainbow Box Plot", prompt: "Rainbow Box Plot" },
+      { label: "Basic Violin Plot", prompt: "Basic Violin Plot" },
+      {
+        label: "Violin with Box Inside",
+        prompt: "Violin Plot with Box Plot Inside",
+      },
+      { label: "Split Violin", prompt: "Split Violin Plot" },
+      { label: "Grouped Violin", prompt: "Grouped Violin Plot" },
+      { label: "Symmetric Error Bars", prompt: "Basic Symmetric Error Bars" },
+      { label: "Bar with Error Bars", prompt: "Bar Chart with Error Bars" },
+      { label: "Horizontal Error Bars", prompt: "Horizontal Error Bars" },
+      { label: "Asymmetric Error Bars", prompt: "Asymmetric Error Bars" },
+      { label: "Strip Chart", prompt: "Strip Chart showing all data points" },
+      {
+        label: "ECDF Plot",
+        prompt: "Empirical Cumulative Distribution Function ECDF Plot",
+      },
     ],
   },
   {
@@ -318,16 +486,42 @@ const CHART_GROUPS: ChartGroup[] = [
         label: "2D Histogram + Slider",
         prompt: "2D Histogram Contour Plot with Slider Control",
       },
+      { label: "Probability Histogram", prompt: "Probability Histogram" },
     ],
   },
   {
-    id: "filled-error",
-    label: "Filled & Error",
+    id: "heatmap-contour",
+    label: "Heatmap & Contour",
+    icon: Icons.heatmap,
+    color: "#06b6d4",
+    description: "Density, intensity, 2D patterns",
+    subtypes: [
+      { label: "AI Choice", prompt: null },
+      { label: "Basic Heatmap", prompt: "Basic Heatmap" },
+      {
+        label: "Categorical Heatmap",
+        prompt: "Heatmap with Categorical Axis Labels",
+      },
+      { label: "Annotated Heatmap", prompt: "Annotated Heatmap" },
+      { label: "Simple Contour", prompt: "Simple Contour Plot" },
+      { label: "Basic Contour", prompt: "Basic Contour Plot" },
+      { label: "Contour Lines", prompt: "Contour Lines" },
+      { label: "Contour Labels", prompt: "Contour Line Labels" },
+      { label: "Carpet Plot", prompt: "Carpet Plot" },
+      { label: "Contour Carpet", prompt: "Contour Carpet Plot" },
+      { label: "Carpet Scatter", prompt: "Scatter on Carpet Plot" },
+    ],
+  },
+  {
+    id: "filled-area",
+    label: "Filled & Area",
     icon: Icons.filled,
     color: "#ef4444",
-    description: "Confidence bands, filled areas",
-    noAiChoice: true,
+    description: "Area charts, confidence bands, filled regions",
     subtypes: [
+      { label: "AI Choice", prompt: null },
+      { label: "Basic Area Chart", prompt: "Basic Area Chart" },
+      { label: "Stacked Area Chart", prompt: "Stacked Area Chart" },
       { label: "Filled Lines", prompt: "Filled Lines" },
       {
         label: "Continuous Error Filled",
@@ -341,46 +535,63 @@ const CHART_GROUPS: ChartGroup[] = [
     ],
   },
   {
-    id: "contour-heat",
-    label: "Contour & Heat",
-    icon: Icons.contour,
-    color: "#06b6d4",
-    description: "Density, intensity, 2D patterns",
+    id: "3d",
+    label: "3D Charts",
+    icon: Icons.threeD,
+    color: "#a855f7",
+    description: "Three-dimensional visualizations",
     subtypes: [
       { label: "AI Choice", prompt: null },
-      { label: "Simple Contour", prompt: "Simple Contour Plot" },
-      { label: "Basic Contour", prompt: "Basic Contour Plot" },
-      { label: "Contour Lines", prompt: "Contour Lines" },
-      { label: "Contour Labels", prompt: "Contour Line Labels" },
-      { label: "Basic Heatmap", prompt: "Basic Heatmap" },
+      { label: "3D Scatter", prompt: "3D Scatter Plot" },
+      { label: "3D Line Chart", prompt: "3D line chart" },
+      { label: "3D Line Plot", prompt: "3D Line Plot" },
+      { label: "3D Line + Markers", prompt: "3D Line and Markers Plot" },
+      { label: "3D Line Spiral", prompt: "3D Line Spiral Plot" },
+      { label: "3D Random Walk", prompt: "3D Random Walk Plot" },
       {
-        label: "Categorical Heatmap",
-        prompt: "Heatmap with Categorical Axis Labels",
+        label: "Topographical Surface",
+        prompt: "Topographical 3D Surface Plot",
       },
-      { label: "Annotated Heatmap", prompt: "Annotated Heatmap" },
+      { label: "Multiple 3D Surfaces", prompt: "Multiple 3D Surface Plots" },
+      { label: "3D Mesh Plot", prompt: "Simple 3D Mesh Plot" },
+      { label: "Basic Ribbon Plot", prompt: "Basic Ribbon Plot" },
+      {
+        label: "3D Cone Plot",
+        prompt: "3D Cone Plot showing vector field directions",
+      },
+      {
+        label: "3D Streamtube",
+        prompt: "3D Streamtube Plot showing flow lines",
+      },
+      { label: "3D Isosurface", prompt: "3D Isosurface Plot" },
+      { label: "Volume Plot", prompt: "3D Volume Plot with opacity" },
     ],
   },
   {
-    id: "scientific",
-    label: "Scientific",
-    icon: Icons.scientific,
-    color: "#4ade80",
-    description: "Ternary, parallel coords, log scales",
+    id: "maps",
+    label: "Maps & Geo",
+    icon: Icons.map,
+    color: "#14b8a6",
+    description: "Geographic and choropleth maps",
     subtypes: [
       { label: "AI Choice", prompt: null },
-      { label: "Ternary + Markers", prompt: "Basic Ternary Plot with Markers" },
-      { label: "Soil Types Ternary", prompt: "Soil Types Ternary Plot" },
       {
-        label: "Basic Parallel Coords",
-        prompt: "Basic Parallel Coordinates Plot",
+        label: "Choropleth Map",
+        prompt: "Choropleth Map using plotly go.Choropleth",
       },
-      { label: "Parallel Coordinates", prompt: "Parallel Coordinates Plot" },
       {
-        label: "Advanced Parallel Coords",
-        prompt: "Advanced Parallel Coordinates Plot",
+        label: "Choropleth Tile Map",
+        prompt: "Choropleth Tile Map using plotly choropleth_mapbox",
       },
-      { label: "Log Plots", prompt: "Log Plots" },
-      { label: "Logarithmic Axes", prompt: "Logarithmic Axes" },
+      { label: "World Map", prompt: "World Choropleth Map with country data" },
+      { label: "US State Map", prompt: "US States Choropleth Map" },
+      { label: "Scatter Geo", prompt: "Scatter Plot on Geographic Map" },
+      { label: "Line Geo", prompt: "Lines on Geographic Map" },
+      { label: "Bubble Map", prompt: "Bubble Map on Geographic Map" },
+      { label: "Scatter Mapbox", prompt: "Scatter Plot on Mapbox Map" },
+      { label: "Line Mapbox", prompt: "Lines on Mapbox Map" },
+      { label: "Density Mapbox", prompt: "Density Heatmap on Mapbox Map" },
+      { label: "Choropleth Mapbox", prompt: "Choropleth Map on Mapbox" },
     ],
   },
   {
@@ -388,14 +599,9 @@ const CHART_GROUPS: ChartGroup[] = [
     label: "Financial",
     icon: Icons.financial,
     color: "#f97316",
-    description: "Candlestick, waterfall, funnel, time series",
+    description: "Candlestick, OHLC, waterfall, funnel, time series",
     subtypes: [
       { label: "AI Choice", prompt: null },
-      { label: "Basic Waterfall", prompt: "Basic Waterfall Chart" },
-      {
-        label: "Multi-Category Waterfall",
-        prompt: "Multi Category Waterfall Chart",
-      },
       { label: "Simple Candlestick", prompt: "Simple Candlestick Chart" },
       {
         label: "Candlestick No Slider",
@@ -405,8 +611,16 @@ const CHART_GROUPS: ChartGroup[] = [
         label: "Candlestick + Annotations",
         prompt: "Customise Candlestick Chart with Shapes and Annotations",
       },
+      { label: "Basic OHLC", prompt: "ohcl" },
+      { label: "OHLC No Slider", prompt: "OHLC Chart without Rangeslider" },
+      { label: "Basic Waterfall", prompt: "Basic Waterfall Chart" },
+      {
+        label: "Multi-Category Waterfall",
+        prompt: "Multi Category Waterfall Chart",
+      },
       { label: "Basic Funnel", prompt: "Basic Funnel Plot" },
       { label: "Stacked Funnel", prompt: "Stacked Funnel" },
+      { label: "Funnel Area", prompt: "Funnel Area Chart" },
       {
         label: "Time Series + Rangeslider",
         prompt: "Time Series with Rangeslider",
@@ -415,26 +629,97 @@ const CHART_GROUPS: ChartGroup[] = [
     ],
   },
   {
-    id: "3d",
-    label: "3D Charts",
-    icon: Icons.threeD,
-    color: "#a855f7",
-    description: "Three-dimensional visualizations",
+    id: "polar-radar",
+    label: "Polar & Radar",
+    icon: Icons.polar,
+    color: "#4ade80",
+    description: "Polar, radar/spider, wind rose charts",
     subtypes: [
       { label: "AI Choice", prompt: null },
-      { label: "3D Scatter", prompt: "3D Scatter Plot" },
-      { label: "Basic Ribbon Plot", prompt: "Basic Ribbon Plot" },
+      { label: "Polar Scatter", prompt: "Polar Scatter Plot" },
+      { label: "Polar Line", prompt: "Polar Line Chart" },
+      { label: "Polar Bar (Wind Rose)", prompt: "Polar Bar Chart Wind Rose" },
       {
-        label: "Topographical Surface",
-        prompt: "Topographical 3D Surface Plot",
+        label: "Radar / Spider Chart",
+        prompt: "Radar Spider Chart using go.Scatterpolar with fill",
       },
-      { label: "Multiple 3D Surfaces", prompt: "Multiple 3D Surface Plots" },
-      { label: "3D Mesh Plot", prompt: "Simple 3D Mesh Plot" },
-      { label: "3D Line Chart", prompt: "3D line chart" },
-      { label: "3D Line Plot", prompt: "3D Line Plot" },
-      { label: "3D Line + Markers", prompt: "3D Line + Markers Plot" },
-      { label: "3D Line Spiral", prompt: "3D Line Spiral Plot" },
-      { label: "3D Random Walk", prompt: "3D Random Walk Plot" },
+      {
+        label: "Radar Multiple Traces",
+        prompt: "Radar Chart with Multiple Traces",
+      },
+      { label: "Styled Wind Rose", prompt: "Styled Wind Rose Polar Chart" },
+    ],
+  },
+  {
+    id: "scientific",
+    label: "Scientific",
+    icon: Icons.scientific,
+    color: "#22d3ee",
+    description: "Ternary, parallel coords, log scales, SPLOM",
+    subtypes: [
+      { label: "AI Choice", prompt: null },
+      { label: "Ternary + Markers", prompt: "Basic Ternary Plot with Markers" },
+      { label: "Soil Types Ternary", prompt: "Soil Types Ternary Plot" },
+      { label: "Log Plots", prompt: "Log Plots" },
+      { label: "Logarithmic Axes", prompt: "Logarithmic Axes" },
+      { label: "SPLOM (Scatter Matrix)", prompt: "Scatter Plot Matrix SPLOM" },
+      {
+        label: "SPLOM with Iris Data",
+        prompt: "Scatter Matrix SPLOM with Iris Dataset",
+      },
+    ],
+  },
+  {
+    id: "parallel",
+    label: "Parallel & Sankey",
+    icon: Icons.parallel,
+    color: "#fb923c",
+    description: "Parallel coordinates, categories, Sankey flow",
+    subtypes: [
+      { label: "AI Choice", prompt: null },
+      {
+        label: "Basic Parallel Coords",
+        prompt: "Basic Parallel Coordinates Plot",
+      },
+      { label: "Parallel Coordinates", prompt: "Parallel Coordinates Plot" },
+      {
+        label: "Advanced Parallel Coords",
+        prompt: "Advanced Parallel Coordinates Plot",
+      },
+      { label: "Parallel Categories", prompt: "Parallel Categories Diagram" },
+      { label: "Basic Sankey", prompt: "Basic Sankey Diagram" },
+      {
+        label: "Multilevel Sankey",
+        prompt: "Multilevel Sankey Diagram with node colors",
+      },
+      {
+        label: "Styled Sankey",
+        prompt: "Styled Sankey Diagram with custom link colors",
+      },
+    ],
+  },
+  {
+    id: "indicator-table",
+    label: "Indicator & Table",
+    icon: Icons.indicator,
+    color: "#64748b",
+    description: "KPI gauges, bullet charts, data tables",
+    subtypes: [
+      { label: "AI Choice", prompt: null },
+      { label: "Basic Indicator", prompt: "Basic Indicator Gauge" },
+      { label: "Angular Gauge", prompt: "Angular Gauge Indicator" },
+      { label: "Bullet Gauge", prompt: "Bullet Gauge Indicator" },
+      { label: "Delta Indicator", prompt: "Delta Indicator showing change" },
+      { label: "Number + Delta", prompt: "Number and Delta Indicator" },
+      { label: "Basic Table", prompt: "Basic Table using go.Table" },
+      {
+        label: "Styled Table",
+        prompt: "Styled Table with alternating row colors",
+      },
+      {
+        label: "Table with Formatting",
+        prompt: "Table with custom cell formatting and colors",
+      },
     ],
   },
 ];
@@ -497,6 +782,11 @@ export default function ChartTypeSelector({
   const displayGroup = hoveredGroup || activeGroup;
   const selectedGroup = CHART_GROUPS.find(
     (g) => g.label === selected?.groupLabel,
+  );
+
+  const totalTypes = CHART_GROUPS.reduce(
+    (s, g) => s + g.subtypes.filter((st) => st.prompt !== null).length,
+    0,
   );
 
   return (
@@ -807,7 +1097,7 @@ export default function ChartTypeSelector({
         <div
           className="absolute bottom-full left-0 z-[9999] rounded-2xl overflow-hidden"
           style={{
-            width: 560,
+            width: 580,
             maxWidth: "calc(100vw - 2rem)",
             animation: "cts-up 0.15s cubic-bezier(0.16,1,0.3,1) both",
             marginBottom: 6,
@@ -835,22 +1125,16 @@ export default function ChartTypeSelector({
                 fontFamily: "monospace",
               }}
             >
-              {CHART_GROUPS.length} categories ·{" "}
-              {CHART_GROUPS.reduce(
-                (s, g) =>
-                  s + g.subtypes.filter((st) => st.prompt !== null).length,
-                0,
-              )}{" "}
-              types
+              {CHART_GROUPS.length} categories · {totalTypes} types
             </span>
           </div>
 
-          <div className="flex" style={{ height: 300 }}>
+          <div className="flex" style={{ height: 340 }}>
             {/* Left: groups */}
             <div
               className="flex-shrink-0 overflow-y-auto cts-no-sb py-1.5"
               style={{
-                width: 180,
+                width: 190,
                 borderRight: "1px solid rgba(255,255,255,0.06)",
               }}
             >

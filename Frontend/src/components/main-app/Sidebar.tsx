@@ -2,7 +2,7 @@
 "use client";
 import { useAppStore } from "@/store/appStore";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Conversation {
   id: string;
@@ -15,7 +15,11 @@ interface SidebarProps {
   onSelect: (id: string) => void;
   onNew: () => void;
   onClose: () => void;
+  onDelete: (id: string) => void;
 }
+
+// Save collapsed state whenever it changes
+
 
 export default function Sidebar({
   conversations,
@@ -23,103 +27,37 @@ export default function Sidebar({
   onSelect,
   onNew,
   onClose,
+  onDelete,
 }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(true);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const saved = localStorage.getItem("graphix_sidebar_collapsed");
+    return saved ? JSON.parse(saved) : true; // default to collapsed
+  });
+
+
+  
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem(
+        "graphix_sidebar_collapsed",
+        JSON.stringify(collapsed),
+      );
+    }
+  }, [collapsed]);
 
   const user = useAppStore((s) => s.user);
   const workspaceLabel = user ? `${user.firstName}'s Workspace` : "Workspace";
+
+
+
+const handleDelete = (id: string) => {
+  onDelete(id); // Just notify parent to show toast
+};
+
   return (
     <>
       {/* ── Only the truly irreplaceable styles ── */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bricolage+Grotesque:wght@700;800&display=swap');
-
-        /* Precise label collapse (opacity + max-width + transform together) */
-        .sb-label {
-          transition: opacity 0.15s ease, max-width 0.26s cubic-bezier(0.4,0,0.2,1), transform 0.2s ease;
-          overflow: hidden;
-          white-space: nowrap;
-        }
-        .sb-aside.collapsed .sb-label {
-          opacity: 0;
-          max-width: 0 !important;
-          transform: translateX(-5px);
-          pointer-events: none;
-        }
-
-        /* Tooltip exact behavior */
-        .sb-tip {
-          position: absolute;
-          left: calc(100% + 12px);
-          top: 50%;
-          transform: translateY(-50%) translateX(-4px);
-          background: rgba(255,255,255,0.06);
-          backdrop-filter: blur(12px);
-          border: 1px solid rgba(255,255,255,0.08);
-          color: rgba(255,255,255,0.7);
-          font-size: 10px;
-          font-family: 'DM Mono', monospace;
-          letter-spacing: 0.06em;
-          padding: 4px 9px;
-          border-radius: 6px;
-          white-space: nowrap;
-          pointer-events: none;
-          opacity: 0;
-          transition: opacity 0.14s ease, transform 0.14s ease;
-          z-index: 50;
-        }
-        .sb-aside.collapsed .sb-tip-trigger:hover .sb-tip {
-          opacity: 1;
-          transform: translateY(-50%) translateX(0);
-        }
-
-        /* Toggle button glow & rotation */
-        .sb-toggle svg {
-          transition: transform 0.26s cubic-bezier(0.4,0,0.2,1);
-        }
-        .sb-aside.collapsed .sb-toggle svg {
-          transform: rotate(180deg);
-        }
-
-        /* Active dot pulse (exact timing & spread) */
-        @keyframes dotGlow {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(6,182,212,0.5); }
-          50%      { box-shadow: 0 0 0 3px rgba(6,182,212,0); }
-        }
-        .dot-glow {
-          animation: dotGlow 2.4s ease infinite;
-        }
-
-        /* New button shimmer */
-        .new-btn {
-          position: relative;
-          overflow: hidden;
-        }
-        .new-btn::after {
-          content: '';
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(90deg, transparent 0%, rgba(6,182,212,0.06) 50%, transparent 100%);
-          transform: translateX(-100%);
-          transition: transform 0.4s ease;
-        }
-        .new-btn:hover::after {
-          transform: translateX(100%);
-        }
-
-        /* Custom scrollbar */
-        .sb-scroll::-webkit-scrollbar { width: 3px; }
-        .sb-scroll::-webkit-scrollbar-track { background: transparent; }
-        .sb-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 9999px; }
-        .sb-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.12); }
-
-        /* Noise (SVG fractal noise) */
-        .sb-noise {
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-          background-size: 128px 128px;
-          opacity: 0.025;
-        }
-      `}</style>
 
       <aside
         className={`
@@ -159,7 +97,14 @@ export default function Sidebar({
             hover:shadow-[0_0_12px_rgba(6,182,212,0.4)]
             text-white/35
           `}
-          onClick={() => setCollapsed((c) => !c)}
+          onClick={() => {
+            const newState = !collapsed;
+            setCollapsed(newState);
+            localStorage.setItem(
+              "graphix_sidebar_collapsed",
+              JSON.stringify(newState),
+            );
+          }}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           <svg
@@ -331,32 +276,6 @@ export default function Sidebar({
             )}
 
             {/* Empty state */}
-            {conversations.length === 0 && !collapsed && (
-              <div className="flex flex-col items-center gap-2 py-6">
-                <div
-                  className="grid grid-cols-3 grid-rows-3 gap-[3px]"
-                  style={{ width: "fit-content" }}
-                >
-                  {Array.from({ length: 9 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-[6px] h-[6px] rounded-[2px] bg-white"
-                      style={{
-                        opacity: i % 3 === 0 ? 0.8 : i % 2 === 0 ? 0.3 : 0.5,
-                      }}
-                    />
-                  ))}
-                </div>
-                <span
-                  className="text-[11px] text-white/20"
-                  style={{ fontFamily: "'DM Mono', monospace" }}
-                >
-                  no conversations yet
-                </span>
-              </div>
-            )}
-
-            {/* Conversation list */}
             {conversations.map((conv, i) => {
               const isActive = conv.id === activeId;
               const initials = conv.title
@@ -369,17 +288,17 @@ export default function Sidebar({
               return (
                 <div
                   key={conv.id}
-                  className="relative sb-tip-trigger conv-in"
+                  className="relative sb-tip-trigger group" // Changed conv-in to group
                   style={{ animationDelay: `${i * 0.04}s` }}
                 >
                   <button
                     onClick={() => onSelect(conv.id)}
                     className={`
-                      w-full text-left flex items-center rounded-lg
-                      transition-all duration-100 touch-manipulation
-                      min-h-[38px]
-                      ${collapsed ? "justify-center gap-0 px-0" : "justify-start gap-[9px] px-[10px]"}
-                    `}
+          w-full text-left flex items-center rounded-lg
+          transition-all duration-100 touch-manipulation
+          min-h-[38px]
+          ${collapsed ? "justify-center gap-0 px-0" : "justify-start gap-[9px] px-[10px]"}
+        `}
                     style={{
                       background: isActive
                         ? "rgba(6,182,212,0.07)"
@@ -408,11 +327,7 @@ export default function Sidebar({
                           background: isActive
                             ? "rgba(6,182,212,0.15)"
                             : "rgba(255,255,255,0.05)",
-                          border: `1px solid ${
-                            isActive
-                              ? "rgba(6,182,212,0.3)"
-                              : "rgba(255,255,255,0.06)"
-                          }`,
+                          border: `1px solid ${isActive ? "rgba(6,182,212,0.3)" : "rgba(255,255,255,0.06)"}`,
                           color: isActive ? "#22d3ee" : "rgba(255,255,255,0.3)",
                         }}
                       >
@@ -449,6 +364,33 @@ export default function Sidebar({
                       </>
                     )}
                   </button>
+
+                  {/* Delete Button - Hover only */}
+                  {!collapsed && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(conv.id);
+                      }}
+                      className="delete-btn absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-md opacity-0 group-hover:opacity-100 hover:bg-red-500/10 text-white/30 hover:text-red-400 transition-all"
+                      title="Delete conversation"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.75"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M3 6h18" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                        <path d="M8 6V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2 2 2 0 0 1 2 2" />
+                      </svg>
+                    </button>
+                  )}
 
                   {collapsed && <span className="sb-tip">{conv.title}</span>}
                 </div>

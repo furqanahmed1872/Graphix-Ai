@@ -24,6 +24,7 @@ interface ChartEditorProps {
 }
 
 type ChartTypeId =
+  // Line & Scatter
   | "line"
   | "scatter"
   | "line-scatter"
@@ -38,6 +39,7 @@ type ChartTypeId =
   | "line-data-labels"
   | "scatter-color"
   | "grouped-scatter"
+  // Bar
   | "bar"
   | "hbar"
   | "stacked"
@@ -50,18 +52,27 @@ type ChartTypeId =
   | "bar-colors"
   | "bar-styled"
   | "bar-relative"
+  // Pie & Donut
   | "pie"
   | "donut"
+  | "pie-pull"
+  | "pie-styled"
+  // Sunburst / Treemap / Icicle
+  | "sunburst"
+  | "sunburst-multi"
+  | "treemap"
+  | "treemap-nested"
+  | "treemap-color"
+  | "icicle"
+  | "icicle-multi"
+  // Bubble
   | "bubble"
   | "bubble-size"
   | "bubble-size-color"
   | "bubble-hover"
   | "bubble-scaling"
   | "marker-array"
-  | "error-bars"
-  | "bar-error"
-  | "horizontal-error"
-  | "asymmetric-error"
+  // Statistical
   | "box"
   | "box-data"
   | "hbox"
@@ -69,6 +80,17 @@ type ChartTypeId =
   | "box-outliers"
   | "box-styled"
   | "rainbow-box"
+  | "violin"
+  | "violin-box"
+  | "violin-split"
+  | "violin-grouped"
+  | "error-bars"
+  | "bar-error"
+  | "horizontal-error"
+  | "asymmetric-error"
+  | "strip-chart"
+  | "ecdf"
+  // Histogram
   | "histogram"
   | "overlaid-histogram"
   | "stacked-histogram"
@@ -77,33 +99,26 @@ type ChartTypeId =
   | "normalized-histogram"
   | "2d-histogram-contour"
   | "2d-histogram-slider"
-  | "filled-lines"
-  | "continuous-error-filled"
-  | "asymmetric-offset"
-  | "continuous-error"
+  | "probability-histogram"
+  // Heatmap & Contour
+  | "heatmap"
+  | "heatmap-categorical"
+  | "heatmap-annotated"
   | "contour-simple"
   | "contour-basic"
   | "contour-lines"
   | "contour-labels"
-  | "heatmap"
-  | "heatmap-categorical"
-  | "heatmap-annotated"
-  | "ternary"
-  | "soil-ternary"
-  | "parallel-basic"
-  | "parallel-coords"
-  | "parallel-advanced"
-  | "log-plots"
-  | "log-axes"
-  | "waterfall"
-  | "waterfall-multi"
-  | "candlestick"
-  | "candlestick-no-slider"
-  | "candlestick-annotated"
-  | "funnel"
-  | "funnel-stacked"
-  | "time-series-slider"
-  | "time-series"
+  | "carpet"
+  | "contour-carpet"
+  | "carpet-scatter"
+  // Filled & Area
+  | "area"
+  | "area-stacked"
+  | "filled-lines"
+  | "continuous-error-filled"
+  | "asymmetric-offset"
+  | "continuous-error"
+  // 3D
   | "scatter3d"
   | "ribbon3d"
   | "surface3d"
@@ -114,7 +129,62 @@ type ChartTypeId =
   | "line3d-markers"
   | "line3d-spiral"
   | "random-walk3d"
-  | "violin";
+  | "cone3d"
+  | "streamtube3d"
+  | "isosurface3d"
+  | "volume3d"
+  // Maps
+  | "choropleth"
+  | "choropleth-tile"
+  | "world-map"
+  | "us-map"
+  | "scatter-geo"
+  | "line-geo"
+  | "bubble-map"
+  | "scatter-mapbox"
+  | "density-mapbox"
+  // Financial
+  | "candlestick"
+  | "candlestick-no-slider"
+  | "candlestick-annotated"
+  | "ohlc"
+  | "ohlc-no-slider"
+  | "waterfall"
+  | "waterfall-multi"
+  | "funnel"
+  | "funnel-stacked"
+  | "funnel-area"
+  | "time-series"
+  | "time-series-slider"
+  // Polar & Radar
+  | "polar-scatter"
+  | "polar-line"
+  | "polar-bar"
+  | "radar"
+  | "radar-multi"
+  // Scientific
+  | "ternary"
+  | "soil-ternary"
+  | "log-plots"
+  | "log-axes"
+  | "splom"
+  // Parallel & Sankey
+  | "parallel-basic"
+  | "parallel-coords"
+  | "parallel-advanced"
+  | "parallel-categories"
+  | "sankey"
+  | "sankey-multi"
+  | "sankey-styled"
+  // Indicator & Table
+  | "indicator"
+  | "indicator-angular"
+  | "indicator-bullet"
+  | "indicator-delta"
+  | "indicator-number-delta"
+  | "table"
+  | "table-styled"
+  | "table-formatted";
 
 interface ChartTypeDef {
   id: ChartTypeId;
@@ -132,7 +202,9 @@ interface ChartTypeDef {
   mode3d?: string;
 }
 
-const Icon = {
+// ─── Icons ─────────────────────────────────────────────────────────────────
+
+const I = {
   line: (
     <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
       <polyline
@@ -245,6 +317,80 @@ const Icon = {
       <circle cx="14" cy="14" r="5" fill="white" />
     </svg>
   ),
+  sunburst: (
+    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+      <circle cx="14" cy="14" r="4" fill="currentColor" opacity=".9" />
+      <circle
+        cx="14"
+        cy="14"
+        r="8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="4"
+        strokeDasharray="10 6"
+        opacity=".6"
+      />
+      <circle
+        cx="14"
+        cy="14"
+        r="12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeDasharray="7 5"
+        opacity=".35"
+      />
+    </svg>
+  ),
+  treemap: (
+    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+      <rect
+        x="2"
+        y="2"
+        width="14"
+        height="14"
+        rx="1"
+        fill="currentColor"
+        opacity=".8"
+      />
+      <rect
+        x="18"
+        y="2"
+        width="8"
+        height="6"
+        rx="1"
+        fill="currentColor"
+        opacity=".5"
+      />
+      <rect
+        x="18"
+        y="10"
+        width="8"
+        height="6"
+        rx="1"
+        fill="currentColor"
+        opacity=".35"
+      />
+      <rect
+        x="2"
+        y="18"
+        width="8"
+        height="8"
+        rx="1"
+        fill="currentColor"
+        opacity=".5"
+      />
+      <rect
+        x="12"
+        y="18"
+        width="14"
+        height="8"
+        rx="1"
+        fill="currentColor"
+        opacity=".3"
+      />
+    </svg>
+  ),
   bubble: (
     <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
       <circle cx="7" cy="20" r="5" fill="currentColor" opacity=".45" />
@@ -289,6 +435,15 @@ const Icon = {
         stroke="currentColor"
         strokeWidth="1.8"
         strokeLinecap="round"
+      />
+    </svg>
+  ),
+  violin: (
+    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+      <path
+        d="M9 3 Q14 7 14 14 Q14 21 9 25 L19 25 Q14 21 14 14 Q14 7 19 3 Z"
+        fill="currentColor"
+        opacity=".55"
       />
     </svg>
   ),
@@ -535,12 +690,232 @@ const Icon = {
       />
     </svg>
   ),
-  violin: (
+  map: (
+    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+      <polygon
+        points="1,6 1,22 8,18 16,22 23,18 23,2 16,6 8,2 1,6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        fill="none"
+        opacity=".7"
+      />
+      <line
+        x1="8"
+        y1="2"
+        x2="8"
+        y2="18"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        opacity=".5"
+      />
+      <line
+        x1="16"
+        y1="6"
+        x2="16"
+        y2="22"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        opacity=".5"
+      />
+    </svg>
+  ),
+  polar: (
+    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+      <circle
+        cx="14"
+        cy="14"
+        r="11"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        opacity=".3"
+        fill="none"
+      />
+      <circle
+        cx="14"
+        cy="14"
+        r="7"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        opacity=".4"
+        fill="none"
+      />
+      <polygon points="14,4 20,18 8,18" fill="currentColor" opacity=".6" />
+    </svg>
+  ),
+  radar: (
+    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+      <polygon
+        points="14,3 24,10 21,22 7,22 4,10"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        fill="currentColor"
+        opacity=".2"
+      />
+      <polygon
+        points="14,8 20,13 18,20 10,20 8,13"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        fill="currentColor"
+        opacity=".4"
+      />
+    </svg>
+  ),
+  sankey: (
+    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+      <line
+        x1="3"
+        y1="4"
+        x2="3"
+        y2="24"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <line
+        x1="25"
+        y1="7"
+        x2="25"
+        y2="17"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+      />
+      <path
+        d="M3 8 Q14 8 25 10"
+        stroke="currentColor"
+        strokeWidth="2"
+        fill="none"
+        opacity=".7"
+      />
+      <path
+        d="M3 16 Q14 16 25 14"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        fill="none"
+        opacity=".5"
+      />
+    </svg>
+  ),
+  parallel: (
+    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+      <line
+        x1="5"
+        y1="3"
+        x2="5"
+        y2="25"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <line
+        x1="14"
+        y1="3"
+        x2="14"
+        y2="25"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <line
+        x1="23"
+        y1="3"
+        x2="23"
+        y2="25"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <path
+        d="M5 8 Q14 6 23 12"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        fill="none"
+        opacity=".7"
+      />
+      <path
+        d="M5 18 Q14 14 23 20"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        fill="none"
+        opacity=".5"
+      />
+    </svg>
+  ),
+  indicator: (
     <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
       <path
-        d="M9 3 Q14 7 14 14 Q14 21 9 25 L19 25 Q14 21 14 14 Q14 7 19 3 Z"
+        d="M4 20 A10 10 0 0 1 24 20"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        fill="none"
+        opacity=".35"
+      />
+      <path
+        d="M4 20 A10 10 0 0 1 17 11"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <circle cx="14" cy="20" r="2" fill="currentColor" />
+      <line
+        x1="14"
+        y1="20"
+        x2="18"
+        y2="11"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  ),
+  table: (
+    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+      <rect
+        x="2"
+        y="4"
+        width="24"
+        height="5"
+        rx="1"
         fill="currentColor"
-        opacity=".55"
+        opacity=".8"
+      />
+      <rect
+        x="2"
+        y="11"
+        width="24"
+        height="4"
+        rx="1"
+        fill="currentColor"
+        opacity=".3"
+      />
+      <rect
+        x="2"
+        y="17"
+        width="24"
+        height="4"
+        rx="1"
+        fill="currentColor"
+        opacity=".2"
+      />
+      <line
+        x1="10"
+        y1="4"
+        x2="10"
+        y2="21"
+        stroke="currentColor"
+        strokeWidth="1"
+        opacity=".4"
+      />
+      <line
+        x1="18"
+        y1="4"
+        x2="18"
+        y2="21"
+        stroke="currentColor"
+        strokeWidth="1"
+        opacity=".4"
       />
     </svg>
   ),
@@ -588,51 +963,6 @@ const Icon = {
       <circle cx="14" cy="15" r="2" fill="currentColor" />
       <circle cx="8" cy="20" r="1.5" fill="currentColor" opacity=".6" />
       <circle cx="20" cy="20" r="1.5" fill="currentColor" opacity=".6" />
-    </svg>
-  ),
-  parallel: (
-    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
-      <line
-        x1="5"
-        y1="3"
-        x2="5"
-        y2="25"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <line
-        x1="14"
-        y1="3"
-        x2="14"
-        y2="25"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <line
-        x1="23"
-        y1="3"
-        x2="23"
-        y2="25"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-      />
-      <path
-        d="M5 8 Q14 6 23 12"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        fill="none"
-        opacity=".7"
-      />
-      <path
-        d="M5 18 Q14 14 23 20"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        fill="none"
-        opacity=".5"
-      />
     </svg>
   ),
   timeseries: (
@@ -689,9 +1019,115 @@ const Icon = {
       />
     </svg>
   ),
+  cone: (
+    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+      <path d="M14 4 L24 22 L4 22 Z" fill="currentColor" opacity=".5" />
+      <ellipse
+        cx="14"
+        cy="22"
+        rx="10"
+        ry="3"
+        fill="currentColor"
+        opacity=".3"
+      />
+      <line
+        x1="14"
+        y1="4"
+        x2="20"
+        y2="14"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        opacity=".7"
+      />
+    </svg>
+  ),
+  splom: (
+    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+      <rect
+        x="2"
+        y="2"
+        width="11"
+        height="11"
+        rx="1"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        fill="none"
+        opacity=".5"
+      />
+      <rect
+        x="15"
+        y="2"
+        width="11"
+        height="11"
+        rx="1"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        fill="none"
+        opacity=".5"
+      />
+      <rect
+        x="2"
+        y="15"
+        width="11"
+        height="11"
+        rx="1"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        fill="none"
+        opacity=".5"
+      />
+      <rect
+        x="15"
+        y="15"
+        width="11"
+        height="11"
+        rx="1"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        fill="none"
+        opacity=".5"
+      />
+      <circle cx="6" cy="8" r="1.5" fill="currentColor" opacity=".7" />
+      <circle cx="10" cy="5" r="1.5" fill="currentColor" opacity=".7" />
+      <circle cx="19" cy="7" r="1.5" fill="currentColor" opacity=".7" />
+      <circle cx="22" cy="4" r="1.5" fill="currentColor" opacity=".7" />
+    </svg>
+  ),
+  strip: (
+    <svg viewBox="0 0 28 28" fill="none" width="20" height="20">
+      <line
+        x1="8"
+        y1="4"
+        x2="8"
+        y2="24"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        opacity=".3"
+      />
+      <line
+        x1="20"
+        y1="4"
+        x2="20"
+        y2="24"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        opacity=".3"
+      />
+      <circle cx="8" cy="6" r="1.5" fill="currentColor" />
+      <circle cx="7" cy="10" r="1.5" fill="currentColor" />
+      <circle cx="9" cy="15" r="1.5" fill="currentColor" />
+      <circle cx="8" cy="20" r="1.5" fill="currentColor" />
+      <circle cx="20" cy="8" r="1.5" fill="currentColor" />
+      <circle cx="19" cy="13" r="1.5" fill="currentColor" />
+      <circle cx="21" cy="18" r="1.5" fill="currentColor" />
+    </svg>
+  ),
 };
 
+// ─── Chart Type Definitions ────────────────────────────────────────────────
+
 const CHART_TYPES: ChartTypeDef[] = [
+  // Line & Scatter
   {
     id: "line",
     label: "Line",
@@ -699,7 +1135,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "lines",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.line,
+    icon: I.line,
   },
   {
     id: "scatter",
@@ -708,7 +1144,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "markers",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.scatter,
+    icon: I.scatter,
   },
   {
     id: "line-scatter",
@@ -717,7 +1153,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "lines+markers",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.line,
+    icon: I.line,
   },
   {
     id: "data-labels-hover",
@@ -726,7 +1162,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "lines+markers",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.scatter,
+    icon: I.scatter,
   },
   {
     id: "line-data-labels",
@@ -735,7 +1171,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "lines+text",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.line,
+    icon: I.line,
   },
   {
     id: "scatter-color",
@@ -744,7 +1180,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "markers",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.scatter,
+    icon: I.scatter,
   },
   {
     id: "grouped-scatter",
@@ -753,7 +1189,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "markers",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.scatter,
+    icon: I.scatter,
   },
   {
     id: "named-lines",
@@ -762,7 +1198,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "lines+markers",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.line,
+    icon: I.line,
   },
   {
     id: "styled-line",
@@ -771,7 +1207,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "lines",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.line,
+    icon: I.line,
   },
   {
     id: "colored-scatter",
@@ -780,7 +1216,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "markers",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.scatter,
+    icon: I.scatter,
   },
   {
     id: "line-shape",
@@ -789,7 +1225,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "lines",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.line,
+    icon: I.line,
   },
   {
     id: "line-dash",
@@ -798,7 +1234,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "lines",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.line,
+    icon: I.line,
   },
   {
     id: "connect-gaps",
@@ -807,7 +1243,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "lines",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.line,
+    icon: I.line,
   },
   {
     id: "annotated-lines",
@@ -816,8 +1252,9 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode: "lines",
     group: "line-scatter",
     category: "Line & Scatter",
-    icon: Icon.line,
+    icon: I.line,
   },
+  // Bar
   {
     id: "bar",
     label: "Column",
@@ -825,7 +1262,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     orientation: "v",
     group: "bar",
     category: "Bar Charts",
-    icon: Icon.bar,
+    icon: I.bar,
   },
   {
     id: "hbar",
@@ -834,7 +1271,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     orientation: "h",
     group: "bar",
     category: "Bar Charts",
-    icon: Icon.hbar,
+    icon: I.hbar,
   },
   {
     id: "grouped",
@@ -843,7 +1280,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     barmode: "group",
     group: "bar",
     category: "Bar Charts",
-    icon: Icon.bar,
+    icon: I.bar,
   },
   {
     id: "stacked",
@@ -852,7 +1289,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     barmode: "stack",
     group: "bar",
     category: "Bar Charts",
-    icon: Icon.stacked,
+    icon: I.stacked,
   },
   {
     id: "stacked100",
@@ -861,7 +1298,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     barmode: "relative",
     group: "bar",
     category: "Bar Charts",
-    icon: Icon.stacked,
+    icon: I.stacked,
   },
   {
     id: "bar-hover",
@@ -869,7 +1306,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     plotlyType: "bar",
     group: "bar",
     category: "Bar Charts",
-    icon: Icon.bar,
+    icon: I.bar,
   },
   {
     id: "bar-direct-labels",
@@ -877,7 +1314,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     plotlyType: "bar",
     group: "bar",
     category: "Bar Charts",
-    icon: Icon.bar,
+    icon: I.bar,
   },
   {
     id: "grouped-direct-labels",
@@ -886,7 +1323,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     barmode: "group",
     group: "bar",
     category: "Bar Charts",
-    icon: Icon.bar,
+    icon: I.bar,
   },
   {
     id: "bar-rotated",
@@ -894,7 +1331,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     plotlyType: "bar",
     group: "bar",
     category: "Bar Charts",
-    icon: Icon.bar,
+    icon: I.bar,
   },
   {
     id: "bar-colors",
@@ -902,7 +1339,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     plotlyType: "bar",
     group: "bar",
     category: "Bar Charts",
-    icon: Icon.bar,
+    icon: I.bar,
   },
   {
     id: "bar-styled",
@@ -910,7 +1347,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     plotlyType: "bar",
     group: "bar",
     category: "Bar Charts",
-    icon: Icon.bar,
+    icon: I.bar,
   },
   {
     id: "bar-relative",
@@ -919,34 +1356,109 @@ const CHART_TYPES: ChartTypeDef[] = [
     barmode: "relative",
     group: "bar",
     category: "Bar Charts",
-    icon: Icon.bar,
+    icon: I.bar,
   },
+  // Pie & Donut
   {
     id: "pie",
     label: "Pie Chart",
     plotlyType: "pie",
-    group: "pie-bubble",
-    category: "Pie & Bubble",
-    icon: Icon.pie,
+    group: "pie-donut",
+    category: "Pie & Donut",
+    icon: I.pie,
   },
   {
     id: "donut",
     label: "Donut Chart",
     plotlyType: "pie",
     hole: 0.45,
-    group: "pie-bubble",
-    category: "Pie & Bubble",
-    icon: Icon.donut,
+    group: "pie-donut",
+    category: "Pie & Donut",
+    icon: I.donut,
   },
+  {
+    id: "pie-pull",
+    label: "Pie with Pull",
+    plotlyType: "pie",
+    group: "pie-donut",
+    category: "Pie & Donut",
+    icon: I.pie,
+  },
+  {
+    id: "pie-styled",
+    label: "Styled Pie",
+    plotlyType: "pie",
+    group: "pie-donut",
+    category: "Pie & Donut",
+    icon: I.pie,
+  },
+  // Sunburst / Treemap / Icicle
+  {
+    id: "sunburst",
+    label: "Sunburst",
+    plotlyType: "sunburst",
+    group: "sunburst-treemap",
+    category: "Sunburst & Treemap",
+    icon: I.sunburst,
+  },
+  {
+    id: "sunburst-multi",
+    label: "Multilevel Sunburst",
+    plotlyType: "sunburst",
+    group: "sunburst-treemap",
+    category: "Sunburst & Treemap",
+    icon: I.sunburst,
+  },
+  {
+    id: "treemap",
+    label: "Treemap",
+    plotlyType: "treemap",
+    group: "sunburst-treemap",
+    category: "Sunburst & Treemap",
+    icon: I.treemap,
+  },
+  {
+    id: "treemap-nested",
+    label: "Nested Treemap",
+    plotlyType: "treemap",
+    group: "sunburst-treemap",
+    category: "Sunburst & Treemap",
+    icon: I.treemap,
+  },
+  {
+    id: "treemap-color",
+    label: "Treemap + Color",
+    plotlyType: "treemap",
+    group: "sunburst-treemap",
+    category: "Sunburst & Treemap",
+    icon: I.treemap,
+  },
+  {
+    id: "icicle",
+    label: "Icicle",
+    plotlyType: "icicle",
+    group: "sunburst-treemap",
+    category: "Sunburst & Treemap",
+    icon: I.treemap,
+  },
+  {
+    id: "icicle-multi",
+    label: "Multilevel Icicle",
+    plotlyType: "icicle",
+    group: "sunburst-treemap",
+    category: "Sunburst & Treemap",
+    icon: I.treemap,
+  },
+  // Bubble
   {
     id: "bubble",
     label: "Bubble Chart",
     plotlyType: "scatter",
     mode: "markers",
     bubble: true,
-    group: "pie-bubble",
-    category: "Pie & Bubble",
-    icon: Icon.bubble,
+    group: "bubble",
+    category: "Bubble Charts",
+    icon: I.bubble,
   },
   {
     id: "bubble-size",
@@ -954,19 +1466,19 @@ const CHART_TYPES: ChartTypeDef[] = [
     plotlyType: "scatter",
     mode: "markers",
     bubble: true,
-    group: "pie-bubble",
-    category: "Pie & Bubble",
-    icon: Icon.bubble,
+    group: "bubble",
+    category: "Bubble Charts",
+    icon: I.bubble,
   },
   {
     id: "bubble-size-color",
-    label: "Bubble Size + Color",
+    label: "Bubble Size+Color",
     plotlyType: "scatter",
     mode: "markers",
     bubble: true,
-    group: "pie-bubble",
-    category: "Pie & Bubble",
-    icon: Icon.bubble,
+    group: "bubble",
+    category: "Bubble Charts",
+    icon: I.bubble,
   },
   {
     id: "bubble-hover",
@@ -974,9 +1486,9 @@ const CHART_TYPES: ChartTypeDef[] = [
     plotlyType: "scatter",
     mode: "markers",
     bubble: true,
-    group: "pie-bubble",
-    category: "Pie & Bubble",
-    icon: Icon.bubble,
+    group: "bubble",
+    category: "Bubble Charts",
+    icon: I.bubble,
   },
   {
     id: "bubble-scaling",
@@ -984,182 +1496,336 @@ const CHART_TYPES: ChartTypeDef[] = [
     plotlyType: "scatter",
     mode: "markers",
     bubble: true,
-    group: "pie-bubble",
-    category: "Pie & Bubble",
-    icon: Icon.bubble,
+    group: "bubble",
+    category: "Bubble Charts",
+    icon: I.bubble,
   },
   {
     id: "marker-array",
     label: "Marker Array",
     plotlyType: "scatter",
     mode: "markers",
-    group: "pie-bubble",
-    category: "Pie & Bubble",
-    icon: Icon.scatter,
+    group: "bubble",
+    category: "Bubble Charts",
+    icon: I.scatter,
   },
-  {
-    id: "error-bars",
-    label: "Symmetric Error Bars",
-    plotlyType: "scatter",
-    mode: "lines+markers",
-    group: "statistical",
-    category: "Statistical",
-    icon: Icon.error,
-  },
-  {
-    id: "bar-error",
-    label: "Bar with Error Bars",
-    plotlyType: "bar",
-    group: "statistical",
-    category: "Statistical",
-    icon: Icon.error,
-  },
-  {
-    id: "horizontal-error",
-    label: "Horizontal Error Bars",
-    plotlyType: "scatter",
-    mode: "markers",
-    group: "statistical",
-    category: "Statistical",
-    icon: Icon.error,
-  },
-  {
-    id: "asymmetric-error",
-    label: "Asymmetric Error Bars",
-    plotlyType: "scatter",
-    mode: "markers",
-    group: "statistical",
-    category: "Statistical",
-    icon: Icon.error,
-  },
+  // Statistical
   {
     id: "box",
     label: "Box Plot",
     plotlyType: "box",
     group: "statistical",
     category: "Statistical",
-    icon: Icon.box,
+    icon: I.box,
   },
   {
     id: "box-data",
-    label: "Box + Underlying Data",
+    label: "Box + Data",
     plotlyType: "box",
     group: "statistical",
     category: "Statistical",
-    icon: Icon.box,
+    icon: I.box,
   },
   {
     id: "hbox",
-    label: "Horizontal Box Plot",
+    label: "Horizontal Box",
     plotlyType: "box",
     orientation: "h",
     group: "statistical",
     category: "Statistical",
-    icon: Icon.box,
+    icon: I.box,
   },
   {
     id: "grouped-box",
-    label: "Grouped Box Plot",
+    label: "Grouped Box",
     plotlyType: "box",
     group: "statistical",
     category: "Statistical",
-    icon: Icon.box,
+    icon: I.box,
   },
   {
     id: "box-outliers",
-    label: "Box Styled Outliers",
+    label: "Box Outliers",
     plotlyType: "box",
     group: "statistical",
     category: "Statistical",
-    icon: Icon.box,
+    icon: I.box,
   },
   {
     id: "box-styled",
-    label: "Fully Styled Box",
+    label: "Styled Box",
     plotlyType: "box",
     group: "statistical",
     category: "Statistical",
-    icon: Icon.box,
+    icon: I.box,
   },
   {
     id: "rainbow-box",
-    label: "Rainbow Box Plot",
+    label: "Rainbow Box",
     plotlyType: "box",
     group: "statistical",
     category: "Statistical",
-    icon: Icon.box,
+    icon: I.box,
   },
   {
     id: "violin",
-    label: "Violin Plot",
+    label: "Violin",
     plotlyType: "violin",
     group: "statistical",
     category: "Statistical",
-    icon: Icon.violin,
+    icon: I.violin,
   },
   {
+    id: "violin-box",
+    label: "Violin + Box",
+    plotlyType: "violin",
+    group: "statistical",
+    category: "Statistical",
+    icon: I.violin,
+  },
+  {
+    id: "violin-split",
+    label: "Split Violin",
+    plotlyType: "violin",
+    group: "statistical",
+    category: "Statistical",
+    icon: I.violin,
+  },
+  {
+    id: "violin-grouped",
+    label: "Grouped Violin",
+    plotlyType: "violin",
+    group: "statistical",
+    category: "Statistical",
+    icon: I.violin,
+  },
+  {
+    id: "error-bars",
+    label: "Symmetric Error",
+    plotlyType: "scatter",
+    mode: "lines+markers",
+    group: "statistical",
+    category: "Statistical",
+    icon: I.error,
+  },
+  {
+    id: "bar-error",
+    label: "Bar Error Bars",
+    plotlyType: "bar",
+    group: "statistical",
+    category: "Statistical",
+    icon: I.error,
+  },
+  {
+    id: "horizontal-error",
+    label: "Horizontal Error",
+    plotlyType: "scatter",
+    mode: "markers",
+    group: "statistical",
+    category: "Statistical",
+    icon: I.error,
+  },
+  {
+    id: "asymmetric-error",
+    label: "Asymmetric Error",
+    plotlyType: "scatter",
+    mode: "markers",
+    group: "statistical",
+    category: "Statistical",
+    icon: I.error,
+  },
+  {
+    id: "strip-chart",
+    label: "Strip Chart",
+    plotlyType: "scatter",
+    mode: "markers",
+    group: "statistical",
+    category: "Statistical",
+    icon: I.strip,
+  },
+  {
+    id: "ecdf",
+    label: "ECDF",
+    plotlyType: "scatter",
+    mode: "lines",
+    group: "statistical",
+    category: "Statistical",
+    icon: I.line,
+  },
+  // Histogram
+  {
     id: "histogram",
-    label: "Basic Histogram",
+    label: "Histogram",
     plotlyType: "histogram",
     group: "histogram",
     category: "Histograms",
-    icon: Icon.histogram,
+    icon: I.histogram,
   },
   {
     id: "overlaid-histogram",
-    label: "Overlaid Histogram",
+    label: "Overlaid",
     plotlyType: "histogram",
     group: "histogram",
     category: "Histograms",
-    icon: Icon.histogram,
+    icon: I.histogram,
   },
   {
     id: "stacked-histogram",
-    label: "Stacked Histograms",
+    label: "Stacked",
     plotlyType: "histogram",
     group: "histogram",
     category: "Histograms",
-    icon: Icon.histogram,
+    icon: I.histogram,
   },
   {
     id: "styled-histogram",
-    label: "Styled Histogram",
+    label: "Styled",
     plotlyType: "histogram",
     group: "histogram",
     category: "Histograms",
-    icon: Icon.histogram,
+    icon: I.histogram,
   },
   {
     id: "cumulative-histogram",
-    label: "Cumulative Histogram",
+    label: "Cumulative",
     plotlyType: "histogram",
     group: "histogram",
     category: "Histograms",
-    icon: Icon.histogram,
+    icon: I.histogram,
   },
   {
     id: "normalized-histogram",
-    label: "Normalized Histogram",
+    label: "Normalized",
     plotlyType: "histogram",
     group: "histogram",
     category: "Histograms",
-    icon: Icon.histogram,
+    icon: I.histogram,
+  },
+  {
+    id: "probability-histogram",
+    label: "Probability",
+    plotlyType: "histogram",
+    group: "histogram",
+    category: "Histograms",
+    icon: I.histogram,
   },
   {
     id: "2d-histogram-contour",
-    label: "2D Histogram Contour",
+    label: "2D Hist Contour",
     plotlyType: "histogram2dcontour",
     group: "histogram",
     category: "Histograms",
-    icon: Icon.contour,
+    icon: I.contour,
   },
   {
     id: "2d-histogram-slider",
-    label: "2D Histogram + Slider",
+    label: "2D Hist + Slider",
     plotlyType: "histogram2dcontour",
     group: "histogram",
     category: "Histograms",
-    icon: Icon.contour,
+    icon: I.contour,
+  },
+  // Heatmap & Contour
+  {
+    id: "heatmap",
+    label: "Heatmap",
+    plotlyType: "heatmap",
+    group: "heatmap-contour",
+    category: "Heatmap & Contour",
+    icon: I.heatmap,
+  },
+  {
+    id: "heatmap-categorical",
+    label: "Categorical Heatmap",
+    plotlyType: "heatmap",
+    group: "heatmap-contour",
+    category: "Heatmap & Contour",
+    icon: I.heatmap,
+  },
+  {
+    id: "heatmap-annotated",
+    label: "Annotated Heatmap",
+    plotlyType: "heatmap",
+    group: "heatmap-contour",
+    category: "Heatmap & Contour",
+    icon: I.heatmap,
+  },
+  {
+    id: "contour-simple",
+    label: "Simple Contour",
+    plotlyType: "contour",
+    group: "heatmap-contour",
+    category: "Heatmap & Contour",
+    icon: I.contour,
+  },
+  {
+    id: "contour-basic",
+    label: "Basic Contour",
+    plotlyType: "contour",
+    group: "heatmap-contour",
+    category: "Heatmap & Contour",
+    icon: I.contour,
+  },
+  {
+    id: "contour-lines",
+    label: "Contour Lines",
+    plotlyType: "contour",
+    group: "heatmap-contour",
+    category: "Heatmap & Contour",
+    icon: I.contour,
+  },
+  {
+    id: "contour-labels",
+    label: "Contour Labels",
+    plotlyType: "contour",
+    group: "heatmap-contour",
+    category: "Heatmap & Contour",
+    icon: I.contour,
+  },
+  {
+    id: "carpet",
+    label: "Carpet Plot",
+    plotlyType: "carpet",
+    group: "heatmap-contour",
+    category: "Heatmap & Contour",
+    icon: I.heatmap,
+  },
+  {
+    id: "contour-carpet",
+    label: "Contour Carpet",
+    plotlyType: "contourcarpet",
+    group: "heatmap-contour",
+    category: "Heatmap & Contour",
+    icon: I.contour,
+  },
+  {
+    id: "carpet-scatter",
+    label: "Carpet Scatter",
+    plotlyType: "scattercarpet",
+    group: "heatmap-contour",
+    category: "Heatmap & Contour",
+    icon: I.scatter,
+  },
+  // Filled & Area
+  {
+    id: "area",
+    label: "Area Chart",
+    plotlyType: "scatter",
+    mode: "lines",
+    fill: "tozeroy",
+    group: "filled-area",
+    category: "Filled & Area",
+    icon: I.area,
+  },
+  {
+    id: "area-stacked",
+    label: "Stacked Area",
+    plotlyType: "scatter",
+    mode: "lines",
+    fill: "tonexty",
+    group: "filled-area",
+    category: "Filled & Area",
+    icon: I.area,
   },
   {
     id: "filled-lines",
@@ -1167,226 +1833,39 @@ const CHART_TYPES: ChartTypeDef[] = [
     plotlyType: "scatter",
     mode: "lines",
     fill: "tozeroy",
-    group: "filled-error",
-    category: "Filled & Error",
-    icon: Icon.area,
+    group: "filled-area",
+    category: "Filled & Area",
+    icon: I.area,
   },
   {
     id: "continuous-error-filled",
-    label: "Continuous Error Filled",
+    label: "Error Filled",
     plotlyType: "scatter",
     mode: "lines",
     fill: "tonexty",
-    group: "filled-error",
-    category: "Filled & Error",
-    icon: Icon.area,
+    group: "filled-area",
+    category: "Filled & Area",
+    icon: I.area,
   },
   {
     id: "asymmetric-offset",
-    label: "Asymmetric + Offset",
+    label: "Asymmetric Offset",
     plotlyType: "scatter",
     mode: "lines+markers",
-    group: "filled-error",
-    category: "Filled & Error",
-    icon: Icon.error,
+    group: "filled-area",
+    category: "Filled & Area",
+    icon: I.error,
   },
   {
     id: "continuous-error",
-    label: "Continuous Error Bars",
+    label: "Continuous Error",
     plotlyType: "scatter",
     mode: "lines+markers",
-    group: "filled-error",
-    category: "Filled & Error",
-    icon: Icon.error,
+    group: "filled-area",
+    category: "Filled & Area",
+    icon: I.error,
   },
-  {
-    id: "contour-simple",
-    label: "Simple Contour",
-    plotlyType: "contour",
-    group: "contour-heat",
-    category: "Contour & Heat",
-    icon: Icon.contour,
-  },
-  {
-    id: "contour-basic",
-    label: "Basic Contour",
-    plotlyType: "contour",
-    group: "contour-heat",
-    category: "Contour & Heat",
-    icon: Icon.contour,
-  },
-  {
-    id: "contour-lines",
-    label: "Contour Lines",
-    plotlyType: "contour",
-    group: "contour-heat",
-    category: "Contour & Heat",
-    icon: Icon.contour,
-  },
-  {
-    id: "contour-labels",
-    label: "Contour Labels",
-    plotlyType: "contour",
-    group: "contour-heat",
-    category: "Contour & Heat",
-    icon: Icon.contour,
-  },
-  {
-    id: "heatmap",
-    label: "Basic Heatmap",
-    plotlyType: "heatmap",
-    group: "contour-heat",
-    category: "Contour & Heat",
-    icon: Icon.heatmap,
-  },
-  {
-    id: "heatmap-categorical",
-    label: "Categorical Heatmap",
-    plotlyType: "heatmap",
-    group: "contour-heat",
-    category: "Contour & Heat",
-    icon: Icon.heatmap,
-  },
-  {
-    id: "heatmap-annotated",
-    label: "Annotated Heatmap",
-    plotlyType: "heatmap",
-    group: "contour-heat",
-    category: "Contour & Heat",
-    icon: Icon.heatmap,
-  },
-  {
-    id: "ternary",
-    label: "Ternary + Markers",
-    plotlyType: "scatterternary",
-    group: "scientific",
-    category: "Scientific",
-    icon: Icon.ternary,
-  },
-  {
-    id: "soil-ternary",
-    label: "Soil Types Ternary",
-    plotlyType: "scatterternary",
-    group: "scientific",
-    category: "Scientific",
-    icon: Icon.ternary,
-  },
-  {
-    id: "parallel-basic",
-    label: "Basic Parallel Coords",
-    plotlyType: "parcoords",
-    group: "scientific",
-    category: "Scientific",
-    icon: Icon.parallel,
-  },
-  {
-    id: "parallel-coords",
-    label: "Parallel Coordinates",
-    plotlyType: "parcoords",
-    group: "scientific",
-    category: "Scientific",
-    icon: Icon.parallel,
-  },
-  {
-    id: "parallel-advanced",
-    label: "Advanced Parallel",
-    plotlyType: "parcoords",
-    group: "scientific",
-    category: "Scientific",
-    icon: Icon.parallel,
-  },
-  {
-    id: "log-plots",
-    label: "Log Plots",
-    plotlyType: "scatter",
-    mode: "lines+markers",
-    group: "scientific",
-    category: "Scientific",
-    icon: Icon.line,
-  },
-  {
-    id: "log-axes",
-    label: "Logarithmic Axes",
-    plotlyType: "scatter",
-    mode: "lines",
-    group: "scientific",
-    category: "Scientific",
-    icon: Icon.line,
-  },
-  {
-    id: "waterfall",
-    label: "Basic Waterfall",
-    plotlyType: "waterfall",
-    group: "financial",
-    category: "Financial",
-    icon: Icon.waterfall,
-  },
-  {
-    id: "waterfall-multi",
-    label: "Multi-Category Waterfall",
-    plotlyType: "waterfall",
-    group: "financial",
-    category: "Financial",
-    icon: Icon.waterfall,
-  },
-  {
-    id: "candlestick",
-    label: "Candlestick",
-    plotlyType: "candlestick",
-    group: "financial",
-    category: "Financial",
-    icon: Icon.candlestick,
-  },
-  {
-    id: "candlestick-no-slider",
-    label: "Candlestick No Slider",
-    plotlyType: "candlestick",
-    group: "financial",
-    category: "Financial",
-    icon: Icon.candlestick,
-  },
-  {
-    id: "candlestick-annotated",
-    label: "Candlestick Annotated",
-    plotlyType: "candlestick",
-    group: "financial",
-    category: "Financial",
-    icon: Icon.candlestick,
-  },
-  {
-    id: "funnel",
-    label: "Basic Funnel",
-    plotlyType: "funnel",
-    group: "financial",
-    category: "Financial",
-    icon: Icon.funnel,
-  },
-  {
-    id: "funnel-stacked",
-    label: "Stacked Funnel",
-    plotlyType: "funnel",
-    group: "financial",
-    category: "Financial",
-    icon: Icon.funnel,
-  },
-  {
-    id: "time-series-slider",
-    label: "Time Series + Slider",
-    plotlyType: "scatter",
-    mode: "lines",
-    group: "financial",
-    category: "Financial",
-    icon: Icon.timeseries,
-  },
-  {
-    id: "time-series",
-    label: "Basic Time Series",
-    plotlyType: "scatter",
-    mode: "lines",
-    group: "financial",
-    category: "Financial",
-    icon: Icon.timeseries,
-  },
+  // 3D
   {
     id: "scatter3d",
     label: "3D Scatter",
@@ -1394,7 +1873,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode3d: "markers",
     group: "3d",
     category: "3D Charts",
-    icon: Icon.scatter3d,
+    icon: I.scatter3d,
   },
   {
     id: "ribbon3d",
@@ -1403,7 +1882,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode3d: "lines",
     group: "3d",
     category: "3D Charts",
-    icon: Icon.scatter3d,
+    icon: I.scatter3d,
   },
   {
     id: "surface3d",
@@ -1411,15 +1890,15 @@ const CHART_TYPES: ChartTypeDef[] = [
     plotlyType: "surface",
     group: "3d",
     category: "3D Charts",
-    icon: Icon.surface3d,
+    icon: I.surface3d,
   },
   {
     id: "surface3d-multi",
-    label: "Multiple 3D Surfaces",
+    label: "Multi Surface",
     plotlyType: "surface",
     group: "3d",
     category: "3D Charts",
-    icon: Icon.surface3d,
+    icon: I.surface3d,
   },
   {
     id: "mesh3d",
@@ -1427,7 +1906,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     plotlyType: "mesh3d",
     group: "3d",
     category: "3D Charts",
-    icon: Icon.scatter3d,
+    icon: I.scatter3d,
   },
   {
     id: "line3d",
@@ -1436,7 +1915,7 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode3d: "lines+markers",
     group: "3d",
     category: "3D Charts",
-    icon: Icon.scatter3d,
+    icon: I.scatter3d,
   },
   {
     id: "line3d-plot",
@@ -1445,25 +1924,25 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode3d: "lines",
     group: "3d",
     category: "3D Charts",
-    icon: Icon.scatter3d,
+    icon: I.scatter3d,
   },
   {
     id: "line3d-markers",
-    label: "3D Line + Markers",
+    label: "3D Line+Markers",
     plotlyType: "scatter3d",
     mode3d: "lines+markers",
     group: "3d",
     category: "3D Charts",
-    icon: Icon.scatter3d,
+    icon: I.scatter3d,
   },
   {
     id: "line3d-spiral",
-    label: "3D Line Spiral",
+    label: "3D Spiral",
     plotlyType: "scatter3d",
     mode3d: "lines",
     group: "3d",
     category: "3D Charts",
-    icon: Icon.scatter3d,
+    icon: I.scatter3d,
   },
   {
     id: "random-walk3d",
@@ -1472,22 +1951,446 @@ const CHART_TYPES: ChartTypeDef[] = [
     mode3d: "lines+markers",
     group: "3d",
     category: "3D Charts",
-    icon: Icon.scatter3d,
+    icon: I.scatter3d,
+  },
+  {
+    id: "cone3d",
+    label: "3D Cone",
+    plotlyType: "cone",
+    group: "3d",
+    category: "3D Charts",
+    icon: I.cone,
+  },
+  {
+    id: "streamtube3d",
+    label: "Streamtube",
+    plotlyType: "streamtube",
+    group: "3d",
+    category: "3D Charts",
+    icon: I.cone,
+  },
+  {
+    id: "isosurface3d",
+    label: "Isosurface",
+    plotlyType: "isosurface",
+    group: "3d",
+    category: "3D Charts",
+    icon: I.surface3d,
+  },
+  {
+    id: "volume3d",
+    label: "Volume Plot",
+    plotlyType: "volume",
+    group: "3d",
+    category: "3D Charts",
+    icon: I.surface3d,
+  },
+  // Maps
+  {
+    id: "choropleth",
+    label: "Choropleth Map",
+    plotlyType: "choropleth",
+    group: "maps",
+    category: "Maps & Geo",
+    icon: I.map,
+  },
+  {
+    id: "world-map",
+    label: "World Map",
+    plotlyType: "choropleth",
+    group: "maps",
+    category: "Maps & Geo",
+    icon: I.map,
+  },
+  {
+    id: "us-map",
+    label: "US State Map",
+    plotlyType: "choropleth",
+    group: "maps",
+    category: "Maps & Geo",
+    icon: I.map,
+  },
+  {
+    id: "scatter-geo",
+    label: "Scatter Geo",
+    plotlyType: "scattergeo",
+    group: "maps",
+    category: "Maps & Geo",
+    icon: I.scatter,
+  },
+  {
+    id: "line-geo",
+    label: "Line Geo",
+    plotlyType: "scattergeo",
+    mode: "lines",
+    group: "maps",
+    category: "Maps & Geo",
+    icon: I.line,
+  },
+  {
+    id: "bubble-map",
+    label: "Bubble Map",
+    plotlyType: "scattergeo",
+    mode: "markers",
+    group: "maps",
+    category: "Maps & Geo",
+    icon: I.bubble,
+  },
+  {
+    id: "choropleth-tile",
+    label: "Choropleth Tile",
+    plotlyType: "choroplethmapbox",
+    group: "maps",
+    category: "Maps & Geo",
+    icon: I.map,
+  },
+  {
+    id: "scatter-mapbox",
+    label: "Scatter Mapbox",
+    plotlyType: "scattermapbox",
+    group: "maps",
+    category: "Maps & Geo",
+    icon: I.scatter,
+  },
+  {
+    id: "density-mapbox",
+    label: "Density Mapbox",
+    plotlyType: "densitymapbox",
+    group: "maps",
+    category: "Maps & Geo",
+    icon: I.heatmap,
+  },
+  // Financial
+  {
+    id: "candlestick",
+    label: "Candlestick",
+    plotlyType: "candlestick",
+    group: "financial",
+    category: "Financial",
+    icon: I.candlestick,
+  },
+  {
+    id: "candlestick-no-slider",
+    label: "Candlestick No Slider",
+    plotlyType: "candlestick",
+    group: "financial",
+    category: "Financial",
+    icon: I.candlestick,
+  },
+  {
+    id: "candlestick-annotated",
+    label: "Candlestick Annotated",
+    plotlyType: "candlestick",
+    group: "financial",
+    category: "Financial",
+    icon: I.candlestick,
+  },
+  {
+    id: "ohlc",
+    label: "OHLC Chart",
+    plotlyType: "ohlc",
+    group: "financial",
+    category: "Financial",
+    icon: I.candlestick,
+  },
+  {
+    id: "ohlc-no-slider",
+    label: "OHLC No Slider",
+    plotlyType: "ohlc",
+    group: "financial",
+    category: "Financial",
+    icon: I.candlestick,
+  },
+  {
+    id: "waterfall",
+    label: "Waterfall",
+    plotlyType: "waterfall",
+    group: "financial",
+    category: "Financial",
+    icon: I.waterfall,
+  },
+  {
+    id: "waterfall-multi",
+    label: "Multi Waterfall",
+    plotlyType: "waterfall",
+    group: "financial",
+    category: "Financial",
+    icon: I.waterfall,
+  },
+  {
+    id: "funnel",
+    label: "Basic Funnel",
+    plotlyType: "funnel",
+    group: "financial",
+    category: "Financial",
+    icon: I.funnel,
+  },
+  {
+    id: "funnel-stacked",
+    label: "Stacked Funnel",
+    plotlyType: "funnel",
+    group: "financial",
+    category: "Financial",
+    icon: I.funnel,
+  },
+  {
+    id: "funnel-area",
+    label: "Funnel Area",
+    plotlyType: "funnelarea",
+    group: "financial",
+    category: "Financial",
+    icon: I.funnel,
+  },
+  {
+    id: "time-series",
+    label: "Time Series",
+    plotlyType: "scatter",
+    mode: "lines",
+    group: "financial",
+    category: "Financial",
+    icon: I.timeseries,
+  },
+  {
+    id: "time-series-slider",
+    label: "Time + Slider",
+    plotlyType: "scatter",
+    mode: "lines",
+    group: "financial",
+    category: "Financial",
+    icon: I.timeseries,
+  },
+  // Polar & Radar
+  {
+    id: "polar-scatter",
+    label: "Polar Scatter",
+    plotlyType: "scatterpolar",
+    mode: "markers",
+    group: "polar-radar",
+    category: "Polar & Radar",
+    icon: I.polar,
+  },
+  {
+    id: "polar-line",
+    label: "Polar Line",
+    plotlyType: "scatterpolar",
+    mode: "lines",
+    group: "polar-radar",
+    category: "Polar & Radar",
+    icon: I.polar,
+  },
+  {
+    id: "polar-bar",
+    label: "Polar Bar (Wind Rose)",
+    plotlyType: "barpolar",
+    group: "polar-radar",
+    category: "Polar & Radar",
+    icon: I.polar,
+  },
+  {
+    id: "radar",
+    label: "Radar / Spider",
+    plotlyType: "scatterpolar",
+    mode: "lines",
+    group: "polar-radar",
+    category: "Polar & Radar",
+    icon: I.radar,
+  },
+  {
+    id: "radar-multi",
+    label: "Radar Multi-Trace",
+    plotlyType: "scatterpolar",
+    mode: "lines",
+    group: "polar-radar",
+    category: "Polar & Radar",
+    icon: I.radar,
+  },
+  // Scientific
+  {
+    id: "ternary",
+    label: "Ternary Plot",
+    plotlyType: "scatterternary",
+    group: "scientific",
+    category: "Scientific",
+    icon: I.ternary,
+  },
+  {
+    id: "soil-ternary",
+    label: "Soil Ternary",
+    plotlyType: "scatterternary",
+    group: "scientific",
+    category: "Scientific",
+    icon: I.ternary,
+  },
+  {
+    id: "log-plots",
+    label: "Log Plots",
+    plotlyType: "scatter",
+    mode: "lines+markers",
+    group: "scientific",
+    category: "Scientific",
+    icon: I.line,
+  },
+  {
+    id: "log-axes",
+    label: "Logarithmic Axes",
+    plotlyType: "scatter",
+    mode: "lines",
+    group: "scientific",
+    category: "Scientific",
+    icon: I.line,
+  },
+  {
+    id: "splom",
+    label: "SPLOM",
+    plotlyType: "splom",
+    group: "scientific",
+    category: "Scientific",
+    icon: I.splom,
+  },
+  // Parallel & Sankey
+  {
+    id: "parallel-basic",
+    label: "Basic Parallel Coords",
+    plotlyType: "parcoords",
+    group: "parallel-sankey",
+    category: "Parallel & Sankey",
+    icon: I.parallel,
+  },
+  {
+    id: "parallel-coords",
+    label: "Parallel Coordinates",
+    plotlyType: "parcoords",
+    group: "parallel-sankey",
+    category: "Parallel & Sankey",
+    icon: I.parallel,
+  },
+  {
+    id: "parallel-advanced",
+    label: "Advanced Parallel",
+    plotlyType: "parcoords",
+    group: "parallel-sankey",
+    category: "Parallel & Sankey",
+    icon: I.parallel,
+  },
+  {
+    id: "parallel-categories",
+    label: "Parallel Categories",
+    plotlyType: "parcats",
+    group: "parallel-sankey",
+    category: "Parallel & Sankey",
+    icon: I.parallel,
+  },
+  {
+    id: "sankey",
+    label: "Sankey Diagram",
+    plotlyType: "sankey",
+    group: "parallel-sankey",
+    category: "Parallel & Sankey",
+    icon: I.sankey,
+  },
+  {
+    id: "sankey-multi",
+    label: "Multilevel Sankey",
+    plotlyType: "sankey",
+    group: "parallel-sankey",
+    category: "Parallel & Sankey",
+    icon: I.sankey,
+  },
+  {
+    id: "sankey-styled",
+    label: "Styled Sankey",
+    plotlyType: "sankey",
+    group: "parallel-sankey",
+    category: "Parallel & Sankey",
+    icon: I.sankey,
+  },
+  // Indicator & Table
+  {
+    id: "indicator",
+    label: "Indicator Gauge",
+    plotlyType: "indicator",
+    group: "indicator-table",
+    category: "Indicator & Table",
+    icon: I.indicator,
+  },
+  {
+    id: "indicator-angular",
+    label: "Angular Gauge",
+    plotlyType: "indicator",
+    group: "indicator-table",
+    category: "Indicator & Table",
+    icon: I.indicator,
+  },
+  {
+    id: "indicator-bullet",
+    label: "Bullet Gauge",
+    plotlyType: "indicator",
+    group: "indicator-table",
+    category: "Indicator & Table",
+    icon: I.indicator,
+  },
+  {
+    id: "indicator-delta",
+    label: "Delta Indicator",
+    plotlyType: "indicator",
+    group: "indicator-table",
+    category: "Indicator & Table",
+    icon: I.indicator,
+  },
+  {
+    id: "indicator-number-delta",
+    label: "Number + Delta",
+    plotlyType: "indicator",
+    group: "indicator-table",
+    category: "Indicator & Table",
+    icon: I.indicator,
+  },
+  {
+    id: "table",
+    label: "Basic Table",
+    plotlyType: "table",
+    group: "indicator-table",
+    category: "Indicator & Table",
+    icon: I.table,
+  },
+  {
+    id: "table-styled",
+    label: "Styled Table",
+    plotlyType: "table",
+    group: "indicator-table",
+    category: "Indicator & Table",
+    icon: I.table,
+  },
+  {
+    id: "table-formatted",
+    label: "Formatted Table",
+    plotlyType: "table",
+    group: "indicator-table",
+    category: "Indicator & Table",
+    icon: I.table,
   },
 ];
 
 const CHART_GROUPS_ORDER = [
   { id: "line-scatter", label: "Line & Scatter", color: "#3b82f6" },
   { id: "bar", label: "Bar Charts", color: "#10b981" },
-  { id: "pie-bubble", label: "Pie & Bubble", color: "#ec4899" },
+  { id: "pie-donut", label: "Pie & Donut", color: "#ec4899" },
+  { id: "sunburst-treemap", label: "Sunburst & Treemap", color: "#f97316" },
+  { id: "bubble", label: "Bubble Charts", color: "#a855f7" },
   { id: "statistical", label: "Statistical", color: "#f59e0b" },
   { id: "histogram", label: "Histograms", color: "#8b5cf6" },
-  { id: "filled-error", label: "Filled & Error", color: "#ef4444" },
-  { id: "contour-heat", label: "Contour & Heat", color: "#06b6d4" },
-  { id: "scientific", label: "Scientific", color: "#4ade80" },
-  { id: "financial", label: "Financial", color: "#f97316" },
+  { id: "heatmap-contour", label: "Heatmap & Contour", color: "#06b6d4" },
+  { id: "filled-area", label: "Filled & Area", color: "#ef4444" },
   { id: "3d", label: "3D Charts", color: "#a855f7" },
+  { id: "maps", label: "Maps & Geo", color: "#14b8a6" },
+  { id: "financial", label: "Financial", color: "#f97316" },
+  { id: "polar-radar", label: "Polar & Radar", color: "#4ade80" },
+  { id: "scientific", label: "Scientific", color: "#22d3ee" },
+  { id: "parallel-sankey", label: "Parallel & Sankey", color: "#fb923c" },
+  { id: "indicator-table", label: "Indicator & Table", color: "#64748b" },
 ];
+
+// ─── Type Detector ─────────────────────────────────────────────────────────
 
 function detectChartTypeId(traces: any[]): ChartTypeId {
   if (!traces || traces.length === 0) return "bar";
@@ -1499,21 +2402,46 @@ function detectChartTypeId(traces: any[]): ChartTypeId {
   if (type === "scatter3d" || (type === "scatter" && t0.z)) return "scatter3d";
   if (type === "mesh3d") return "mesh3d";
   if (type === "surface") return "surface3d";
+  if (type === "cone") return "cone3d";
+  if (type === "streamtube") return "streamtube3d";
+  if (type === "isosurface") return "isosurface3d";
+  if (type === "volume") return "volume3d";
   if (type === "waterfall") return "waterfall";
   if (type === "funnel") return "funnel";
+  if (type === "funnelarea") return "funnel-area";
   if (type === "candlestick") return "candlestick";
+  if (type === "ohlc") return "ohlc";
   if (type === "box") return orient === "h" ? "hbox" : "box";
   if (type === "violin") return "violin";
   if (type === "histogram") return "histogram";
   if (type === "histogram2dcontour") return "2d-histogram-contour";
   if (type === "heatmap") return "heatmap";
   if (type === "contour") return "contour-basic";
+  if (type === "carpet") return "carpet";
+  if (type === "contourcarpet") return "contour-carpet";
+  if (type === "scattercarpet") return "carpet-scatter";
   if (type === "parcoords") return "parallel-coords";
+  if (type === "parcats") return "parallel-categories";
   if (type === "scatterternary") return "ternary";
+  if (type === "sunburst") return "sunburst";
+  if (type === "treemap") return "treemap";
+  if (type === "icicle") return "icicle";
+  if (type === "splom") return "splom";
+  if (type === "sankey") return "sankey";
+  if (type === "indicator") return "indicator";
+  if (type === "table") return "table";
+  if (type === "choropleth") return "choropleth";
+  if (type === "choroplethmapbox") return "choropleth-tile";
+  if (type === "scattergeo") return "scatter-geo";
+  if (type === "scattermapbox") return "scatter-mapbox";
+  if (type === "densitymapbox") return "density-mapbox";
+  if (type === "scatterpolar")
+    return mode.includes("lines") ? "radar" : "polar-scatter";
+  if (type === "barpolar") return "polar-bar";
   if (type === "pie" && t0.hole && t0.hole > 0) return "donut";
   if (type === "pie") return "pie";
   if (type === "scatter" && mode.includes("lines") && fill === "tonexty")
-    return "filled-lines";
+    return "area-stacked";
   if (type === "scatter" && mode.includes("lines") && fill)
     return "filled-lines";
   if (type === "scatter" && mode.includes("lines") && mode.includes("markers"))
@@ -1526,138 +2454,113 @@ function detectChartTypeId(traces: any[]): ChartTypeId {
   return "bar";
 }
 
-// ─── Synthetic data generators ───────────────────────────────
+// ─── Data Generators ───────────────────────────────────────────────────────
 
-function generateBoxData(sourceTraces: any[], palette: string[]) {
-  return sourceTraces.map((trace: any, i: number) => {
-    const rawY: number[] =
-      trace.y?.map(Number).filter((n: number) => !isNaN(n)) || [];
-    const syntheticY =
-      rawY.length >= 4
-        ? rawY
-        : [10, 15, 13, 17, 14, 12, 18, 11, 16, 13, 15, 14, 19, 12, 17];
+function genBox(traces: any[], pal: string[]) {
+  return traces.map((t: any, i: number) => {
+    const y = t.y?.map(Number).filter((n: number) => !isNaN(n)) || [];
     return {
       type: "box",
-      name: trace.name || `Series ${i + 1}`,
-      y: syntheticY,
-      marker: { color: palette[i % palette.length] },
+      name: t.name || `S${i + 1}`,
+      y: y.length >= 4 ? y : [10, 15, 13, 17, 14, 12, 18, 11, 16, 13],
+      marker: { color: pal[i % pal.length] },
       boxmean: true,
     };
   });
 }
-
-function generateViolinData(sourceTraces: any[], palette: string[]) {
-  return sourceTraces.map((trace: any, i: number) => {
-    const rawY: number[] =
-      trace.y?.map(Number).filter((n: number) => !isNaN(n)) || [];
-    const syntheticY =
-      rawY.length >= 5
-        ? rawY
-        : Array.from({ length: 30 }, () => Math.random() * 20 + 5);
+function genViolin(traces: any[], pal: string[]) {
+  return traces.map((t: any, i: number) => {
+    const y = t.y?.map(Number).filter((n: number) => !isNaN(n)) || [];
     return {
       type: "violin",
-      name: trace.name || `Series ${i + 1}`,
-      y: syntheticY,
-      marker: { color: palette[i % palette.length] },
+      name: t.name || `S${i + 1}`,
+      y:
+        y.length >= 5
+          ? y
+          : Array.from({ length: 30 }, () => Math.random() * 20 + 5),
+      marker: { color: pal[i % pal.length] },
       box: { visible: true },
       meanline: { visible: true },
     };
   });
 }
-
-function generateHistogramData(
-  sourceTraces: any[],
-  palette: string[],
-  variant: string,
-) {
-  return sourceTraces.map((trace: any, i: number) => {
-    const rawX: number[] =
-      trace.y?.map(Number).filter((n: number) => !isNaN(n)) ||
-      trace.x?.map(Number).filter((n: number) => !isNaN(n)) ||
-      [];
-    const syntheticX =
-      rawX.length >= 5
-        ? rawX
-        : Array.from({ length: 50 }, () => Math.random() * 20 + i * 5);
+function genHistogram(traces: any[], pal: string[], variant: string) {
+  return traces.map((t: any, i: number) => {
+    const x = (t.y || t.x || []).map(Number).filter((n: number) => !isNaN(n));
     const base: any = {
       type: "histogram",
-      name: trace.name || `Series ${i + 1}`,
-      x: syntheticX,
-      marker: { color: palette[i % palette.length] },
+      name: t.name || `S${i + 1}`,
+      x:
+        x.length >= 5
+          ? x
+          : Array.from({ length: 50 }, () => Math.random() * 20 + i * 5),
+      marker: { color: pal[i % pal.length] },
     };
     if (variant === "overlaid-histogram") base.opacity = 0.7;
     if (variant === "cumulative-histogram") base.cumulative = { enabled: true };
-    if (variant === "normalized-histogram") base.histnorm = "probability";
+    if (
+      variant === "normalized-histogram" ||
+      variant === "probability-histogram"
+    )
+      base.histnorm = "probability";
     return base;
   });
 }
-
-function generate2DHistContour(sourceTraces: any[], palette: string[]) {
+function gen2DHistContour() {
   const n = 100;
-  const x = Array.from({ length: n }, () => Math.random() * 10);
-  const y = Array.from({ length: n }, () => Math.random() * 10);
   return [
     {
       type: "histogram2dcontour",
-      x,
-      y,
+      x: Array.from({ length: n }, () => Math.random() * 10),
+      y: Array.from({ length: n }, () => Math.random() * 10),
       colorscale: "Viridis",
       contours: { showlabels: true },
     },
   ];
 }
-
-function generateHeatmapData(sourceTraces: any[], variant: string) {
-  if (sourceTraces[0]?.z) return sourceTraces;
-  const cols = sourceTraces.length;
-  const rows = Math.max(
-    ...sourceTraces.map((t: any) => (t.y || t.x || []).length),
-    4,
-  );
+function genHeatmap(traces: any[], variant: string) {
+  if (traces[0]?.z) return traces;
+  const cols = traces.length,
+    rows = Math.max(...traces.map((t: any) => (t.y || t.x || []).length), 4);
   const z = Array.from({ length: rows }, (_, r) =>
     Array.from(
       { length: cols },
-      (_, c) =>
-        sourceTraces[c]?.y?.[r] ??
-        sourceTraces[c]?.x?.[r] ??
-        Math.random() * 100,
+      (_, c) => traces[c]?.y?.[r] ?? Math.random() * 100,
     ),
   );
-  const xLabels = sourceTraces.map(
-    (t: any) => t.name || `Series ${sourceTraces.indexOf(t) + 1}`,
-  );
-  const yLabels = (
-    sourceTraces[0]?.x || Array.from({ length: rows }, (_, i) => `Row ${i + 1}`)
-  ).map(String);
   const base: any = {
     type: "heatmap",
     z,
-    x: xLabels,
-    y: yLabels,
+    x: traces.map((t: any, i: number) => t.name || `S${i + 1}`),
+    y: (
+      traces[0]?.x || Array.from({ length: rows }, (_, i) => `Row ${i + 1}`)
+    ).map(String),
     colorscale: "Viridis",
   };
   if (variant === "heatmap-annotated") {
-    base.text = z.map((row: number[]) => row.map((v: number) => v.toFixed(1)));
+    base.text = z.map((r: number[]) => r.map((v: number) => v.toFixed(1)));
     base.texttemplate = "%{text}";
-    base.showscale = true;
   }
   return [base];
 }
-
-function generateContourData(sourceTraces: any[], variant: string) {
-  if (sourceTraces[0]?.z) {
-    const base: any = {
-      ...sourceTraces[0],
-      type: "contour",
-      colorscale: "Viridis",
-    };
-    if (variant === "contour-lines") base.contours = { coloring: "lines" };
-    if (variant === "contour-labels") base.contours = { showlabels: true };
-    return [base];
-  }
-  const size = 20;
-  const x = Array.from({ length: size }, (_, i) => i);
-  const y = Array.from({ length: size }, (_, i) => i);
+function genContour(traces: any[], variant: string) {
+  if (traces[0]?.z)
+    return [
+      {
+        ...traces[0],
+        type: "contour",
+        colorscale: "Viridis",
+        contours:
+          variant === "contour-lines"
+            ? { coloring: "lines" }
+            : variant === "contour-labels"
+              ? { showlabels: true }
+              : {},
+      },
+    ];
+  const size = 20,
+    x = Array.from({ length: size }, (_, i) => i),
+    y = Array.from({ length: size }, (_, i) => i);
   const z = y.map((yi) =>
     x.map((xi) => Math.sin(xi / 3) * Math.cos(yi / 3) * 10),
   );
@@ -1666,32 +2569,30 @@ function generateContourData(sourceTraces: any[], variant: string) {
   if (variant === "contour-labels") base.contours = { showlabels: true };
   return [base];
 }
-
-function generateTernaryData(sourceTraces: any[], palette: string[]) {
-  return sourceTraces.map((trace: any, i: number) => {
-    const len = Math.max((trace.y || []).length, 5);
-    const a = Array.from({ length: len }, () => Math.random() * 100);
-    const b = a.map((ai) => Math.random() * (100 - ai));
-    const c = a.map((ai, idx) => 100 - ai - b[idx]);
+function genTernary(traces: any[], pal: string[]) {
+  return traces.map((t: any, i: number) => {
+    const len = Math.max((t.y || []).length, 5),
+      a = Array.from({ length: len }, () => Math.random() * 100);
+    const b = a.map((ai) => Math.random() * (100 - ai)),
+      c = a.map((ai, idx) => 100 - ai - b[idx]);
     return {
       type: "scatterternary",
-      name: trace.name || `Series ${i + 1}`,
+      name: t.name || `S${i + 1}`,
       a,
       b,
       c,
       mode: "markers",
-      marker: { color: palette[i % palette.length], size: 8 },
+      marker: { color: pal[i % pal.length], size: 8 },
     };
   });
 }
-
-function generateParcoordData(sourceTraces: any[], palette: string[]) {
-  const dims = sourceTraces.map((trace: any, i: number) => ({
-    label: trace.name || `Dim ${i + 1}`,
+function genParcoords(traces: any[], pal: string[]) {
+  const dims = traces.map((t: any, i: number) => ({
+    label: t.name || `Dim ${i + 1}`,
     values:
-      (trace.y || trace.x || []).map(Number).filter((n: number) => !isNaN(n))
-        .length >= 3
-        ? (trace.y || trace.x || []).map(Number)
+      (t.y || t.x || []).map(Number).filter((n: number) => !isNaN(n)).length >=
+      3
+        ? (t.y || t.x || []).map(Number)
         : Array.from({ length: 20 }, () => Math.random() * 100),
   }));
   if (dims.length < 2)
@@ -1707,183 +2608,632 @@ function generateParcoordData(sourceTraces: any[], palette: string[]) {
     },
   ];
 }
-
-function generateWaterfallData(sourceTraces: any[], palette: string[]) {
-  const trace0 = sourceTraces[0] || {};
-  const x: string[] = trace0.x || ["Start", "Q1", "Q2", "Q3", "Q4", "Total"];
-  const y: number[] = (trace0.y || [100, 20, -15, 35, -10, 130]).map(Number);
+function genParcats(traces: any[], pal: string[]) {
+  const dims = traces
+    .slice(0, 3)
+    .map((t: any, i: number) => ({
+      label: t.name || `Cat ${i + 1}`,
+      values:
+        t.x ||
+        Array.from(
+          { length: 20 },
+          () => `Option ${Math.floor(Math.random() * 3) + 1}`,
+        ),
+    }));
+  if (dims.length < 2)
+    dims.push({
+      label: "Cat 2",
+      values: Array.from(
+        { length: 20 },
+        () => `X${Math.floor(Math.random() * 2) + 1}`,
+      ),
+    });
   return [
     {
-      type: "waterfall",
-      name: trace0.name || "Waterfall",
-      x,
-      y,
-      measure: y.map((_, i) =>
-        i === 0 || i === y.length - 1 ? "absolute" : "relative",
-      ),
-      connector: { line: { color: "rgb(63,63,63)" } },
-      increasing: { marker: { color: palette[1] || "#10b981" } },
-      decreasing: { marker: { color: "#ef4444" } },
-      totals: { marker: { color: palette[0] || "#3b82f6" } },
+      type: "parcats",
+      dimensions: dims,
+      line: { color: pal[0], colorscale: "Viridis" },
     },
   ];
 }
-
-function generateCandlestickData(sourceTraces: any[], showSlider: boolean) {
-  const trace0 = sourceTraces[0] || {};
-  const dates =
-    trace0.x ||
-    Array.from({ length: 30 }, (_, i) => {
-      const d = new Date(2024, 0, i + 1);
-      return d.toISOString().split("T")[0];
-    });
+function genWaterfall(traces: any[], pal: string[]) {
+  const t0 = traces[0] || {},
+    x = t0.x || ["Start", "Q1", "Q2", "Q3", "Q4", "Total"],
+    y = (t0.y || [100, 20, -15, 35, -10, 130]).map(Number);
+  return [
+    {
+      type: "waterfall",
+      name: t0.name || "Waterfall",
+      x,
+      y,
+      measure: y.map((_: any, i: number) =>
+        i === 0 || i === y.length - 1 ? "absolute" : "relative",
+      ),
+      connector: { line: { color: "rgb(63,63,63)" } },
+      increasing: { marker: { color: pal[1] || "#10b981" } },
+      decreasing: { marker: { color: "#ef4444" } },
+      totals: { marker: { color: pal[0] || "#3b82f6" } },
+    },
+  ];
+}
+function genCandlestick(traces: any[]) {
+  const t0 = traces[0] || {},
+    dates =
+      t0.x ||
+      Array.from({ length: 30 }, (_, i) => {
+        const d = new Date(2024, 0, i + 1);
+        return d.toISOString().split("T")[0];
+      });
   const open =
-    trace0.open ||
+    t0.open ||
     Array.from(
       { length: dates.length },
       (_, i) => 100 + Math.sin(i / 3) * 15 + Math.random() * 5,
     );
-  const high = trace0.high || open.map((o: number) => o + Math.random() * 10);
-  const low = trace0.low || open.map((o: number) => o - Math.random() * 10);
-  const close =
-    trace0.close || open.map((o: number) => o + (Math.random() - 0.5) * 8);
   return [
     {
       type: "candlestick",
       x: dates,
       open,
-      high,
-      low,
-      close,
-      name: trace0.name || "OHLC",
+      high: t0.high || open.map((o: number) => o + Math.random() * 10),
+      low: t0.low || open.map((o: number) => o - Math.random() * 10),
+      close: t0.close || open.map((o: number) => o + (Math.random() - 0.5) * 8),
       increasing: { line: { color: "#10b981" } },
       decreasing: { line: { color: "#ef4444" } },
     },
   ];
 }
-
-function generateFunnelData(
-  sourceTraces: any[],
-  palette: string[],
-  stacked: boolean,
-) {
-  if (stacked) {
-    return sourceTraces.map((trace: any, i: number) => ({
+function genOHLC(traces: any[]) {
+  const t0 = traces[0] || {},
+    dates =
+      t0.x ||
+      Array.from({ length: 30 }, (_, i) => {
+        const d = new Date(2024, 0, i + 1);
+        return d.toISOString().split("T")[0];
+      });
+  const open =
+    t0.open ||
+    Array.from({ length: dates.length }, (_, i) => 100 + Math.sin(i / 3) * 15);
+  return [
+    {
+      type: "ohlc",
+      x: dates,
+      open,
+      high: open.map((o: number) => o + Math.random() * 8),
+      low: open.map((o: number) => o - Math.random() * 8),
+      close: open.map((o: number) => o + (Math.random() - 0.5) * 6),
+      increasing: { line: { color: "#10b981" } },
+      decreasing: { line: { color: "#ef4444" } },
+    },
+  ];
+}
+function genFunnel(traces: any[], pal: string[], stacked: boolean) {
+  if (stacked)
+    return traces.map((t: any, i: number) => ({
       type: "funnel",
-      name: trace.name || `Stage ${i + 1}`,
-      y: trace.x || ["Awareness", "Interest", "Desire", "Action"],
-      x: trace.y || [500 - i * 80, 400 - i * 60, 300 - i * 50, 200 - i * 40],
-      marker: { color: palette[i % palette.length] },
+      name: t.name || `S${i + 1}`,
+      y: t.x || ["Awareness", "Interest", "Desire", "Action"],
+      x: t.y || [500 - i * 80, 400 - i * 60, 300 - i * 50, 200 - i * 40],
+      marker: { color: pal[i % pal.length] },
     }));
-  }
-  const trace0 = sourceTraces[0] || {};
+  const t0 = traces[0] || {};
   return [
     {
       type: "funnel",
-      name: trace0.name || "Funnel",
-      y: trace0.x || [
-        "Website visits",
-        "Downloads",
-        "Prospects",
-        "Invoiced",
-        "Paid",
-      ],
-      x: trace0.y || [13873, 10533, 5443, 2703, 908],
-      marker: { color: palette.slice(0, 5) },
+      y: t0.x || ["Visits", "Downloads", "Prospects", "Invoiced", "Paid"],
+      x: t0.y || [13873, 10533, 5443, 2703, 908],
+      marker: { color: pal.slice(0, 5) },
       textinfo: "value+percent initial",
     },
   ];
 }
-
-function generateSurface3DData() {
-  const size = 25;
-  const x = Array.from({ length: size }, (_, i) => (i - size / 2) / 5);
-  const y = Array.from({ length: size }, (_, i) => (i - size / 2) / 5);
-  const z = y.map((yi) =>
-    x.map((xi) => Math.sin(Math.sqrt(xi * xi + yi * yi))),
-  );
-  return [{ type: "surface", x, y, z, colorscale: "Viridis" }];
-}
-
-function generateMesh3DData(palette: string[]) {
-  const n = 50;
-  const theta = Array.from({ length: n }, (_, i) => (i / n) * 2 * Math.PI);
-  const phi = Array.from({ length: n }, (_, i) => (i / n) * Math.PI);
-  const x = theta.map((t, i) => Math.sin(phi[i]) * Math.cos(t));
-  const y = theta.map((t, i) => Math.sin(phi[i]) * Math.sin(t));
-  const z = phi.map((p) => Math.cos(p));
+function genFunnelArea(traces: any[], pal: string[]) {
   return [
-    { type: "mesh3d", x, y, z, alphahull: 7, color: palette[0], opacity: 0.7 },
+    {
+      type: "funnelarea",
+      values: traces[0]?.y || [5, 4, 3, 2, 1],
+      text: traces[0]?.x || [
+        "Awareness",
+        "Interest",
+        "Desire",
+        "Action",
+        "Purchase",
+      ],
+      marker: { colors: pal.slice(0, 5) },
+    },
   ];
 }
-
-function generateScatter3DData(
-  sourceTraces: any[],
-  palette: string[],
-  mode3d: string,
-) {
-  return sourceTraces.map((trace: any, i: number) => {
-    const n = Math.max((trace.y || []).length, 20);
-    const x = trace.x || Array.from({ length: n }, () => Math.random() * 10);
-    const y = trace.y || Array.from({ length: n }, () => Math.random() * 10);
-    const z = trace.z || Array.from({ length: n }, () => Math.random() * 10);
+function genSurface3D(traces: any[]) {
+  if (traces[0]?.z)
+    return traces.map((t: any) => ({
+      ...t,
+      type: "surface",
+      colorscale: "Viridis",
+    }));
+  const size = 25,
+    x = Array.from({ length: size }, (_, i) => (i - size / 2) / 5),
+    y = Array.from({ length: size }, (_, i) => (i - size / 2) / 5);
+  return [
+    {
+      type: "surface",
+      x,
+      y,
+      z: y.map((yi) => x.map((xi) => Math.sin(Math.sqrt(xi * xi + yi * yi)))),
+      colorscale: "Viridis",
+    },
+  ];
+}
+function genMesh3D(pal: string[]) {
+  const n = 50,
+    theta = Array.from({ length: n }, (_, i) => (i / n) * 2 * Math.PI),
+    phi = Array.from({ length: n }, (_, i) => (i / n) * Math.PI);
+  return [
+    {
+      type: "mesh3d",
+      x: theta.map((t, i) => Math.sin(phi[i]) * Math.cos(t)),
+      y: theta.map((t, i) => Math.sin(phi[i]) * Math.sin(t)),
+      z: phi.map((p) => Math.cos(p)),
+      alphahull: 7,
+      color: pal[0],
+      opacity: 0.7,
+    },
+  ];
+}
+function genScatter3D(traces: any[], pal: string[], mode3d: string) {
+  return traces.map((t: any, i: number) => {
+    const n = Math.max((t.y || []).length, 20);
     return {
       type: "scatter3d",
-      name: trace.name || `Series ${i + 1}`,
+      name: t.name || `S${i + 1}`,
+      x: t.x || Array.from({ length: n }, () => Math.random() * 10),
+      y: t.y || Array.from({ length: n }, () => Math.random() * 10),
+      z: t.z || Array.from({ length: n }, () => Math.random() * 10),
+      mode: mode3d || "markers",
+      marker: { color: pal[i % pal.length], size: 5, opacity: 0.8 },
+      line: { color: pal[i % pal.length], width: 2 },
+    };
+  });
+}
+function genCone3D(pal: string[]) {
+  const n = 9,
+    x = [],
+    y = [],
+    z = [],
+    u = [],
+    v = [],
+    w = [];
+  for (let i = 0; i < n; i++) {
+    x.push(i % 3);
+    y.push(Math.floor(i / 3));
+    z.push(0);
+    u.push(Math.cos(i));
+    v.push(Math.sin(i));
+    w.push(0.5);
+  }
+  return [
+    {
+      type: "cone",
       x,
       y,
       z,
-      mode: mode3d || "markers",
-      marker: { color: palette[i % palette.length], size: 5, opacity: 0.8 },
-      line: { color: palette[i % palette.length], width: 2 },
+      u,
+      v,
+      w,
+      colorscale: "Viridis",
+      sizemode: "absolute",
+      sizeref: 0.5,
+    },
+  ];
+}
+function genStreamtube(pal: string[]) {
+  const x = [],
+    y = [],
+    z = [],
+    u = [],
+    v = [],
+    w = [];
+  for (let i = 0; i < 4; i++)
+    for (let j = 0; j < 4; j++) {
+      x.push(i);
+      y.push(j);
+      z.push(0);
+      u.push(1);
+      v.push(0);
+      w.push(0);
+    }
+  return [
+    {
+      type: "streamtube",
+      x,
+      y,
+      z,
+      u,
+      v,
+      w,
+      colorscale: "Portland",
+      sizeref: 0.5,
+    },
+  ];
+}
+function genIsosurface(pal: string[]) {
+  const n = 5;
+  const vals = [];
+  const x = [],
+    y = [],
+    z = [],
+    val = [];
+  for (let i = 0; i < n; i++)
+    for (let j = 0; j < n; j++)
+      for (let k = 0; k < n; k++) {
+        x.push(i - 2);
+        y.push(j - 2);
+        z.push(k - 2);
+        val.push(Math.pow(i - 2, 2) + Math.pow(j - 2, 2) + Math.pow(k - 2, 2));
+      }
+  return [
+    {
+      type: "isosurface",
+      x,
+      y,
+      z,
+      value: val,
+      isomin: 1,
+      isomax: 4,
+      colorscale: "Viridis",
+      opacity: 0.6,
+      surface: { count: 3 },
+    },
+  ];
+}
+function genVolume(pal: string[]) {
+  const n = 5;
+  const x = [],
+    y = [],
+    z = [],
+    val = [];
+  for (let i = 0; i < n; i++)
+    for (let j = 0; j < n; j++)
+      for (let k = 0; k < n; k++) {
+        x.push(i - 2);
+        y.push(j - 2);
+        z.push(k - 2);
+        val.push(Math.sin(i) * Math.cos(j) * Math.sin(k));
+      }
+  return [
+    {
+      type: "volume",
+      x,
+      y,
+      z,
+      value: val,
+      isomin: -0.5,
+      isomax: 0.5,
+      colorscale: "RdBu",
+      opacity: 0.2,
+      surface: { count: 17 },
+      slices: { z: { show: true, locations: [0] } },
+    },
+  ];
+}
+function genChoropleth(variant: string, pal: string[]) {
+  const countries = [
+    "USA",
+    "CAN",
+    "GBR",
+    "DEU",
+    "FRA",
+    "AUS",
+    "JPN",
+    "CHN",
+    "IND",
+    "BRA",
+  ];
+  const us_states = [
+    "NY",
+    "CA",
+    "TX",
+    "FL",
+    "IL",
+    "PA",
+    "OH",
+    "GA",
+    "NC",
+    "MI",
+  ];
+  const isUS = variant === "us-map";
+  const locations = isUS ? us_states : countries;
+  return [
+    {
+      type: "choropleth",
+      locationmode: isUS ? "USA-states" : "country names",
+      locations,
+      z: locations.map(() => Math.random() * 100),
+      colorscale: "Viridis",
+      geo: isUS ? { scope: "usa" } : undefined,
+    },
+  ];
+}
+function genScatterGeo(traces: any[], pal: string[], mode: string) {
+  const cities = [
+    { name: "New York", lat: 40.7, lon: -74 },
+    { name: "London", lat: 51.5, lon: -0.12 },
+    { name: "Tokyo", lat: 35.7, lon: 139.7 },
+    { name: "Sydney", lat: -33.9, lon: 151.2 },
+    { name: "Paris", lat: 48.9, lon: 2.3 },
+  ];
+  return traces
+    .slice(0, 2)
+    .map((t: any, i: number) => ({
+      type: "scattergeo",
+      name: t.name || `S${i + 1}`,
+      lat: cities.map((c) => c.lat + Math.random() * 5 - 2.5),
+      lon: cities.map((c) => c.lon + Math.random() * 5 - 2.5),
+      mode: mode || "markers",
+      marker: { color: pal[i % pal.length], size: 8 },
+    }));
+}
+function genPolarScatter(traces: any[], pal: string[], mode: string) {
+  return traces.map((t: any, i: number) => {
+    const n = 20;
+    return {
+      type: "scatterpolar",
+      name: t.name || `S${i + 1}`,
+      r: Array.from({ length: n }, () => Math.random() * 5),
+      theta: Array.from({ length: n }, (_, j) => j * (360 / n)),
+      mode: mode || "markers",
+      marker: { color: pal[i % pal.length], size: 8 },
+      line: { color: pal[i % pal.length] },
     };
   });
 }
-
-function generateErrorBarData(
-  sourceTraces: any[],
-  palette: string[],
+function genRadar(traces: any[], pal: string[]) {
+  const cats = [
+    "Speed",
+    "Strength",
+    "Agility",
+    "Endurance",
+    "Intelligence",
+    "Luck",
+  ];
+  return traces.map((t: any, i: number) => ({
+    type: "scatterpolar",
+    name: t.name || `S${i + 1}`,
+    r: [...Array.from({ length: cats.length }, () => Math.random() * 5 + 2), 0],
+    theta: [...cats, cats[0]],
+    fill: "toself",
+    fillcolor: pal[i % pal.length] + "33",
+    line: { color: pal[i % pal.length] },
+    mode: "lines",
+  }));
+}
+function genPolarBar(traces: any[], pal: string[]) {
+  const n = 8,
+    dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+  return traces
+    .slice(0, 2)
+    .map((t: any, i: number) => ({
+      type: "barpolar",
+      name: t.name || `Wind ${i + 1}`,
+      r: Array.from({ length: n }, () => Math.random() * 30 + 10),
+      theta: dirs,
+      marker: { color: pal[i % pal.length], opacity: 0.8 },
+    }));
+}
+function genSankey(traces: any[], pal: string[]) {
+  const node = {
+    label: ["A", "B", "C", "D", "E", "F"],
+    color: pal.slice(0, 6),
+    pad: 15,
+    thickness: 20,
+  };
+  const link = {
+    source: [0, 0, 1, 2, 3, 4],
+    target: [2, 3, 3, 4, 4, 5],
+    value: [8, 4, 2, 8, 4, 2],
+  };
+  return [
+    {
+      type: "sankey",
+      node,
+      link: { ...link, color: pal.slice(0, 6).map((c: string) => c + "88") },
+    },
+  ];
+}
+function genIndicator(variant: string, traces: any[]) {
+  const value = traces[0]?.y?.[0] ?? 67;
+  const prev = traces[0]?.y?.[1] ?? 52;
+  const base: any = {
+    type: "indicator",
+    value,
+    number: { font: { size: 60 } },
+  };
+  if (variant === "indicator-angular" || variant === "indicator") {
+    base.mode = "number+gauge";
+    base.gauge = {
+      axis: { range: [0, 100] },
+      bar: { color: "#06b6d4" },
+      bgcolor: "white",
+      borderwidth: 2,
+      bordercolor: "#ccc",
+      steps: [
+        { range: [0, 50], color: "#fef3c7" },
+        { range: [50, 80], color: "#d1fae5" },
+        { range: [80, 100], color: "#dcfce7" },
+      ],
+      threshold: {
+        line: { color: "red", width: 4 },
+        thickness: 0.75,
+        value: 90,
+      },
+    };
+  } else if (variant === "indicator-bullet") {
+    base.mode = "number+gauge";
+    base.gauge = {
+      shape: "bullet",
+      axis: { range: [0, 100] },
+      bar: { color: "#06b6d4" },
+      steps: [
+        { range: [0, 50], color: "#e5e7eb" },
+        { range: [50, 80], color: "#d1d5db" },
+      ],
+      threshold: {
+        line: { color: "#ef4444", width: 2 },
+        thickness: 0.75,
+        value: 85,
+      },
+    };
+  } else if (
+    variant === "indicator-delta" ||
+    variant === "indicator-number-delta"
+  ) {
+    base.mode = "number+delta";
+    base.delta = {
+      reference: prev,
+      relative: true,
+      increasing: { color: "#10b981" },
+      decreasing: { color: "#ef4444" },
+    };
+  }
+  return [base];
+}
+function genTable(
+  traces: any[],
   variant: string,
+  pal: string[],
+  textClr: string,
 ) {
-  return sourceTraces.map((trace: any, i: number) => {
-    const x = trace.x || ["Jan", "Feb", "Mar", "Apr", "May"];
-    const y = (trace.y || [10, 15, 13, 17, 14]).map(Number);
-    const errVals = y.map((v: number) => v * 0.1 + 1);
+  const headers = traces.map(
+    (t: any, i: number) => t.name || `Column ${i + 1}`,
+  );
+  const maxLen = Math.max(
+    ...traces.map((t: any) => (t.y || t.x || []).length),
+    5,
+  );
+  const cells = traces.map(
+    (t: any) =>
+      t.y || t.x || Array.from({ length: maxLen }, (_, i) => `Row ${i + 1}`),
+  );
+  const headerFill =
+    variant === "table-formatted"
+      ? pal.slice(0, headers.length)
+      : variant === "table-styled"
+        ? "#1e293b"
+        : "#f3f4f6";
+  const headerFont =
+    variant === "table-formatted" || variant === "table-styled"
+      ? { color: "white", size: 13 }
+      : { color: "#374151", size: 12 };
+  const cellFill =
+    variant === "table-styled"
+      ? cells[0].map((_: any, i: number) => (i % 2 === 0 ? "#f8fafc" : "white"))
+      : variant === "table-formatted"
+        ? cells[0].map((_: any, i: number) =>
+            i % 2 === 0 ? "#f0f9ff" : "white",
+          )
+        : "white";
+  return [
+    {
+      type: "table",
+      header: {
+        values: headers,
+        fill: { color: headerFill },
+        font: headerFont,
+        align: "left",
+        height: 36,
+      },
+      cells: {
+        values: cells,
+        fill: { color: cellFill },
+        font: { color: "#374151", size: 12 },
+        align: "left",
+        height: 30,
+        line: { color: "#e2e8f0", width: 1 },
+      },
+    },
+  ];
+}
+function genSPLOM(traces: any[], pal: string[]) {
+  const dims = traces
+    .slice(0, 4)
+    .map((t: any, i: number) => ({
+      label: t.name || `Dim ${i + 1}`,
+      values: (t.y || Array.from({ length: 30 }, () => Math.random() * 10)).map(
+        Number,
+      ),
+    }));
+  if (dims.length < 2)
+    dims.push({
+      label: "Dim 2",
+      values: Array.from({ length: 30 }, () => Math.random() * 10),
+    });
+  return [
+    {
+      type: "splom",
+      dimensions: dims,
+      marker: { color: pal[0], size: 5, opacity: 0.7 },
+      diagonal: { visible: false },
+    },
+  ];
+}
+function genErrorBar(traces: any[], pal: string[], variant: string) {
+  return traces.map((t: any, i: number) => {
+    const x = t.x || ["Jan", "Feb", "Mar", "Apr", "May"],
+      y = (t.y || [10, 15, 13, 17, 14]).map(Number);
+    const err = y.map((v: number) => v * 0.1 + 1);
     const base: any = {
       type: "scatter",
-      name: trace.name || `Series ${i + 1}`,
+      name: t.name || `S${i + 1}`,
       x,
       y,
       mode: "lines+markers",
-      marker: { color: palette[i % palette.length] },
-      line: { color: palette[i % palette.length] },
+      marker: { color: pal[i % pal.length] },
+      line: { color: pal[i % pal.length] },
     };
-    if (variant === "horizontal-error") {
-      base.error_x = { type: "data", array: errVals, visible: true };
-    } else if (variant === "asymmetric-error") {
+    if (variant === "horizontal-error")
+      base.error_x = { type: "data", array: err, visible: true };
+    else if (variant === "asymmetric-error")
       base.error_y = {
         type: "data",
-        array: errVals,
-        arrayminus: errVals.map((v: number) => v * 0.5),
+        array: err,
+        arrayminus: err.map((v: number) => v * 0.5),
         visible: true,
       };
-    } else {
-      base.error_y = { type: "data", array: errVals, visible: true };
-    }
+    else base.error_y = { type: "data", array: err, visible: true };
     return base;
   });
 }
-
-function generateBarErrorData(sourceTraces: any[], palette: string[]) {
-  return sourceTraces.map((trace: any, i: number) => ({
-    type: "bar",
-    name: trace.name || `Series ${i + 1}`,
-    x: trace.x || ["A", "B", "C", "D"],
-    y: (trace.y || [10, 15, 13, 17]).map(Number),
-    error_y: { type: "data", array: [1.5, 2, 1, 2.5], visible: true },
-    marker: { color: palette[i % palette.length] },
+function genStripChart(traces: any[], pal: string[]) {
+  return traces.map((t: any, i: number) => ({
+    type: "scatter",
+    name: t.name || `S${i + 1}`,
+    x: Array.from({ length: 30 }, () => t.name || `S${i + 1}`),
+    y: Array.from({ length: 30 }, () => Math.random() * 20 + 5),
+    mode: "markers",
+    marker: {
+      color: pal[i % pal.length],
+      size: 6,
+      opacity: 0.6,
+      symbol: "circle",
+    },
   }));
 }
+function genECDF(traces: any[], pal: string[]) {
+  return traces.map((t: any, i: number) => {
+    const raw = (t.y || Array.from({ length: 50 }, () => Math.random() * 20))
+      .map(Number)
+      .sort((a: number, b: number) => a - b);
+    return {
+      type: "scatter",
+      name: t.name || `S${i + 1}`,
+      x: raw,
+      y: raw.map((_: any, idx: number) => (idx + 1) / raw.length),
+      mode: "lines",
+      line: { color: pal[i % pal.length], shape: "hv" },
+    };
+  });
+}
+
+// ─── Palettes & Fonts ──────────────────────────────────────────────────────
 
 const PALETTES = [
   {
@@ -2055,7 +3405,6 @@ const PALETTES = [
     ],
   },
 ];
-
 const FONTS = [
   "Inter",
   "DM Sans",
@@ -2073,7 +3422,6 @@ const FONTS = [
   "Roboto",
   "Roboto Mono",
 ];
-
 const BG_PRESETS = [
   { id: "white", label: "White", hex: "#ffffff" },
   { id: "paper", label: "Paper", hex: "#fafaf9" },
@@ -2085,7 +3433,7 @@ const BG_PRESETS = [
   { id: "green", label: "Forest", hex: "#052e16" },
 ];
 
-// ─── Sub-components ───────────────────────────────────────────
+// ─── Sub-components ────────────────────────────────────────────────────────
 
 function Sec({
   title,
@@ -2129,7 +3477,6 @@ function Sec({
     </div>
   );
 }
-
 function Toggle({
   label,
   value,
@@ -2160,7 +3507,6 @@ function Toggle({
     </div>
   );
 }
-
 function Slider({
   label,
   value,
@@ -2199,7 +3545,6 @@ function Slider({
     </div>
   );
 }
-
 function TxtInput({
   value,
   onChange,
@@ -2226,7 +3571,7 @@ function TxtInput({
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────
+// ─── Main Component ────────────────────────────────────────────────────────
 
 export default function ChartEditor({
   message,
@@ -2245,12 +3590,11 @@ export default function ChartEditor({
 
   const getLiveData = useCallback((): { data: any[]; layout: any } => {
     const liveDiv = divRef?.current;
-    if (liveDiv && liveDiv.data && liveDiv.data.length > 0) {
+    if (liveDiv && liveDiv.data && liveDiv.data.length > 0)
       return {
         data: liveDiv.data,
         layout: liveDiv.layout || message?.content?.layout || {},
       };
-    }
     return {
       data: message?.content?.data || [],
       layout: message?.content?.layout || {},
@@ -2303,12 +3647,10 @@ export default function ChartEditor({
 
   const isLightBg = ["#ffffff", "#fafaf9", "#f3f4f6"].includes(bgHex);
 
-  // ── markEdited: called whenever user touches any control ──
   const markEdited = () => {
     userHasEdited.current = true;
   };
 
-  // ── Mount effect: populate controls from original chart, then render it as-is ──
   useEffect(() => {
     const { data: liveData, layout: liveLayout } = getLiveData();
     setTitle(
@@ -2329,12 +3671,10 @@ export default function ChartEditor({
     setShowLegend(liveLayout.showlegend !== false);
     setShowGrid(liveLayout.xaxis?.showgrid !== false);
     setShowZero(liveLayout.xaxis?.zeroline !== false);
-    userHasEdited.current = false; // reset — don't run applyChart on first render
+    userHasEdited.current = false;
     setMounted(true);
   }, [getLiveData]);
 
-  // Sync title/subtitle/annotations back into __graphixChartData so
-  // SingleChartArea.handleSaveCurrentChart can read the latest values.
   useEffect(() => {
     if (!mounted) return;
     const msgId = message?.id;
@@ -2347,7 +3687,6 @@ export default function ChartEditor({
         ...existing.layout,
         _subtitle: subtitle,
         _annotations: annotations,
-        // keep title in sync too (Plotly layout title)
         title: title ? { text: title } : existing.layout.title,
       },
     };
@@ -2356,24 +3695,22 @@ export default function ChartEditor({
   const buildPieData = useCallback(
     (rawData: any[], pal: string[], hole?: number) => {
       if (rawData.length === 0) return [];
-      if (rawData[0]?.type === "pie") {
+      if (rawData[0]?.type === "pie")
         return rawData.map((t: any) => ({
           ...t,
           type: "pie",
           hole: hole || 0,
           marker: { ...t.marker, colors: pal },
         }));
-      }
-      const labels: string[] = [];
-      const values: number[] = [];
-      rawData.forEach((trace: any, i: number) => {
-        const name = trace.name || `Series ${i + 1}`;
-        const vals: number[] = trace.y || trace.values || trace.r || [];
-        const total = Array.isArray(vals)
-          ? vals.reduce((s: number, v: any) => s + (Number(v) || 0), 0)
-          : Number(vals) || 0;
-        labels.push(name);
-        values.push(total);
+      const labels: string[] = [],
+        values: number[] = [];
+      rawData.forEach((t: any, i: number) => {
+        labels.push(t.name || `S${i + 1}`);
+        values.push(
+          Array.isArray(t.y)
+            ? t.y.reduce((s: number, v: any) => s + (Number(v) || 0), 0)
+            : Number(t.y) || 0,
+        );
       });
       return [
         {
@@ -2390,15 +3727,49 @@ export default function ChartEditor({
     [],
   );
 
+  const buildHierarchyData = useCallback(
+    (rawData: any[], plotlyType: string, pal: string[]) => {
+      if (rawData[0]?.type === plotlyType) return rawData;
+      const labels = [
+        "Root",
+        "Branch A",
+        "Branch B",
+        "Leaf A1",
+        "Leaf A2",
+        "Leaf B1",
+        "Leaf B2",
+      ];
+      const parents = [
+        "",
+        "Root",
+        "Root",
+        "Branch A",
+        "Branch A",
+        "Branch B",
+        "Branch B",
+      ];
+      const values = [0, 10, 15, 5, 5, 8, 7];
+      return [
+        {
+          type: plotlyType,
+          labels,
+          parents,
+          values,
+          marker: { colors: pal.slice(0, 7) },
+        },
+      ];
+    },
+    [],
+  );
+
   const applyChart = useCallback(() => {
-    if (!userHasEdited.current) return; // ← guard: never run on initial mount
+    if (!userHasEdited.current) return;
     if (!plotRef.current || typeof window === "undefined" || !window.Plotly)
       return;
     const Plotly = window.Plotly;
     const { data: liveData, layout: liveLayout } = getLiveData();
     const ct = CHART_TYPES.find((c) => c.id === chartTypeId) || CHART_TYPES[0];
     const pal = PALETTES[paletteIdx].colors;
-
     const isCardLight = !isLightBg;
     const cardBgColor = isCardLight ? "#ffffff" : "#1e293b";
     const textClr = isCardLight ? "#111827" : "rgba(255,255,255,0.85)";
@@ -2407,335 +3778,483 @@ export default function ChartEditor({
 
     let data: any[];
 
-    switch (ct.id) {
-      case "pie":
-        data = buildPieData(liveData, pal, 0);
-        break;
-      case "donut":
-        data = buildPieData(liveData, pal, 0.45);
-        break;
-      case "box":
-      case "box-data":
-      case "grouped-box":
-      case "box-outliers":
-      case "box-styled":
-      case "rainbow-box":
-        data = generateBoxData(liveData, pal);
-        if (ct.id === "grouped-box")
-          data = data.map((d) => ({ ...d, boxpoints: "all", jitter: 0.3 }));
-        if (ct.id === "box-outliers")
-          data = data.map((d) => ({ ...d, boxpoints: "outliers" }));
-        if (ct.id === "rainbow-box")
-          data = data.map((d, i) => ({
-            ...d,
-            marker: { color: pal[i % pal.length], opacity: 0.7 },
-          }));
-        break;
-      case "hbox":
-        data = generateBoxData(liveData, pal).map((d) => ({
+    // ── Hierarchy charts ──
+    if (
+      [
+        "sunburst",
+        "sunburst-multi",
+        "treemap",
+        "treemap-nested",
+        "treemap-color",
+        "icicle",
+        "icicle-multi",
+      ].includes(ct.id)
+    ) {
+      data = buildHierarchyData(liveData, ct.plotlyType, pal);
+    }
+    // ── Pie/Donut ──
+    else if (ct.id === "pie" || ct.id === "pie-styled")
+      data = buildPieData(liveData, pal, 0);
+    else if (ct.id === "donut") data = buildPieData(liveData, pal, 0.45);
+    else if (ct.id === "pie-pull") {
+      const d = buildPieData(liveData, pal, 0);
+      if (d[0]) d[0].pull = [0.1, ...Array(d[0].values?.length - 1).fill(0)];
+      data = d;
+    }
+    // ── Box/Violin ──
+    else if (
+      [
+        "box",
+        "box-data",
+        "grouped-box",
+        "box-outliers",
+        "box-styled",
+        "rainbow-box",
+      ].includes(ct.id)
+    ) {
+      data = genBox(liveData, pal);
+      if (ct.id === "grouped-box")
+        data = data.map((d) => ({ ...d, boxpoints: "all", jitter: 0.3 }));
+      if (ct.id === "box-outliers")
+        data = data.map((d) => ({ ...d, boxpoints: "outliers" }));
+      if (ct.id === "rainbow-box")
+        data = data.map((d, i) => ({
           ...d,
-          orientation: "h",
-          x: d.y,
-          y: undefined,
+          marker: { color: pal[i % pal.length], opacity: 0.7 },
         }));
-        break;
-      case "violin":
-        data = generateViolinData(liveData, pal);
-        break;
-      case "histogram":
-      case "overlaid-histogram":
-      case "stacked-histogram":
-      case "styled-histogram":
-      case "cumulative-histogram":
-      case "normalized-histogram":
-        data = generateHistogramData(liveData, pal, ct.id);
-        break;
-      case "2d-histogram-contour":
-      case "2d-histogram-slider":
-        data = generate2DHistContour(liveData, pal);
-        break;
-      case "heatmap":
-      case "heatmap-categorical":
-      case "heatmap-annotated":
-        data = generateHeatmapData(liveData, ct.id);
-        break;
-      case "contour-simple":
-      case "contour-basic":
-      case "contour-lines":
-      case "contour-labels":
-        data = generateContourData(liveData, ct.id);
-        break;
-      case "ternary":
-      case "soil-ternary":
-        data = generateTernaryData(liveData, pal);
-        break;
-      case "parallel-basic":
-      case "parallel-coords":
-      case "parallel-advanced":
-        data = generateParcoordData(liveData, pal);
-        break;
-      case "waterfall":
-      case "waterfall-multi":
-        data = generateWaterfallData(liveData, pal);
-        break;
-      case "candlestick":
-      case "candlestick-no-slider":
-      case "candlestick-annotated":
-        data = generateCandlestickData(liveData, ct.id === "candlestick");
-        break;
-      case "funnel":
-        data = generateFunnelData(liveData, pal, false);
-        break;
-      case "funnel-stacked":
-        data = generateFunnelData(liveData, pal, true);
-        break;
-      case "surface3d":
-      case "surface3d-multi":
-        if (liveData[0]?.z) {
-          data = liveData.map((t: any) => ({
-            ...t,
-            type: "surface",
-            colorscale: "Viridis",
-            opacity: opacity / 100,
-          }));
-        } else {
-          data = generateSurface3DData();
-          if (ct.id === "surface3d-multi") {
-            const base = data[0];
-            data = [
-              base,
-              {
-                ...base,
-                z: base.z.map((row: number[]) =>
-                  row.map((v: number) => v * 0.7 + 0.5),
-                ),
-                opacity: 0.6,
-              },
-            ];
-          }
-        }
-        break;
-      case "mesh3d":
-        data = liveData[0]?.i
-          ? liveData.map((t: any) => ({
-              ...t,
-              type: "mesh3d",
-              opacity: opacity / 100,
-            }))
-          : generateMesh3DData(pal);
-        break;
-      case "scatter3d":
-      case "ribbon3d":
-      case "line3d":
-      case "line3d-plot":
-      case "line3d-markers":
-      case "line3d-spiral":
-      case "random-walk3d":
-        data = generateScatter3DData(liveData, pal, ct.mode3d || "markers");
-        if (ct.id === "line3d-spiral") {
-          const t = Array.from({ length: 100 }, (_, i) => i / 10);
-          data = [
-            {
-              type: "scatter3d",
-              mode: "lines",
-              x: t.map((v) => Math.cos(v)),
-              y: t.map((v) => Math.sin(v)),
-              z: t,
-              line: { color: pal[0], width: 4 },
-              name: "Spiral",
-            },
-          ];
-        }
-        if (ct.id === "random-walk3d") {
-          const n = 50;
-          let x = 0,
-            y = 0,
-            z = 0;
-          const xs: number[] = [],
-            ys: number[] = [],
-            zs: number[] = [];
-          for (let i = 0; i < n; i++) {
-            x += Math.random() - 0.5;
-            y += Math.random() - 0.5;
-            z += Math.random() - 0.5;
-            xs.push(x);
-            ys.push(y);
-            zs.push(z);
-          }
-          data = [
-            {
-              type: "scatter3d",
-              mode: "lines+markers",
-              x: xs,
-              y: ys,
-              z: zs,
-              marker: { color: pal[0], size: 4 },
-              line: { color: pal[1] || pal[0], width: 2 },
-              name: "Random Walk",
-            },
-          ];
-        }
-        break;
-      case "error-bars":
-      case "horizontal-error":
-      case "asymmetric-error":
-      case "asymmetric-offset":
-      case "continuous-error":
-        data = generateErrorBarData(liveData, pal, ct.id);
-        break;
-      case "bar-error":
-        data = generateBarErrorData(liveData, pal);
-        break;
-      case "filled-lines":
-        data = liveData.map((trace: any, i: number) => {
-          const clr = pal[i % pal.length];
-          const fa = Math.round(fillOpacity * 2.55)
+    } else if (ct.id === "hbox")
+      data = genBox(liveData, pal).map((d) => ({
+        ...d,
+        orientation: "h",
+        x: d.y,
+        y: undefined,
+      }));
+    else if (
+      ["violin", "violin-box", "violin-split", "violin-grouped"].includes(ct.id)
+    ) {
+      data = genViolin(liveData, pal);
+      if (ct.id === "violin-box")
+        data = data.map((d) => ({ ...d, box: { visible: true } }));
+      if (ct.id === "violin-split") {
+        data = genViolin(liveData.slice(0, 2), pal).map((d, i) => ({
+          ...d,
+          side: i % 2 === 0 ? "negative" : "positive",
+          meanline: { visible: true },
+        }));
+      }
+    }
+    // ── Strip / ECDF ──
+    else if (ct.id === "strip-chart") data = genStripChart(liveData, pal);
+    else if (ct.id === "ecdf") data = genECDF(liveData, pal);
+    // ── Histogram ──
+    else if (
+      [
+        "histogram",
+        "overlaid-histogram",
+        "stacked-histogram",
+        "styled-histogram",
+        "cumulative-histogram",
+        "normalized-histogram",
+        "probability-histogram",
+      ].includes(ct.id)
+    )
+      data = genHistogram(liveData, pal, ct.id);
+    else if (
+      ct.id === "2d-histogram-contour" ||
+      ct.id === "2d-histogram-slider"
+    )
+      data = gen2DHistContour();
+    // ── Heatmap/Contour ──
+    else if (
+      ["heatmap", "heatmap-categorical", "heatmap-annotated"].includes(ct.id)
+    )
+      data = genHeatmap(liveData, ct.id);
+    else if (
+      [
+        "contour-simple",
+        "contour-basic",
+        "contour-lines",
+        "contour-labels",
+      ].includes(ct.id)
+    )
+      data = genContour(liveData, ct.id);
+    else if (ct.id === "carpet")
+      data = [
+        {
+          type: "carpet",
+          a: [4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5],
+          b: [1, 2, 3, 1, 2, 3, 1, 2, 3],
+          y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5],
+          aaxis: { title: "a" },
+          baxis: { title: "b" },
+        },
+      ];
+    else if (ct.id === "contour-carpet") {
+      const c = {
+        type: "carpet",
+        a: [0, 1, 2, 3],
+        b: [0, 1],
+        y: [
+          [0, 0.5],
+          [1, 1.5],
+          [2, 2.5],
+          [3, 3.5],
+        ],
+        aaxis: {},
+        baxis: {},
+      };
+      data = [
+        c,
+        {
+          type: "contourcarpet",
+          a: [0, 1, 2, 3, 0, 1, 2, 3],
+          b: [0, 0, 0, 0, 1, 1, 1, 1],
+          z: [1, 1.5, 2, 2.5, 1.5, 2, 2.5, 3],
+          carpet: "c0",
+        },
+      ];
+    } else if (ct.id === "carpet-scatter")
+      data = [
+        {
+          type: "carpet",
+          a: [4, 4, 4, 4.5, 4.5, 4.5, 5, 5, 5],
+          b: [1, 2, 3, 1, 2, 3, 1, 2, 3],
+          y: [2, 3.5, 4, 3, 4.5, 5, 5.5, 6.5, 7.5],
+          aaxis: {},
+          baxis: {},
+        },
+        {
+          type: "scattercarpet",
+          a: [4, 4.5, 5],
+          b: [1.5, 2.5, 1.5],
+          mode: "markers",
+          marker: { color: pal[0], size: 10 },
+        },
+      ];
+    // ── Filled/Area ──
+    else if (ct.id === "area" || ct.id === "filled-lines") {
+      data = liveData.map((t: any, i: number) => {
+        const c = pal[i % pal.length],
+          fa = Math.round(fillOpacity * 2.55)
             .toString(16)
             .padStart(2, "0");
-          return {
-            ...trace,
-            type: "scatter",
-            mode: "lines",
-            fill: i === 0 ? "tozeroy" : "tonexty",
-            fillcolor: clr + fa,
-            line: {
-              color: clr,
-              width: lineWidth,
-              shape: smooth ? "spline" : "linear",
-            },
-          };
-        });
-        break;
-      case "continuous-error-filled":
-        data = liveData.map((trace: any, i: number) => {
-          const clr = pal[i % pal.length];
-          const fa = Math.round(fillOpacity * 2.55)
-            .toString(16)
-            .padStart(2, "0");
-          return {
-            ...trace,
-            type: "scatter",
-            mode: "lines",
-            fill: "tonexty",
-            fillcolor: clr + fa,
-            line: { color: clr, width: lineWidth },
-          };
-        });
-        break;
-      case "time-series":
-      case "time-series-slider":
-        data = liveData.map((trace: any, i: number) => ({
-          ...trace,
+        return {
+          ...t,
           type: "scatter",
           mode: "lines",
+          fill: "tozeroy",
+          fillcolor: c + fa,
           line: {
-            color: pal[i % pal.length],
+            color: c,
             width: lineWidth,
             shape: smooth ? "spline" : "linear",
           },
-        }));
-        break;
-      case "log-plots":
-      case "log-axes":
-        data = liveData.map((trace: any, i: number) => ({
-          ...trace,
+        };
+      });
+    } else if (
+      ct.id === "area-stacked" ||
+      ct.id === "continuous-error-filled"
+    ) {
+      data = liveData.map((t: any, i: number) => {
+        const c = pal[i % pal.length],
+          fa = Math.round(fillOpacity * 2.55)
+            .toString(16)
+            .padStart(2, "0");
+        return {
+          ...t,
           type: "scatter",
-          mode: "lines+markers",
-          marker: { color: pal[i % pal.length], size: markerSize },
-          line: { color: pal[i % pal.length], width: lineWidth },
-        }));
-        break;
-      default:
-        data = liveData.map((trace: any, i: number) => {
-          const clr = pal[i % pal.length];
-          const base: any = { ...trace };
-          base.type = ct.plotlyType;
-          base.name = trace.name || `Series ${i + 1}`;
-          base.marker = {
-            ...(trace.marker || {}),
-            color: clr,
-            size: ct.bubble ? (trace.marker?.size ?? markerSize) : markerSize,
+          mode: "lines",
+          fill: i === 0 ? "tozeroy" : "tonexty",
+          fillcolor: c + fa,
+          line: { color: c, width: lineWidth },
+        };
+      });
+    }
+    // ── Error bars ──
+    else if (
+      [
+        "error-bars",
+        "horizontal-error",
+        "asymmetric-error",
+        "asymmetric-offset",
+        "continuous-error",
+      ].includes(ct.id)
+    )
+      data = genErrorBar(liveData, pal, ct.id);
+    else if (ct.id === "bar-error")
+      data = liveData.map((t: any, i: number) => ({
+        type: "bar",
+        name: t.name || `S${i + 1}`,
+        x: t.x || ["A", "B", "C", "D"],
+        y: (t.y || [10, 15, 13, 17]).map(Number),
+        error_y: { type: "data", array: [1.5, 2, 1, 2.5], visible: true },
+        marker: { color: pal[i % pal.length] },
+      }));
+    // ── Scientific ──
+    else if (ct.id === "ternary" || ct.id === "soil-ternary")
+      data = genTernary(liveData, pal);
+    else if (
+      ["parallel-basic", "parallel-coords", "parallel-advanced"].includes(ct.id)
+    )
+      data = genParcoords(liveData, pal);
+    else if (ct.id === "parallel-categories") data = genParcats(liveData, pal);
+    else if (ct.id === "splom") data = genSPLOM(liveData, pal);
+    // ── Sankey ──
+    else if (["sankey", "sankey-multi", "sankey-styled"].includes(ct.id)) {
+      data = genSankey(liveData, pal);
+      if (ct.id === "sankey-styled")
+        data[0].link.color = data[0].link.color.map(
+          (_: any, i: number) => pal[i % pal.length] + "aa",
+        );
+    }
+    // ── Waterfall ──
+    else if (ct.id === "waterfall" || ct.id === "waterfall-multi")
+      data = genWaterfall(liveData, pal);
+    // ── Candlestick / OHLC ──
+    else if (
+      [
+        "candlestick",
+        "candlestick-no-slider",
+        "candlestick-annotated",
+      ].includes(ct.id)
+    )
+      data = genCandlestick(liveData);
+    else if (ct.id === "ohlc" || ct.id === "ohlc-no-slider")
+      data = genOHLC(liveData);
+    // ── Funnel ──
+    else if (ct.id === "funnel") data = genFunnel(liveData, pal, false);
+    else if (ct.id === "funnel-stacked") data = genFunnel(liveData, pal, true);
+    else if (ct.id === "funnel-area") data = genFunnelArea(liveData, pal);
+    // ── Time series ──
+    else if (ct.id === "time-series" || ct.id === "time-series-slider")
+      data = liveData.map((t: any, i: number) => ({
+        ...t,
+        type: "scatter",
+        mode: "lines",
+        line: {
+          color: pal[i % pal.length],
+          width: lineWidth,
+          shape: smooth ? "spline" : "linear",
+        },
+      }));
+    // ── 3D ──
+    else if (ct.id === "surface3d" || ct.id === "surface3d-multi") {
+      data = genSurface3D(liveData);
+      if (ct.id === "surface3d-multi")
+        data = [
+          data[0],
+          {
+            ...data[0],
+            z: data[0].z.map((r: number[]) =>
+              r.map((v: number) => v * 0.7 + 0.5),
+            ),
+            opacity: 0.6,
+          },
+        ];
+    } else if (ct.id === "mesh3d")
+      data = liveData[0]?.i
+        ? liveData.map((t: any) => ({
+            ...t,
+            type: "mesh3d",
             opacity: opacity / 100,
-            line: { color: "rgba(255,255,255,0.3)", width: borderWidth },
+          }))
+        : genMesh3D(pal);
+    else if (ct.id === "cone3d") data = genCone3D(pal);
+    else if (ct.id === "streamtube3d") data = genStreamtube(pal);
+    else if (ct.id === "isosurface3d") data = genIsosurface(pal);
+    else if (ct.id === "volume3d") data = genVolume(pal);
+    else if (
+      [
+        "scatter3d",
+        "ribbon3d",
+        "line3d",
+        "line3d-plot",
+        "line3d-markers",
+      ].includes(ct.id)
+    ) {
+      data = genScatter3D(liveData, pal, ct.mode3d || "markers");
+    } else if (ct.id === "line3d-spiral") {
+      const t = Array.from({ length: 100 }, (_, i) => i / 10);
+      data = [
+        {
+          type: "scatter3d",
+          mode: "lines",
+          x: t.map((v) => Math.cos(v)),
+          y: t.map((v) => Math.sin(v)),
+          z: t,
+          line: { color: pal[0], width: 4 },
+        },
+      ];
+    } else if (ct.id === "random-walk3d") {
+      let x = 0,
+        y = 0,
+        z = 0;
+      const xs: number[] = [],
+        ys: number[] = [],
+        zs: number[] = [];
+      for (let i = 0; i < 60; i++) {
+        x += Math.random() - 0.5;
+        y += Math.random() - 0.5;
+        z += Math.random() - 0.5;
+        xs.push(x);
+        ys.push(y);
+        zs.push(z);
+      }
+      data = [
+        {
+          type: "scatter3d",
+          mode: "lines+markers",
+          x: xs,
+          y: ys,
+          z: zs,
+          marker: { color: pal[0], size: 4 },
+          line: { color: pal[1] || pal[0], width: 2 },
+        },
+      ];
+    }
+    // ── Maps ──
+    else if (
+      ct.id === "choropleth" ||
+      ct.id === "world-map" ||
+      ct.id === "us-map"
+    )
+      data = genChoropleth(ct.id, pal);
+    else if (
+      ct.id === "scatter-geo" ||
+      ct.id === "line-geo" ||
+      ct.id === "bubble-map"
+    )
+      data = genScatterGeo(liveData, pal, ct.mode || "markers");
+    else if (ct.id === "choropleth-tile")
+      data = [
+        {
+          type: "choroplethmapbox",
+          locations: ["USA", "CAN", "GBR"],
+          z: [1, 2, 3],
+          colorscale: "Viridis",
+        },
+      ];
+    else if (ct.id === "scatter-mapbox")
+      data = [
+        {
+          type: "scattermapbox",
+          lat: [40.7, 51.5, 35.7],
+          lon: [-74, -0.12, 139.7],
+          mode: "markers",
+          marker: { color: pal[0], size: 10 },
+        },
+      ];
+    else if (ct.id === "density-mapbox")
+      data = [
+        {
+          type: "densitymapbox",
+          lat: [40.7, 40.8, 40.75, 51.5, 51.6],
+          lon: [-74, -73.9, -74.1, -0.12, -0.2],
+          z: [1, 2, 1.5, 3, 2],
+          colorscale: "Viridis",
+        },
+      ];
+    // ── Polar & Radar ──
+    else if (ct.id === "polar-scatter" || ct.id === "polar-line")
+      data = genPolarScatter(liveData, pal, ct.mode || "markers");
+    else if (ct.id === "polar-bar") data = genPolarBar(liveData, pal);
+    else if (ct.id === "radar" || ct.id === "radar-multi")
+      data = genRadar(liveData.slice(0, ct.id === "radar" ? 1 : 3), pal);
+    // ── Log ──
+    else if (ct.id === "log-plots" || ct.id === "log-axes")
+      data = liveData.map((t: any, i: number) => ({
+        ...t,
+        type: "scatter",
+        mode: "lines+markers",
+        marker: { color: pal[i % pal.length], size: markerSize },
+        line: { color: pal[i % pal.length], width: lineWidth },
+      }));
+    // ── Indicator ──
+    else if (
+      [
+        "indicator",
+        "indicator-angular",
+        "indicator-bullet",
+        "indicator-delta",
+        "indicator-number-delta",
+      ].includes(ct.id)
+    )
+      data = genIndicator(ct.id, liveData);
+    // ── Table ──
+    else if (["table", "table-styled", "table-formatted"].includes(ct.id))
+      data = genTable(liveData, ct.id, pal, textClr);
+    // ── Default ──
+    else {
+      data = liveData.map((t: any, i: number) => {
+        const c = pal[i % pal.length];
+        const base: any = { ...t };
+        base.type = ct.plotlyType;
+        base.name = t.name || `S${i + 1}`;
+        base.marker = {
+          ...(t.marker || {}),
+          color: c,
+          size: ct.bubble ? (t.marker?.size ?? markerSize) : markerSize,
+          opacity: opacity / 100,
+          line: { color: "rgba(255,255,255,0.3)", width: borderWidth },
+        };
+        base.line = {
+          color: c,
+          width: lineWidth,
+          shape: smooth ? "spline" : "linear",
+        };
+        if (ct.mode)
+          base.mode =
+            ct.mode + (showMarkers && ct.mode === "lines" ? "+markers" : "");
+        else if (ct.plotlyType === "scatter") base.mode = "markers";
+        else delete base.mode;
+        if (ct.fill) {
+          base.fill = ct.fill;
+          const fa = Math.round(fillOpacity * 2.55)
+            .toString(16)
+            .padStart(2, "0");
+          base.fillcolor = c + fa;
+        } else delete base.fill;
+        if (ct.hole) base.hole = ct.hole;
+        else delete base.hole;
+        if (ct.orientation) base.orientation = ct.orientation;
+        else delete base.orientation;
+        if (showLabels) {
+          base.texttemplate = "%{y}";
+          base.textposition = "outside";
+          base.textfont = {
+            size: fontSize - 1,
+            color: textClr,
+            family: fontFamily,
           };
-          base.line = {
-            color: clr,
-            width: lineWidth,
-            shape: smooth ? "spline" : "linear",
+          base.cliponaxis = false;
+        } else {
+          delete base.texttemplate;
+          delete base.text;
+        }
+        if (ct.bubble) {
+          const s = (t.y || [])
+            .map(Number)
+            .map((v: number) => Math.max(Math.abs(v) / 5, 5));
+          base.marker = {
+            ...base.marker,
+            size: s,
+            sizemode: "area",
+            sizeref: 0.5,
           };
-          if (ct.mode) {
-            base.mode =
-              ct.mode + (showMarkers && ct.mode === "lines" ? "+markers" : "");
-          } else if (ct.plotlyType === "scatter") {
-            base.mode = "markers";
-          } else {
-            delete base.mode;
-          }
-          if (ct.fill) {
-            base.fill = ct.fill;
-            const fa = Math.round(fillOpacity * 2.55)
-              .toString(16)
-              .padStart(2, "0");
-            base.fillcolor = clr + fa;
-          } else {
-            delete base.fill;
-          }
-          if (ct.hole) base.hole = ct.hole;
-          else delete base.hole;
-          if (ct.orientation) base.orientation = ct.orientation;
-          else delete base.orientation;
-          if (showLabels) {
-            base.texttemplate = "%{y}";
-            base.textposition = "outside";
-            base.textfont = {
-              size: fontSize - 1,
-              color: textClr,
-              family: fontFamily,
-            };
-            base.cliponaxis = false;
-          } else {
-            delete base.texttemplate;
-            delete base.text;
-          }
-          if (
-            ct.id === "bar-direct-labels" ||
-            ct.id === "grouped-direct-labels"
-          ) {
-            base.text = (trace.y || []).map((v: any) => v);
-            base.textposition = "outside";
-            base.textfont = { size: fontSize, color: textClr };
-          }
-          if (
-            ct.id === "bubble" ||
-            ct.id === "bubble-size" ||
-            ct.id === "bubble-size-color" ||
-            ct.id === "bubble-hover" ||
-            ct.id === "bubble-scaling"
-          ) {
-            const yVals = (trace.y || []).map(Number);
-            const sizes = yVals.map((v: number) =>
-              Math.max(Math.abs(v) / 5, 5),
-            );
-            base.marker = {
-              ...base.marker,
-              size: sizes,
-              sizemode: "area",
-              sizeref: 0.5,
-            };
-          }
-          if (ct.id === "line-dash") {
-            const dashes = ["solid", "dash", "dot", "dashdot"];
-            base.line = { ...base.line, dash: dashes[i % dashes.length] };
-          }
-          if (ct.id === "line-shape") {
-            const shapes = ["linear", "spline", "hv", "vh", "hvh", "vhv"];
-            base.line = { ...base.line, shape: shapes[i % shapes.length] };
-          }
-          return base;
-        });
-        break;
+        }
+        if (ct.id === "line-dash") {
+          const dashes = ["solid", "dash", "dot", "dashdot"];
+          base.line = { ...base.line, dash: dashes[i % dashes.length] };
+        }
+        if (ct.id === "line-shape") {
+          const shapes = ["linear", "spline", "hv", "vh", "hvh", "vhv"];
+          base.line = { ...base.line, shape: shapes[i % shapes.length] };
+        }
+        return base;
+      });
     }
 
+    // ── Layout ──
     const legendConfig: Record<string, any> = {
       bottom: {
         orientation: "h",
@@ -2754,9 +4273,29 @@ export default function ChartEditor({
       left: { orientation: "v", x: -0.18, xanchor: "right", y: 0.5 },
       right: { orientation: "v", x: 1.04, xanchor: "left", y: 0.5 },
     };
-
     const is3D = ct.group === "3d";
-    const isPie = ct.id === "pie" || ct.id === "donut";
+    const isPie = ["pie", "donut", "pie-pull", "pie-styled"].includes(ct.id);
+    const isHierarchy = [
+      "sunburst",
+      "sunburst-multi",
+      "treemap",
+      "treemap-nested",
+      "treemap-color",
+      "icicle",
+      "icicle-multi",
+    ].includes(ct.id);
+    const isPolar = ct.group === "polar-radar";
+    const isMap = ct.group === "maps";
+    const isIndicatorOrTable = [
+      "indicator",
+      "indicator-angular",
+      "indicator-bullet",
+      "indicator-delta",
+      "indicator-number-delta",
+      "table",
+      "table-styled",
+      "table-formatted",
+    ].includes(ct.id);
     const isNoAxes =
       [
         "ternary",
@@ -2764,11 +4303,19 @@ export default function ChartEditor({
         "parallel-basic",
         "parallel-coords",
         "parallel-advanced",
+        "parallel-categories",
         "2d-histogram-contour",
         "2d-histogram-slider",
+        "sankey",
+        "sankey-multi",
+        "sankey-styled",
       ].includes(ct.id) ||
       isPie ||
-      is3D;
+      isPolar ||
+      isHierarchy ||
+      is3D ||
+      isMap ||
+      isIndicatorOrTable;
 
     const layout: any = {
       autosize: true,
@@ -2796,16 +4343,13 @@ export default function ChartEditor({
       bargap: barGap / 100,
       barmode: ct.barmode || liveLayout?.barmode || "group",
     };
-
-    if (title) {
+    if (title)
       layout.title = {
         text: title,
         font: { color: textClr, size: titleSize, family: fontFamily },
         x: 0.5,
       };
-    }
-
-    if (is3D) {
+    if (is3D)
       layout.scene = {
         ...(liveLayout?.scene || {}),
         xaxis: {
@@ -2825,8 +4369,29 @@ export default function ChartEditor({
         },
         bgcolor: cardBgColor,
       };
+    if (isPolar)
+      layout.polar = {
+        radialaxis: {
+          visible: true,
+          gridcolor: gridClr,
+          tickfont: { color: textClr },
+        },
+        angularaxis: { gridcolor: gridClr, tickfont: { color: textClr } },
+        bgcolor: cardBgColor,
+      };
+    if (isMap) {
+      layout.geo = {
+        showframe: false,
+        showcoastlines: true,
+        projection: { type: "natural earth" },
+        bgcolor: cardBgColor,
+        lakecolor: cardBgColor,
+        landcolor: isCardLight ? "#e5e7eb" : "#2d3748",
+        oceancolor: isCardLight ? "#bfdbfe" : "#1e3a5f",
+        showcountries: true,
+        countrycolor: lineClr,
+      };
     }
-
     if (!isNoAxes) {
       layout.xaxis = {
         ...(liveLayout?.xaxis || {}),
@@ -2875,24 +4440,24 @@ export default function ChartEditor({
         linewidth: 1,
       };
     }
-
-    if (ct.id === "stacked-histogram" || ct.id === "overlaid-histogram") {
+    if (ct.id === "stacked-histogram" || ct.id === "overlaid-histogram")
       layout.barmode = ct.id === "stacked-histogram" ? "stack" : "overlay";
-    }
-    if (ct.id === "candlestick-no-slider") {
+    if (ct.id === "candlestick-no-slider" || ct.id === "ohlc-no-slider")
       layout.xaxis = {
         ...(layout.xaxis || {}),
         rangeslider: { visible: false },
       };
-    } else if (ct.id === "candlestick" || ct.id === "candlestick-annotated") {
+    else if (["candlestick", "candlestick-annotated", "ohlc"].includes(ct.id))
       layout.xaxis = {
         ...(layout.xaxis || {}),
         rangeslider: { visible: true },
       };
-    }
-    if (ct.id === "funnel-stacked") {
-      layout.funnelmode = "stack";
-    }
+    if (ct.id === "funnel-stacked") layout.funnelmode = "stack";
+    if (ct.id === "time-series-slider")
+      layout.xaxis = {
+        ...(layout.xaxis || {}),
+        rangeslider: { visible: true },
+      };
 
     Plotly.react(plotRef.current, data, layout, {
       responsive: true,
@@ -2929,20 +4494,20 @@ export default function ChartEditor({
     title,
     getLiveData,
     buildPieData,
+    buildHierarchyData,
     isLightBg,
   ]);
 
-  // ── Render effect: on mount render original; after edits run applyChart ──
   useEffect(() => {
     if (!mounted || !plotRef.current || !window.Plotly) return;
     if (userHasEdited.current) {
       applyChart();
     } else {
-      const { data: liveData, layout: liveLayout } = getLiveData();
+      const { data: ld, layout: ll } = getLiveData();
       window.Plotly.react(
         plotRef.current,
-        liveData,
-        { ...liveLayout, autosize: true },
+        ld,
+        { ...ll, autosize: true },
         { responsive: true, displayModeBar: false },
       );
     }
@@ -2973,7 +4538,6 @@ export default function ChartEditor({
         data: plotRef.current?.data ?? live.data,
         layout: {
           ...(plotRef.current?.layout ?? live.layout),
-          // Persist sidebar fields into the JSONB blob using private _ keys
           _subtitle: subtitle,
           _annotations: annotations,
         },
@@ -2984,16 +4548,13 @@ export default function ChartEditor({
           ? message.content.layout.title
           : message?.content?.layout?.title?.text) ||
         "Untitled Chart";
-
       if (existingChartId) {
-        // UPDATE existing chart
         const updated = await apiUpdateChart(token, existingChartId, {
           title: chartTitle,
           chartConfig: chartJson,
         });
         updateSavedChart(updated);
       } else {
-        // CREATE new chart
         const saved = await apiSaveChart(token, {
           title: chartTitle,
           prompt: chartTitle,
@@ -3001,7 +4562,6 @@ export default function ChartEditor({
         });
         addSavedChart(saved);
       }
-
       setDbSaveStatus("saved");
       setTimeout(() => setDbSaveStatus("idle"), 3000);
     } catch (err) {
@@ -3020,7 +4580,6 @@ export default function ChartEditor({
     { id: "annotate", label: "Notes" },
     { id: "export", label: "Export" },
   ] as const;
-
   const filteredTypes = searchQuery.trim()
     ? CHART_TYPES.filter(
         (ct) =>
@@ -3030,7 +4589,6 @@ export default function ChartEditor({
     : activeGroup
       ? CHART_TYPES.filter((ct) => ct.group === activeGroup)
       : [];
-
   const cardBg = isLightBg ? "#1e293b" : "#ffffff";
   const outerBg = isLightBg ? "#e2e8f0" : "#1a1a1a";
 
@@ -3209,9 +4767,8 @@ export default function ChartEditor({
             ))}
           </div>
 
-          {/* Panel content */}
           <div className="flex-1 overflow-y-auto bg-white">
-            {/* ─── GRAPH TAB ─── */}
+            {/* GRAPH TAB */}
             {tab === "graph" && (
               <>
                 <div className="px-4 pt-3 pb-1.5">
@@ -3221,7 +4778,7 @@ export default function ChartEditor({
                       setSearchQuery(e.target.value);
                       if (e.target.value) setActiveGroup(null);
                     }}
-                    placeholder="Search chart types…"
+                    placeholder="Search all chart types…"
                     className="w-full px-2.5 py-[7px] text-[11px] border border-gray-200 rounded-lg bg-gray-50 outline-none"
                   />
                 </div>
@@ -3296,7 +4853,7 @@ export default function ChartEditor({
                 {!searchQuery && !activeGroup && (
                   <div className="px-4 py-6 text-center">
                     <p className="text-[11px] text-gray-400">
-                      Select a category above or search to browse all{" "}
+                      Select a category or search to browse all{" "}
                       {CHART_TYPES.length} chart types
                     </p>
                   </div>
@@ -3377,7 +4934,7 @@ export default function ChartEditor({
               </>
             )}
 
-            {/* ─── STYLE TAB ─── */}
+            {/* STYLE TAB */}
             {tab === "style" && (
               <>
                 <Sec title="Color Palette">
@@ -3614,7 +5171,7 @@ export default function ChartEditor({
               </>
             )}
 
-            {/* ─── AXES TAB ─── */}
+            {/* AXES TAB */}
             {tab === "axes" && (
               <>
                 <Sec title="Axis Labels">
@@ -3721,7 +5278,7 @@ export default function ChartEditor({
               </>
             )}
 
-            {/* ─── ANNOTATE TAB ─── */}
+            {/* ANNOTATE TAB */}
             {tab === "annotate" && (
               <>
                 <Sec title="Title & Subtitle">
@@ -3790,7 +5347,7 @@ export default function ChartEditor({
               </>
             )}
 
-            {/* ─── EXPORT TAB ─── */}
+            {/* EXPORT TAB */}
             {tab === "export" && (
               <>
                 <Sec title="Dimensions">
@@ -3913,8 +5470,6 @@ export default function ChartEditor({
                         </span>
                       </button>
                     ))}
-
-                    {/* Save / Update button */}
                     <button
                       onClick={handleSaveToDatabase}
                       disabled={!isAuthenticated || dbSaveStatus === "saving"}
@@ -4020,3 +5575,4 @@ export default function ChartEditor({
     document.body,
   );
 }
+  

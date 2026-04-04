@@ -708,7 +708,12 @@ export default function CTA() {
                 }}
               >
                 {[
-                  { val: 70, suffix: "+", label: "CHART TYPES", color: "black" },
+                  {
+                    val: 70,
+                    suffix: "+",
+                    label: "CHART TYPES",
+                    color: "black",
+                  },
                   {
                     val: 12847,
                     suffix: "",

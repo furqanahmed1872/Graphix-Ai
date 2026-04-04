@@ -1,122 +1,511 @@
-import SectionTag from "@/components/ui/SectionTag";
+"use client";
+
+import { useState, useEffect, useRef } from "react";
+
+const principles = [
+  {
+    number: "01",
+    title: "Clarity over complexity",
+    description:
+      "Every pixel, every label, every chart type exists for one reason: to make data easier to understand. Nothing more.",
+    accent: "#00d4c8",
+    stat: "149+ types",
+    statLabel: "each one intentional",
+  },
+  {
+    number: "02",
+    title: "Speed is a feature",
+    description:
+      "Charts in under 3 seconds. No loading spinners. No 'AI is thinking...' We optimized every step.",
+    accent: "#8b5cf6",
+    stat: "<3s",
+    statLabel: "average generation",
+  },
+  {
+    number: "03",
+    title: "Own your work",
+    description:
+      "Your charts, your dashboard, your data. We don't lock you in — export PNG, SVG, JSON anytime.",
+    accent: "#f59e0b",
+    stat: "4 formats",
+    statLabel: "PNG · SVG · JPEG · JSON",
+  },
+  {
+    number: "04",
+    title: "No gatekeeping",
+    description:
+      "No SQL required. No engineering degree. No $50/month plan. Data visualization should be for everyone.",
+    accent: "#ec4899",
+    stat: "$0",
+    statLabel: "forever · no catch",
+  },
+];
+
+const teamValues = [
+  { label: "Brutalist simplicity", percentage: 100, color: "#00d4c8" },
+  { label: "User obsession", percentage: 100, color: "#8b5cf6" },
+  { label: "Ship fast", percentage: 100, color: "#f59e0b" },
+  { label: "Open by default", percentage: 100, color: "#ec4899" },
+];
 
 export default function MissionSection() {
+  const [hoveredPrinciple, setHoveredPrinciple] = useState(null);
+  const [hoveredValue, setHoveredValue] = useState(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Use RAF for smoother mouse tracking
+  const rafRef = useRef();
+  const mouseRef = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      // Store latest mouse position
+      mouseRef.current = { x: e.clientX, y: e.clientY };
+
+      // Cancel previous RAF
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+
+      // Update state on next animation frame
+      rafRef.current = requestAnimationFrame(() => {
+        setMousePosition(mouseRef.current);
+      });
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
+
+  // Memoize noise texture to prevent recreation
+  const noiseTexture =
+    "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' fill='black'/%3E%3C/svg%3E\")";
+
+  // Use will-change for elements that animate
+  const glowStyle = {
+    left: mousePosition.x - 250,
+    top: mousePosition.y - 250,
+    willChange: "transform",
+    transform: "translateZ(0)",
+  };
+
   return (
-    <section className="bg-white border-t border-b border-[#1e2227] px-12 py-24">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
-        {/* Text */}
-        <div>
-          <SectionTag label="Our Mission" />
-          <h2 className="font-syne font-extrabold text-[clamp(2rem,4vw,3.2rem)] leading-[1.05] tracking-tight text-black/40 mb-4">
-            Data fluency for
-            <br />
-            <span className="text-[#00d4c8]">everyone.</span>
-          </h2>
-          <p className="text-[#6b7280] text-[0.97rem] leading-[1.8] max-w-[560px]">
-            We believe the gap between raw data and genuine insight shouldn't
-            require a PhD to bridge. Graphix exists to collapse that gap
-            entirely — so a founder, marketer, scientist, or student can look at
-            numbers and immediately see the story they're trying to tell.
-          </p>
-          <p className="text-[#6b7280] text-[0.97rem] leading-[1.8] max-w-[560px] mt-5">
-            No code. No SQL. No waiting on your data team. Just language and
-            clarity.
-          </p>
+    <div className="relative w-full bg-[#111212] overflow-hidden">
+      {/* BLACK NOISE TEXTURE - Fixed with static background */}
+      <div
+        className="absolute inset-0 pointer-events-none z-0 opacity-[0.08]"
+        style={{
+          backgroundImage: noiseTexture,
+          backgroundRepeat: "repeat",
+          willChange: "auto",
+        }}
+      />
+
+      {/* SUBTLE GRADIENT OVERLAY */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#faf9f8] via-[#f5f4f3] to-[#efeeed] z-0" />
+
+      {/* FLOATING ORBS - Added back the third orb */}
+      <div className="absolute top-40 right-20 w-96 h-96 rounded-full bg-[#111212]/8 blur-3xl pointer-events-none will-change-transform" />
+      <div className="absolute bottom-40 left-20 w-[500px] h-[500px] rounded-full bg-[#111212]/5 blur-3xl pointer-events-none will-change-transform" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] rounded-full bg-[#00d4c8]/3 blur-3xl pointer-events-none will-change-transform" />
+
+      {/* MOUSE-FOLLOW GLOW - Optimized with transform instead of left/top */}
+      <div
+        className="absolute w-[500px] h-[500px] rounded-full bg-[#00d4c8]/5 blur-3xl pointer-events-none z-0"
+        style={{
+          transform: `translate3d(${mousePosition.x - 250}px, ${mousePosition.y - 250}px, 0)`,
+          willChange: "transform",
+          transition: "transform 0.05s linear", // Faster transition for smoother feel
+        }}
+      />
+
+      {/* Top left - The Continental */}
+      <div className="absolute top-10 left-10 z-20 group">
+        <div className="text-[0.6rem] text-[#8b8b8b] tracking-[0.25em] uppercase mb-1.5 group-hover:text-[#00d4c8] transition-colors duration-200">
+          A project by
         </div>
+        <div className="text-xs font-serif text-black tracking-wide group-hover:tracking-wider transition-all duration-200">
+          THE CONTINENTAL
+        </div>
+        <div className="w-6 h-px bg-[#d0d0d0] mt-2 group-hover:w-12 group-hover:bg-[#00d4c8] transition-all duration-300" />
+      </div>
 
-        {/* ── GRAPH VISUAL ── */}
-        <div className="relative h-[360px] bg-[#0d1014] overflow-hidden border-x-16 border-t-16 p-x-5 border-black/40 bg-white">
-          <style>{`
-    @keyframes wave1 {
-      0%   { d: path("M0,180 C80,140 160,220 240,180 S380,120 500,160 L500,360 L0,360 Z"); }
-      50%  { d: path("M0,200 C80,160 160,240 240,160 S380,100 500,140 L500,360 L0,360 Z"); }
-      100% { d: path("M0,180 C80,140 160,220 240,180 S380,120 500,160 L500,360 L0,360 Z"); }
-    }
-    @keyframes wave2 {
-      0%   { d: path("M0,200 C80,240 160,160 240,200 S380,240 500,200 L500,360 L0,360 Z"); }
-      50%  { d: path("M0,220 C80,180 160,260 240,220 S380,180 500,220 L500,360 L0,360 Z"); }
-      100% { d: path("M0,200 C80,240 160,160 240,200 S380,240 500,200 L500,360 L0,360 Z"); }
-    }
-    @keyframes wave3 {
-      0%   { d: path("M0,240 C80,200 160,280 240,240 S380,200 500,240 L500,360 L0,360 Z"); }
-      50%  { d: path("M0,260 C80,220 160,300 240,260 S380,220 500,260 L500,360 L0,360 Z"); }
-      100% { d: path("M0,240 C80,200 160,280 240,240 S380,200 500,240 L500,360 L0,360 Z"); }
-    }
-    .wave1 { animation: wave1 6s ease-in-out infinite; }
-    .wave2 { animation: wave2 5s ease-in-out infinite 0.8s; }
-    .wave3 { animation: wave3 4s ease-in-out infinite 1.6s; }
-  `}</style>
-
-          <svg
-            className="absolute inset-0 w-full h-full"
-            viewBox="0 0 500 360"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient id="w1" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#00d4c8" stopOpacity="0.25" />
-                <stop offset="100%" stopColor="#00d4c8" stopOpacity="0" />
-              </linearGradient>
-              <linearGradient id="w2" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#00d4c8" stopOpacity="0.12" />
-                <stop offset="100%" stopColor="#00d4c8" stopOpacity="0" />
-              </linearGradient>
-              <linearGradient id="w3" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#00d4c8" stopOpacity="0.06" />
-                <stop offset="100%" stopColor="#00d4c8" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-
-            {/* Wave 3 — deepest, most transparent */}
-            <path
-              className="wave3"
-              fill="url(#w3)"
-              d="M0,240 C80,200 160,280 240,240 S380,200 500,240 L500,360 L0,360 Z"
-            />
-
-            {/* Wave 2 — mid */}
-            <path
-              className="wave2"
-              fill="url(#w2)"
-              d="M0,200 C80,240 160,160 240,200 S380,240 500,200 L500,360 L0,360 Z"
-            />
-
-            {/* Wave 1 — top, brightest */}
-            <path
-              className="wave1"
-              fill="url(#w1)"
-              d="M0,180 C80,140 160,220 240,180 S380,120 500,160 L500,360 L0,360 Z"
-            />
-
-            {/* Top stroke line */}
-            <path
-              className="wave1"
-              fill="none"
-              stroke="#00d4c8"
-              strokeWidth="2"
-              d="M0,180 C80,140 160,220 240,180 S380,120 500,160"
-              strokeLinecap="round"
-            />
-          </svg>
-
-          {/* Label overlay */}
-          <div className="absolute top-6 left-6">
-            <p className="text-[0.62rem] uppercase tracking-[0.14em] text-black/40 mb-1">
-              Data Flow
-            </p>
-            <p className="font-syne font-bold text-[1.4rem] text-black/40 leading-none">
-              12,000+ <span className="text-[#00d4c8]">teams</span>
-            </p>
+      <div className="relative z-10 max-w-7xl mx-auto px-6 py-32">
+        {/* Section header */}
+        <div className="text-center mb-24">
+          <div className="inline-flex items-center gap-3 px-4 py-2 border border-[#e8e8e8] rounded-full bg-white/50 backdrop-blur-sm shadow-sm mb-8">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#00d4c8] animate-pulse" />
+            <span className="text-[0.6rem] tracking-[0.15em] text-[#8b8b8b] uppercase font-medium">
+              Our Mission
+            </span>
+            <div className="w-1.5 h-1.5 rounded-full bg-[#d0d0d0]" />
           </div>
 
-          <div className="absolute top-6 right-6 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#00d4c8] animate-pulse" />
-            <span className="text-[0.6rem] uppercase tracking-widest text-[#6b7280]">
-              Live
+          <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-black tracking-tight">
+            Make data
+            <br />
+            <span className="relative inline-block mt-3 group">
+              <span className="absolute -inset-3 bg-[#00d4c8] -z-10 transform -rotate-1 group-hover:rotate-0 transition-transform duration-300" />
+              <span className="text-white px-4 inline-block group-hover:scale-105 transition-transform duration-300">
+                unignorably clear
+              </span>
             </span>
+          </h2>
+
+          <div className="w-16 h-px bg-[#00d4c8]/30 mx-auto mt-8" />
+        </div>
+
+        {/* Principles grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-32">
+          {principles.map((principle, idx) => (
+            <div
+              key={principle.number}
+              className="group cursor-pointer relative will-change-transform"
+              onMouseEnter={() => setHoveredPrinciple(idx)}
+              onMouseLeave={() => setHoveredPrinciple(null)}
+            >
+              {/* Background highlight on hover - Optimized */}
+              <div
+                className={`absolute inset-0 rounded-2xl transition-opacity duration-300 ${
+                  hoveredPrinciple === idx ? "opacity-100" : "opacity-0"
+                }`}
+                style={{
+                  background: `linear-gradient(135deg, ${principle.accent}08, transparent)`,
+                }}
+              />
+
+              {/* Border glow on hover - Optimized */}
+              <div
+                className={`absolute inset-0 rounded-2xl transition-opacity duration-300 pointer-events-none ${
+                  hoveredPrinciple === idx ? "opacity-100" : "opacity-0"
+                }`}
+                style={{
+                  boxShadow: `0 0 0 1px ${principle.accent}30, 0 0 30px ${principle.accent}20`,
+                }}
+              />
+
+              <div className="relative p-8">
+                <div className="flex items-start justify-between mb-4">
+                  <div
+                    className={`text-6xl font-black transition-all duration-200 ${
+                      hoveredPrinciple === idx
+                        ? `scale-110 translate-x-1`
+                        : "text-black/20"
+                    }`}
+                    style={{
+                      color:
+                        hoveredPrinciple === idx ? principle.accent : undefined,
+                      willChange: "transform",
+                    }}
+                  >
+                    {principle.number}
+                  </div>
+
+                  <div
+                    className={`text-right transition-opacity duration-200 ${hoveredPrinciple === idx ? "opacity-100" : "opacity-50"}`}
+                  >
+                    <div
+                      className="text-xs font-bold"
+                      style={{ color: principle.accent }}
+                    >
+                      {principle.stat}
+                    </div>
+                    <div className="text-[0.55rem] text-[#8b8b8b] uppercase tracking-wider">
+                      {principle.statLabel}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="relative inline-block mb-3">
+                  <div
+                    className={`text-xl font-bold transition-colors duration-200 ${
+                      hoveredPrinciple === idx
+                        ? `text-[${principle.accent}]`
+                        : "text-black"
+                    }`}
+                    style={{
+                      color:
+                        hoveredPrinciple === idx ? principle.accent : undefined,
+                    }}
+                  >
+                    {principle.title}
+                  </div>
+                  <div
+                    className={`absolute -bottom-1 left-0 h-px transition-all duration-300 ${
+                      hoveredPrinciple === idx
+                        ? "w-full opacity-100"
+                        : "w-0 opacity-0"
+                    }`}
+                    style={{ backgroundColor: principle.accent }}
+                  />
+                </div>
+
+                <p className="text-[#6b6b6b] text-sm leading-relaxed">
+                  {principle.description}
+                </p>
+
+                <div
+                  className={`w-12 h-px mt-6 transition-opacity duration-300 ${
+                    hoveredPrinciple === idx ? "opacity-100" : "opacity-0"
+                  }`}
+                  style={{ backgroundColor: principle.accent }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Values bar chart */}
+        <div className="mb-32">
+          <div className="text-center mb-12">
+            <div className="text-[0.6rem] text-[#8b8b8b] tracking-[0.2em] uppercase mb-2">
+              Our DNA
+            </div>
+            <h3 className="text-2xl font-bold text-black">
+              Four values, fully committed
+            </h3>
+            <div className="w-12 h-px bg-[#00d4c8]/30 mx-auto mt-4" />
+          </div>
+
+          <div className="space-y-4 max-w-2xl mx-auto">
+            {teamValues.map((value, idx) => (
+              <div
+                key={value.label}
+                className="group cursor-pointer"
+                onMouseEnter={() => setHoveredValue(idx)}
+                onMouseLeave={() => setHoveredValue(null)}
+              >
+                <div className="flex justify-between text-sm mb-1">
+                  <span
+                    className={`text-black/70 transition-colors duration-200`}
+                    style={{
+                      color: hoveredValue === idx ? value.color : undefined,
+                    }}
+                  >
+                    {value.label}
+                  </span>
+                  <span className="text-black/40 font-mono text-xs">
+                    {value.percentage}%
+                  </span>
+                </div>
+                <div className="h-1 bg-[#e8e8e8] rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      hoveredValue === idx ? "opacity-100" : "opacity-80"
+                    }`}
+                    style={{
+                      width: `${value.percentage}%`,
+                      backgroundColor: value.color,
+                      boxShadow:
+                        hoveredValue === idx
+                          ? `0 0 8px ${value.color}`
+                          : "none",
+                    }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Quote / Callout block */}
+        <div className="relative max-w-4xl mx-auto text-center mb-32">
+          <div className="absolute -top-10 -left-10 text-8xl text-[#00d4c8]/10 font-serif">
+            "
+          </div>
+          <div className="absolute -bottom-10 -right-10 text-8xl text-[#00d4c8]/10 font-serif">
+            "
+          </div>
+
+          <div className="relative z-10">
+            <p className="text-2xl md:text-3xl font-light text-black leading-relaxed">
+              We're not building another BI tool.
+              <br />
+              We're building the visualization layer
+              <br />
+              <span className="font-bold bg-gradient-to-r from-[#00d4c8] via-[#8b5cf6] to-[#ec4899] bg-clip-text text-transparent">
+                that should have existed from the start.
+              </span>
+            </p>
+
+            <div className="flex justify-center gap-2 mt-8">
+              <div className="w-8 h-px bg-[#00d4c8]/30" />
+              <div className="w-12 h-px bg-[#00d4c8]" />
+              <div className="w-8 h-px bg-[#00d4c8]/30" />
+            </div>
+
+            <div className="mt-6 text-[0.55rem] text-[#c0c0c0] tracking-[0.3em] uppercase">
+              — Since 2021 —
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom stats / CTA */}
+        <div className="border-t border-[#e8e8e8] pt-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div className="text-center">
+              <div className="text-3xl font-bold text-black">12K+</div>
+              <div className="text-[0.6rem] text-[#8b8b8b] tracking-wider mt-1">
+                TEAMS
+              </div>
+              <div className="w-8 h-px bg-[#00d4c8]/30 mx-auto mt-2" />
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-black">149+</div>
+              <div className="text-[0.6rem] text-[#8b8b8b] tracking-wider mt-1">
+                CHART TYPES
+              </div>
+              <div className="w-8 h-px bg-[#00d4c8]/30 mx-auto mt-2" />
+            </div>
+            <div className="text-center">
+              <div className="text-3xl font-bold text-black">&lt;3s</div>
+              <div className="text-[0.6rem] text-[#8b8b8b] tracking-wider mt-1">
+                GENERATION
+              </div>
+              <div className="w-8 h-px bg-[#00d4c8]/30 mx-auto mt-2" />
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-8 border-t border-[#e8e8e8]">
+            <div className="text-center md:text-left">
+              <div className="text-[0.6rem] text-[#8b8b8b] tracking-[0.2em] uppercase mb-2">
+                Join the mission
+              </div>
+              <div className="text-sm text-[#6b6b6b]">
+                Start telling better stories with your data
+              </div>
+            </div>
+
+            <div className="flex gap-4">
+              <button className="group relative px-8 py-3 bg-[#00d4c8] text-black font-medium rounded-lg overflow-hidden transition-all hover:scale-105">
+                <span className="relative z-10">Start for free →</span>
+                <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                <span className="absolute inset-0 z-10 flex items-center justify-center text-black opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  Start for free →
+                </span>
+              </button>
+              <button className="px-8 py-3 border border-[#d0d0d0] text-[#6b6b6b] text-sm rounded-lg hover:border-[#00d4c8] hover:text-[#00d4c8] transition-all">
+                View demo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom accent */}
+        <div className="mt-20 flex justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-px h-8 bg-gradient-to-b from-[#00d4c8] to-transparent" />
+            <div className="text-[0.55rem] text-[#c0c0c0] tracking-[0.3em] uppercase">
+              Continue
+            </div>
           </div>
         </div>
       </div>
-    </section>
+
+      {/* Decorative elements - bottom right grid pattern */}
+      <div className="absolute bottom-10 right-10 w-40 h-40 opacity-20 pointer-events-none">
+        <svg
+          viewBox="0 0 100 100"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <rect
+            x="10"
+            y="10"
+            width="80"
+            height="80"
+            stroke="#00d4c8"
+            strokeWidth="0.5"
+            fill="none"
+          />
+          <rect
+            x="25"
+            y="25"
+            width="50"
+            height="50"
+            stroke="#00d4c8"
+            strokeWidth="0.5"
+            fill="none"
+          />
+          <rect
+            x="40"
+            y="40"
+            width="20"
+            height="20"
+            stroke="#00d4c8"
+            strokeWidth="0.5"
+            fill="#00d4c8"
+            fillOpacity="0.1"
+          />
+          <circle
+            cx="50"
+            cy="50"
+            r="8"
+            stroke="#00d4c8"
+            strokeWidth="0.5"
+            fill="none"
+          />
+          <line
+            x1="10"
+            y1="50"
+            x2="40"
+            y2="50"
+            stroke="#00d4c8"
+            strokeWidth="0.5"
+            strokeDasharray="2 2"
+          />
+          <line
+            x1="60"
+            y1="50"
+            x2="90"
+            y2="50"
+            stroke="#00d4c8"
+            strokeWidth="0.5"
+            strokeDasharray="2 2"
+          />
+          <line
+            x1="50"
+            y1="10"
+            x2="50"
+            y2="40"
+            stroke="#00d4c8"
+            strokeWidth="0.5"
+            strokeDasharray="2 2"
+          />
+          <line
+            x1="50"
+            y1="60"
+            x2="50"
+            y2="90"
+            stroke="#00d4c8"
+            strokeWidth="0.5"
+            strokeDasharray="2 2"
+          />
+        </svg>
+      </div>
+
+      {/* Top right - subtle chart icon */}
+      <div className="absolute top-10 right-10 opacity-20 pointer-events-none">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path d="M4 28 L28 28" stroke="#00d4c8" strokeWidth="1" />
+          <path
+            d="M8 20 L12 12 L16 18 L20 8 L24 16"
+            stroke="#00d4c8"
+            strokeWidth="1.5"
+            fill="none"
+          />
+          <circle cx="20" cy="8" r="1.5" fill="#00d4c8" />
+          <circle cx="12" cy="12" r="1.5" fill="#00d4c8" />
+          <circle cx="16" cy="18" r="1.5" fill="#00d4c8" />
+          <circle cx="24" cy="16" r="1.5" fill="#00d4c8" />
+          <circle cx="8" cy="20" r="1.5" fill="#00d4c8" />
+        </svg>
+      </div>
+    </div>
   );
 }

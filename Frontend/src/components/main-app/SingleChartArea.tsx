@@ -645,12 +645,14 @@ function InlineToolbar({
   onOpenEditor,
   onResetData,
   onSaveChart,
+  onSaved,
 }: {
   divRef: React.RefObject<any>;
   messageId: string;
   onOpenEditor: () => void;
   onResetData: () => void;
   onSaveChart?: () => Promise<void>;
+  onSaved?: () => void;
 }) {
   const [gridOn, setGridOn] = useState(true);
   const [legendOn, setLegendOn] = useState(true);
@@ -824,18 +826,19 @@ function InlineToolbar({
     }
   };
 
-  const handleSave = async () => {
-    if (!onSaveChart || saving === "saving" || saving === "saved") return;
-    setSaving("saving");
-    try {
-      await onSaveChart();
-      setSaving("saved");
-      setTimeout(() => setSaving("idle"), 2500);
-    } catch {
-      setSaving("error");
-      setTimeout(() => setSaving("idle"), 2500);
-    }
-  };
+ const handleSave = async () => {
+   if (!onSaveChart || saving === "saving" || saving === "saved") return;
+   setSaving("saving");
+   try {
+     await onSaveChart();
+     setSaving("saved");
+     onSaved?.();
+     setTimeout(() => setSaving("idle"), 2500);
+   } catch {
+     setSaving("error");
+     setTimeout(() => setSaving("idle"), 2500);
+   }
+ };
 
   return (
     <div
@@ -1387,6 +1390,7 @@ export default function SingleChartArea({
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
   const [aiMessage, setAiMessage] = useState<Message | null>(null);
+  const [showSavedToast, setShowSavedToast] = useState(false);
   const originalDataRef = useRef<any>(null);
   const originalLayoutRef = useRef<any>(null);
   const lastRenderedIdRef = useRef<string | null>(null);
@@ -1405,11 +1409,14 @@ export default function SingleChartArea({
         const data = perChartData?.data ?? aiMsg?.content?.data ?? [];
         const layout = perChartData?.layout ?? aiMsg?.content?.layout ?? {};
 
-        // Title: prefer Plotly layout.title, fallback to _subtitle context
+        // Title: cascade through all sources to avoid "Untitled Chart"
+        const extractTitle = (l: any) =>
+          typeof l?.title === "string" ? l.title : (l?.title?.text ?? "");
+
         const title =
-          typeof layout.title === "string"
-            ? layout.title
-            : (layout.title?.text ?? "Untitled Chart");
+          extractTitle(perChartData?.layout) ||
+          extractTitle(aiMsg?.content?.layout) ||
+          "Untitled Chart";
 
         // Carry subtitle and annotation labels through to the saved chartConfig
         const enrichedLayout = {
@@ -1885,9 +1892,108 @@ export default function SingleChartArea({
             onOpenEditor={() => setEditorOpen(true)}
             onResetData={resetData}
             onSaveChart={handleSaveCurrentChart}
+            onSaved={() => {
+              setShowSavedToast(true);
+              setTimeout(() => setShowSavedToast(false), 4000);
+            }}
           />
         )}
       </div>
+
+      {/* Saved toast */}
+      {showSavedToast && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 28,
+            left: "50%",
+            transform: "translateX(-50%)",
+            zIndex: 99999,
+            background: "#0f172a",
+            border: "1px solid rgba(6,182,212,0.35)",
+            borderRadius: 14,
+            boxShadow:
+              "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(6,182,212,0.08)",
+            padding: "12px 18px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            minWidth: 260,
+            animation: "toastIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both",
+          }}
+        >
+          <style>{`
+            @keyframes toastIn {
+              from { opacity: 0; transform: translateX(-50%) translateY(12px) scale(0.95); }
+              to   { opacity: 1; transform: translateX(-50%) translateY(0)    scale(1);    }
+            }
+          `}</style>
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              flexShrink: 0,
+              background: "rgba(6,182,212,0.12)",
+              border: "1px solid rgba(6,182,212,0.3)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#06b6d4"
+              strokeWidth={2.5}
+              strokeLinecap="round"
+            >
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>
+              Chart saved!
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                color: "rgba(255,255,255,0.4)",
+                marginTop: 2,
+              }}
+            >
+              View it in your{" "}
+              <a
+                href="/dashboard"
+                style={{
+                  color: "#06b6d4",
+                  textDecoration: "none",
+                  fontWeight: 600,
+                }}
+              >
+                dashboard →
+              </a>
+            </div>
+          </div>
+          <button
+            onClick={() => setShowSavedToast(false)}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              color: "rgba(255,255,255,0.25)",
+              fontSize: 16,
+              lineHeight: 1,
+              padding: "2px 4px",
+              flexShrink: 0,
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
     </>
   );
 }

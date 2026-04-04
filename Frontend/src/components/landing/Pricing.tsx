@@ -4,23 +4,26 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 const FEATURES = [
-  { label: "Charts / mo", value: "∞", unit: "unlimited", pct: 100 },
-  { label: "Chart types", value: "70+", unit: "all types", pct: 95 },
-  { label: "CSV uploads", value: "∞", unit: "unlimited", pct: 100 },
-  { label: "Exports", value: "∞", unit: "SVG · PNG · CSV", pct: 100 },
-  { label: "Workspaces", value: "3", unit: "per account", pct: 60 },
-  { label: "Collaborators", value: "5", unit: "per workspace", pct: 50 },
+  { label: "Charts per month", value: "∞", unit: "unlimited", pct: 100 },
+  { label: "Chart types", value: "80+", unit: "all categories", pct: 100 },
+  { label: "CSV / JSON uploads", value: "∞", unit: "unlimited", pct: 100 },
+  { label: "Exports", value: "∞", unit: "PNG · SVG · JPEG", pct: 100 },
+  { label: "Visual editor", value: "✓", unit: "full access", pct: 100 },
+  { label: "Dashboard saves", value: "∞", unit: "unlimited", pct: 100 },
+  { label: "3D charts", value: "✓", unit: "all types", pct: 100 },
+  { label: "Excel editor", value: "✓", unit: "full access", pct: 100 },
 ];
 
-const TICKER_ITEMS = [
+const TICKER = [
   "CHARTS/MO → ∞",
   "PRICE → $0.00",
   "CSV UPLOADS → UNLIMITED",
   "EXPORT FORMATS → ALL",
-  "CHART TYPES → 70+",
+  "CHART TYPES → 80+",
   "HIDDEN FEES → NULL",
+  "3D CHARTS → INCLUDED",
+  "EXCEL EDITOR → FREE",
   "FREE FOREVER → TRUE",
-  "SIGN UP → 30 SEC",
 ];
 
 export default function PricingSection() {
@@ -32,8 +35,8 @@ export default function PricingSection() {
     const el = sectionRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
+      ([e]) => {
+        if (e.isIntersecting) {
           setAnimated(true);
           obs.disconnect();
         }
@@ -47,365 +50,598 @@ export default function PricingSection() {
   return (
     <>
       <style>{`
-        @keyframes bg-scrolling {
-          0%   { background-position: 0 0; }
-          100% { background-position: 50px 50px; }
-        }
-        @keyframes ticker-scroll {
-          0%   { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        @keyframes free-pop {
-          0%   { opacity: 0; transform: scale(0.7) rotate(-4deg); }
-          60%  { transform: scale(1.08) rotate(1deg); }
-          100% { opacity: 1; transform: scale(1) rotate(-1.5deg); }
-        }
-        @keyframes blink-cursor {
-          0%, 100% { opacity: 1; } 50% { opacity: 0; }
-        }
+        @keyframes ticker-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+        @keyframes free-pop { 0%{opacity:0;transform:scale(0.7) rotate(-4deg)} 60%{transform:scale(1.08) rotate(1deg)} 100%{opacity:1;transform:scale(1) rotate(-1.5deg)} }
+        @keyframes blink-cursor { 0%,100%{opacity:1} 50%{opacity:0} }
         .free-stamp { animation: free-pop 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.3s both; }
       `}</style>
 
       <section
+        id="pricing"
         className="relative overflow-hidden"
-        style={{
-          backgroundColor: "#d4d4d4",
-          backgroundImage: `url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAIAAACRXR/mAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAIGNIUk0AAHolAACAgwAA+f8AAIDpAAB1MAAA6mAAADqYAAAXb5JfxUYAAABnSURBVHja7M5RDYAwDEXRDgmvEocnlrQS2SwUFST9uEfBGWs9c97nbGtDcquqiKhOImLs/UpuzVzWEi1atGjRokWLFi1atGjRokWLFi1atGjRokWLFi1af7Ukz8xWp8z8AAAA//8DAJ4LoEAAlL1nAAAAAElFTkSuQmCC")`,
-          backgroundRepeat: "repeat",
-          backgroundPosition: "0 0",
-          animation: "bg-scrolling 0.92s linear infinite",
-        }}
+        style={{ background: "#111212" }}
       >
-        <div ref={sectionRef} className="relative max-w-7xl mx-auto px-6 py-20">
-          {/* ── Header ── */}
-          <div className="text-center mb-14">
+        {/* Subtle grid */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "linear-gradient(rgba(148,163,184,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,0.04) 1px,transparent 1px)",
+            backgroundSize: "60px 60px",
+            pointerEvents: "none",
+          }}
+        />
+
+        <div
+          ref={sectionRef}
+          style={{
+            maxWidth: 1100,
+            margin: "0 auto",
+            padding: "96px 24px 80px",
+            position: "relative",
+          }}
+        >
+          {/* Header */}
+          <div style={{ textAlign: "center", marginBottom: 60 }}>
             <div
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-5"
               style={{
-                border: "1px solid rgba(6,182,212,0.25)",
-                background: "rgba(6,182,212,0.06)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                padding: "5px 14px",
+                borderRadius: 999,
+                border: "1px solid rgba(6,182,212,0.2)",
+                background: "rgba(6,182,212,0.05)",
+                marginBottom: 18,
               }}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-              <span className="font-mono text-[10px] text-cyan-400/80 tracking-[0.2em] uppercase">
+              <span
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: "50%",
+                  background: "#06b6d4",
+                  display: "inline-block",
+                }}
+              />
+              <span
+                style={{
+                  fontFamily: "monospace",
+                  fontSize: 10,
+                  color: "rgba(6,182,212,0.8)",
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                }}
+              >
                 Pricing
               </span>
             </div>
-            <h2 className="text-5xl md:text-7xl font-black text-cyan-400 tracking-tighter bg-black w-fit mx-auto p-2 rounded-lg leading-none mb-4">
-              Plans that scale with your data.
+            <h2
+              style={{
+                fontSize: "clamp(2rem, 4.5vw, 3.2rem)",
+                fontWeight: 900,
+                color: "#fff",
+                letterSpacing: "-0.03em",
+                lineHeight: 1.1,
+                margin: "0 0 14px",
+              }}
+            >
+              Everything free.
+              <br />
+              <span style={{ color: "rgba(6,182,212,0.7)" }}>
+                No catches. No limits.
+              </span>
             </h2>
-            <p className="font-mono text-sm max-w-lg mx-auto text-neutral-700">
-              Start free. Upgrade when you need it. No hidden fees, ever.
+            <p
+              style={{
+                fontSize: 14,
+                color: "rgba(255,255,255,0.35)",
+                maxWidth: 400,
+                margin: "0 auto",
+                lineHeight: 1.7,
+                fontFamily: "monospace",
+              }}
+            >
+              We're in beta. Every single feature is unlocked for every user,
+              free.
             </p>
           </div>
 
-          {/* ── Creative free block ── */}
-          <div className="max-w-4xl mx-auto">
-            {/* App-style chart card */}
+          {/* Main pricing card */}
+          <div
+            style={{
+              background: "#fff",
+              borderRadius: 16,
+              overflow: "hidden",
+              boxShadow: "0 32px 80px rgba(0,0,0,0.4)",
+              maxWidth: 900,
+              margin: "0 auto",
+            }}
+          >
+            {/* Card header bar */}
             <div
-              className="rounded-2xl overflow-hidden"
               style={{
-                background: "#ffffff",
-                border: "1px solid rgba(0,0,0,0.1)",
-                boxShadow:
-                  "0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
+                display: "flex",
+                alignItems: "center",
+                padding: "14px 24px",
+                background: "#fafafa",
+                borderBottom: "1px solid rgba(0,0,0,0.08)",
               }}
             >
-              {/* Window chrome */}
+              <div style={{ display: "flex", gap: 7 }}>
+                {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
+                  <div
+                    key={c}
+                    style={{
+                      width: 12,
+                      height: 12,
+                      borderRadius: "50%",
+                      background: c,
+                    }}
+                  />
+                ))}
+              </div>
               <div
-                className="flex items-center gap-2 px-4 py-3 border-b"
-                style={{
-                  background: "#fafafa",
-                  borderColor: "rgba(0,0,0,0.08)",
-                }}
+                style={{ flex: 1, display: "flex", justifyContent: "center" }}
               >
-                <div className="w-3 h-3 rounded-full bg-[#ff5f57]" />
-                <div className="w-3 h-3 rounded-full bg-[#febc2e]" />
-                <div className="w-3 h-3 rounded-full bg-[#28c840]" />
                 <div
-                  className="flex-1 h-6 rounded-md ml-3 flex items-center gap-1.5 px-3 border"
                   style={{
+                    padding: "3px 16px",
+                    borderRadius: 6,
                     background: "#fff",
-                    borderColor: "rgba(0,0,0,0.1)",
-                    maxWidth: 220,
+                    border: "1px solid rgba(0,0,0,0.1)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
                   }}
                 >
-                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
-                  <span className="font-mono text-[0.67rem] text-zinc-400">
-                    graphy.ai/pricing
-                  </span>
-                </div>
-                {/* Beta badge */}
-                <div
-                  className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-                  style={{
-                    background: "rgba(6,182,212,0.08)",
-                    border: "1px solid rgba(6,182,212,0.2)",
-                  }}
-                >
-                  <span className="relative flex w-1.5 h-1.5">
-                    <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-50 animate-ping" />
-                    <span className="relative rounded-full w-1.5 h-1.5 bg-cyan-400" />
-                  </span>
-                  <span className="font-mono text-[9px] text-cyan-500 tracking-widest uppercase">
-                    Beta — Everything Free
+                  <span
+                    style={{
+                      fontFamily: "monospace",
+                      fontSize: 10,
+                      color: "#9ca3af",
+                    }}
+                  >
+                    graphix.ai/pricing
                   </span>
                 </div>
               </div>
+              {/* Beta badge */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "4px 10px",
+                  borderRadius: 999,
+                  background: "rgba(6,182,212,0.08)",
+                  border: "1px solid rgba(6,182,212,0.2)",
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#06b6d4",
+                    display: "inline-block",
+                    animation: "blink-cursor 1.5s step-end infinite",
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 9,
+                    color: "#0891b2",
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Beta — Everything Free
+                </span>
+              </div>
+            </div>
 
-              <div className="p-6 md:p-8">
-                <div className="flex flex-col md:flex-row gap-8 items-start">
-                  {/* LEFT — bar chart of features */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-5">
-                      <div>
-                        <p className="font-mono text-[10px] text-zinc-400 tracking-[0.15em] uppercase mb-0.5">
-                          Current Plan · Beta
-                        </p>
-                        <p className="font-mono text-sm font-bold text-zinc-800">
-                          Feature Allocation
-                        </p>
-                      </div>
-                      <div className="font-mono text-[9px] text-zinc-400 text-right">
-                        <div>100%</div>
-                        <div className="mt-1 text-cyan-500 font-bold">
-                          ↑ all unlocked
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-3">
-                      {FEATURES.map((f, i) => (
-                        <div
-                          key={f.label}
-                          className="group cursor-default"
-                          onMouseEnter={() => setHovered(i)}
-                          onMouseLeave={() => setHovered(null)}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-mono text-[11px] text-zinc-500 group-hover:text-zinc-800 transition-colors">
-                              {f.label}
-                            </span>
-                            <div className="flex items-center gap-2">
-                              <span
-                                className="font-mono text-[11px] font-bold transition-colors"
-                                style={{
-                                  color: hovered === i ? "#06b6d4" : "#18181b",
-                                }}
-                              >
-                                {f.value}
-                              </span>
-                              <span className="font-mono text-[9px] text-zinc-400 hidden sm:block">
-                                {f.unit}
-                              </span>
-                            </div>
-                          </div>
-                          <div
-                            className="h-2 rounded-full overflow-hidden"
-                            style={{ background: "rgba(0,0,0,0.06)" }}
-                          >
-                            <div
-                              style={{
-                                height: "100%",
-                                borderRadius: 9999,
-                                width: animated ? `${f.pct}%` : "0%",
-                                transition: `width 0.8s cubic-bezier(0.22,1,0.36,1) ${0.1 + i * 0.08}s, background 0.2s ease`,
-                                background:
-                                  hovered === i
-                                    ? "#06b6d4"
-                                    : f.pct === 100
-                                      ? "linear-gradient(90deg, #06b6d4, #0891b2)"
-                                      : "linear-gradient(90deg, #64748b, #94a3b8)",
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="mt-4 pt-3 border-t border-zinc-100 flex justify-between">
-                      {["0%", "25%", "50%", "75%", "100%"].map((l) => (
-                        <span
-                          key={l}
-                          className="font-mono text-[8px] text-zinc-300"
-                        >
-                          {l}
-                        </span>
-                      ))}
+            {/* Card body */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                gap: 0,
+                flexWrap: "wrap",
+              }}
+            >
+              {/* LEFT: feature bars */}
+              <div
+                style={{ flex: 1, minWidth: 280, padding: "32px 32px 28px" }}
+              >
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 24,
+                  }}
+                >
+                  <div>
+                    <p
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: 10,
+                        color: "#9ca3af",
+                        letterSpacing: "0.15em",
+                        textTransform: "uppercase",
+                        marginBottom: 4,
+                      }}
+                    >
+                      Current Plan · Beta
+                    </p>
+                    <p
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: "#111",
+                      }}
+                    >
+                      Feature Allocation
+                    </p>
+                  </div>
+                  <div
+                    style={{
+                      fontFamily: "monospace",
+                      fontSize: 9,
+                      color: "#9ca3af",
+                      textAlign: "right",
+                    }}
+                  >
+                    <div>100%</div>
+                    <div
+                      style={{
+                        color: "#06b6d4",
+                        fontWeight: 700,
+                        marginTop: 2,
+                      }}
+                    >
+                      ↑ all unlocked
                     </div>
                   </div>
+                </div>
 
-                  {/* RIGHT — stamp + terminal + CTA */}
-                  <div className="flex flex-col items-center gap-5 md:w-52 shrink-0">
-                    {/* The $0 stamp */}
-                    <div className="relative">
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 14 }}
+                >
+                  {FEATURES.map((f, i) => (
+                    <div
+                      key={f.label}
+                      onMouseEnter={() => setHovered(i)}
+                      onMouseLeave={() => setHovered(null)}
+                      style={{ cursor: "default" }}
+                    >
                       <div
-                        className={animated ? "free-stamp" : "opacity-0"}
                         style={{
-                          width: 160,
-                          height: 160,
-                          borderRadius: 16,
-                          background: "#000",
-                          border: "3px solid #06b6d4",
-                          boxShadow:
-                            "0 0 0 6px rgba(6,182,212,0.08), 0 0 40px rgba(6,182,212,0.15)",
-                          transform: "rotate(-1.5deg)",
                           display: "flex",
-                          flexDirection: "column",
                           alignItems: "center",
-                          justifyContent: "center",
-                          gap: 4,
+                          justifyContent: "space-between",
+                          marginBottom: 5,
                         }}
                       >
                         <span
                           style={{
                             fontFamily: "monospace",
-                            fontWeight: 900,
-                            fontSize: 52,
-                            color: "#06b6d4",
-                            lineHeight: 1,
-                            letterSpacing: "-0.04em",
+                            fontSize: 11,
+                            color: hovered === i ? "#111" : "#6b7280",
+                            transition: "color 0.15s",
                           }}
                         >
-                          $0
-                        </span>
-                        <span
-                          style={{
-                            fontFamily: "monospace",
-                            fontSize: 10,
-                            color: "rgba(6,182,212,0.6)",
-                            letterSpacing: "0.3em",
-                            textTransform: "uppercase",
-                          }}
-                        >
-                          forever
+                          {f.label}
                         </span>
                         <div
                           style={{
-                            marginTop: 6,
-                            padding: "2px 8px",
-                            borderRadius: 4,
-                            background: "rgba(6,182,212,0.12)",
-                            border: "1px solid rgba(6,182,212,0.2)",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
                           }}
                         >
                           <span
                             style={{
                               fontFamily: "monospace",
-                              fontSize: 9,
-                              color: "#06b6d4",
-                              letterSpacing: "0.2em",
-                              textTransform: "uppercase",
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: hovered === i ? "#06b6d4" : "#111",
+                              transition: "color 0.15s",
                             }}
                           >
-                            BETA ACCESS
+                            {f.value}
+                          </span>
+                          <span
+                            style={{
+                              fontFamily: "monospace",
+                              fontSize: 9,
+                              color: "#9ca3af",
+                            }}
+                          >
+                            {f.unit}
                           </span>
                         </div>
                       </div>
-                      {/* Corner tick marks */}
-                      {[
-                        "-top-1 -left-1 border-t-2 border-l-2 rounded-tl",
-                        "-top-1 -right-1 border-t-2 border-r-2 rounded-tr",
-                        "-bottom-1 -left-1 border-b-2 border-l-2 rounded-bl",
-                        "-bottom-1 -right-1 border-b-2 border-r-2 rounded-br",
-                      ].map((cls, i) => (
+                      <div
+                        style={{
+                          height: 5,
+                          background: "rgba(0,0,0,0.06)",
+                          borderRadius: 999,
+                          overflow: "hidden",
+                        }}
+                      >
                         <div
-                          key={i}
-                          className={`absolute w-3 h-3 ${cls} border-cyan-400/40`}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Terminal */}
-                    <div
-                      className="w-full rounded-xl p-3 font-mono text-[10px] leading-5"
-                      style={{
-                        background: "#0f0f0f",
-                        border: "1px solid rgba(6,182,212,0.15)",
-                      }}
-                    >
-                      <div className="text-zinc-500 mb-1">
-                        $ graphy --plan beta
-                      </div>
-                      <div className="text-cyan-400">
-                        ✓ price: <span className="text-white">$0.00/mo</span>
-                      </div>
-                      <div className="text-cyan-400">
-                        ✓ charts: <span className="text-white">unlimited</span>
-                      </div>
-                      <div className="text-cyan-400">
-                        ✓ exports:{" "}
-                        <span className="text-white">all formats</span>
-                      </div>
-                      <div className="text-zinc-500 flex items-center gap-1 mt-0.5">
-                        <span>$ </span>
-                        <span
                           style={{
-                            display: "inline-block",
-                            width: 6,
-                            height: 11,
-                            background: "#06b6d4",
-                            verticalAlign: "middle",
-                            animation: "blink-cursor 1s step-end infinite",
+                            height: "100%",
+                            borderRadius: 999,
+                            width: animated ? `${f.pct}%` : "0%",
+                            transition: `width 0.8s cubic-bezier(.22,1,.36,1) ${0.05 + i * 0.06}s`,
+                            background:
+                              hovered === i
+                                ? "#06b6d4"
+                                : "linear-gradient(90deg, #06b6d4, #0891b2)",
                           }}
                         />
                       </div>
                     </div>
+                  ))}
+                </div>
 
-                    {/* CTA */}
-                    <Link
-                      href="/dashboard"
-                      className="w-full py-3 rounded-xl font-mono hover:cursor-pointer text-sm font-bold text-center tracking-wide transition-all hover:scale-[1.03] active:scale-[0.98]"
+                {/* Scale labels */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginTop: 10,
+                  }}
+                >
+                  {["0%", "25%", "50%", "75%", "100%"].map((l) => (
+                    <span
+                      key={l}
                       style={{
-                        background: "linear-gradient(135deg, #06b6d4, #0891b2)",
-                        color: "#000",
-                        boxShadow: "0 0 24px rgba(6,182,212,0.3)",
+                        fontFamily: "monospace",
+                        fontSize: 8,
+                        color: "#d1d5db",
                       }}
                     >
-                      Start free
-                    </Link>
-                    <p className="font-mono text-[9px] text-zinc-400 text-center">
-                      No card required · 30 sec setup
-                    </p>
-                  </div>
+                      {l}
+                    </span>
+                  ))}
                 </div>
               </div>
-            </div>
 
-            {/* ── Scrolling data ticker ── */}
-            <div
-              className="mt-5 rounded-xl overflow-hidden py-2.5"
-              style={{
-                background: "#000",
-                border: "1px solid rgba(6,182,212,0.2)",
-              }}
-            >
+              {/* RIGHT: stamp + terminal + CTA */}
               <div
                 style={{
                   display: "flex",
-                  animation: "ticker-scroll 18s linear infinite",
-                  width: "max-content",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 20,
+                  padding: "32px 32px 28px",
+                  width: 220,
+                  flexShrink: 0,
+                  borderLeft: "1px solid rgba(0,0,0,0.06)",
                 }}
               >
-                {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
-                  <span
-                    key={i}
-                    className="font-mono text-[11px] text-cyan-400/70 tracking-widest whitespace-nowrap px-6 flex items-center gap-6"
+                {/* $0 stamp */}
+                <div
+                  className={animated ? "free-stamp" : ""}
+                  style={{
+                    position: "relative",
+                    width: 120,
+                    height: 120,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      borderRadius: "50%",
+                      border: "3px solid #06b6d4",
+                      opacity: 0.3,
+                    }}
+                  />
+                  <div
+                    style={{
+                      position: "absolute",
+                      inset: 6,
+                      borderRadius: "50%",
+                      border: "1.5px dashed rgba(6,182,212,0.4)",
+                    }}
+                  />
+                  <div style={{ textAlign: "center" }}>
+                    <div
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: 11,
+                        color: "#06b6d4",
+                        letterSpacing: "0.2em",
+                        textTransform: "uppercase",
+                        marginBottom: 2,
+                      }}
+                    >
+                      Beta
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 36,
+                        fontWeight: 900,
+                        color: "#111",
+                        lineHeight: 1,
+                        letterSpacing: "-0.04em",
+                      }}
+                    >
+                      $0
+                    </div>
+                    <div
+                      style={{
+                        fontFamily: "monospace",
+                        fontSize: 9,
+                        color: "#9ca3af",
+                        marginTop: 2,
+                      }}
+                    >
+                      /month
+                    </div>
+                  </div>
+                  {/* Corner ticks */}
+                  {[
+                    "-top-2 -left-2 border-t-2 border-l-2",
+                    "-top-2 -right-2 border-t-2 border-r-2",
+                    "-bottom-2 -left-2 border-b-2 border-l-2",
+                    "-bottom-2 -right-2 border-b-2 border-r-2",
+                  ].map((cls, i) => (
+                    <div
+                      key={i}
+                      className={`absolute w-3 h-3 ${cls} border-cyan-400/30`}
+                    />
+                  ))}
+                </div>
+
+                {/* Terminal */}
+                <div
+                  style={{
+                    width: "100%",
+                    background: "#0f0f0f",
+                    borderRadius: 8,
+                    padding: "10px 12px",
+                    fontFamily: "monospace",
+                    fontSize: 10,
+                    lineHeight: 1.7,
+                    border: "1px solid rgba(6,182,212,0.15)",
+                  }}
+                >
+                  <div style={{ color: "#6b7280" }}>$ graphix --plan beta</div>
+                  <div style={{ color: "#06b6d4" }}>
+                    ✓ price: <span style={{ color: "#fff" }}>$0.00/mo</span>
+                  </div>
+                  <div style={{ color: "#06b6d4" }}>
+                    ✓ charts: <span style={{ color: "#fff" }}>unlimited</span>
+                  </div>
+                  <div style={{ color: "#06b6d4" }}>
+                    ✓ exports:{" "}
+                    <span style={{ color: "#fff" }}>all formats</span>
+                  </div>
+                  <div
+                    style={{
+                      color: "#6b7280",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 4,
+                    }}
                   >
-                    {item}
-                    <span className="text-cyan-400/20">◆</span>
-                  </span>
-                ))}
+                    <span>$</span>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: 6,
+                        height: 11,
+                        background: "#06b6d4",
+                        verticalAlign: "middle",
+                        animation: "blink-cursor 1s step-end infinite",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* CTA */}
+                <Link
+                  href="/signin"
+                  style={{
+                    width: "100%",
+                    display: "block",
+                    textAlign: "center",
+                    padding: "12px 0",
+                    background: "linear-gradient(135deg, #06b6d4, #0891b2)",
+                    color: "#fff",
+                    fontFamily: "monospace",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    letterSpacing: "0.1em",
+                    textDecoration: "none",
+                    borderRadius: 8,
+                    transition: "filter 0.2s",
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.filter = "brightness(1.15)")
+                  }
+                  onMouseLeave={(e) => (e.currentTarget.style.filter = "none")}
+                >
+                  Start free →
+                </Link>
+                <p
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 9,
+                    color: "#9ca3af",
+                    textAlign: "center",
+                  }}
+                >
+                  No card required · 30 sec setup
+                </p>
               </div>
             </div>
           </div>
 
-          {/* Footer note */}
-          <p
-            className="font-mono text-center text-[11px] mt-10"
-            style={{ color: "rgba(0,0,0,0.3)" }}
+          {/* Scrolling ticker */}
+          <div
+            style={{
+              marginTop: 32,
+              borderRadius: 10,
+              overflow: "hidden",
+              background: "#000",
+              border: "1px solid rgba(6,182,212,0.15)",
+              padding: "10px 0",
+            }}
           >
-            All plans include SSL encryption · GDPR compliant · Cancel anytime
+            <div
+              style={{
+                display: "flex",
+                animation: "ticker-scroll 22s linear infinite",
+                width: "max-content",
+              }}
+            >
+              {[...TICKER, ...TICKER].map((item, i) => (
+                <span
+                  key={i}
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 11,
+                    color: "rgba(6,182,212,0.7)",
+                    letterSpacing: "0.15em",
+                    whiteSpace: "nowrap",
+                    padding: "0 24px",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 24,
+                  }}
+                >
+                  {item}
+                  <span style={{ color: "rgba(6,182,212,0.2)" }}>◆</span>
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <p
+            style={{
+              fontFamily: "monospace",
+              textAlign: "center",
+              fontSize: 10,
+              marginTop: 20,
+              color: "rgba(255,255,255,0.2)",
+              letterSpacing: "0.12em",
+            }}
+          >
+            SSL encrypted · GDPR compliant · No credit card required
           </p>
         </div>
       </section>

@@ -1,7 +1,7 @@
 // ── Groq Key Rotation ─────────────────────────────────────────
 
 const KEYS = [];
-for (let i = 1; i <= 20; i++) {
+for (let i = 1; i <= 50; i++) {
   const k = process.env[`GROQ_KEY_${i}`];
   if (k) KEYS.push(k);
 }

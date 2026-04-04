@@ -592,9 +592,82 @@ function ThreeCube() {
   return <div ref={mountRef} className="w-full h-full" />;
 }
 
-// ─── Hero ────────────────────────────────────────────────────────────────────
+// ─── Trust badges ──────────────────────────────────────────────
+const TRUST = [
+  { num: "80+", label: "Chart types" },
+  { num: "3s", label: "Avg generation" },
+  { num: "Free", label: "During beta" },
+  { num: "No code", label: "Required" },
+];
 
-const WORDS = "Where natural language meets stunning visualization.".split(" ");
+// ─── Hero ──────────────────────────────────────────────────────
+const HERO_CSS = `
+  @keyframes gx-word { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes gx-fade { from{opacity:0} to{opacity:1} }
+  @keyframes gx-up   { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes gx-bar  { from{width:0} to{width:220px} }
+  @keyframes gx-pulse-dot { 0%,100%{opacity:0.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.3)} }
+
+  .gx-hero [data-a] { opacity: 0; }
+
+  .gx-ready [data-a="bar"]    { animation: gx-bar  .7s  cubic-bezier(.22,1,.36,1) 0s    forwards; }
+  .gx-ready [data-a="sub"]    { animation: gx-fade .5s  ease                      .05s  forwards; }
+  .gx-ready [data-a="w0"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .08s  forwards; }
+  .gx-ready [data-a="w1"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .14s  forwards; }
+  .gx-ready [data-a="w2"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .20s  forwards; }
+  .gx-ready [data-a="w3"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .26s  forwards; }
+  .gx-ready [data-a="w4"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .32s  forwards; }
+  .gx-ready [data-a="w5"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .38s  forwards; }
+  .gx-ready [data-a="w6"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .44s  forwards; }
+  .gx-ready [data-a="body"]   { animation: gx-up   .55s cubic-bezier(.22,1,.36,1) .52s  forwards; }
+  .gx-ready [data-a="cta"]    { animation: gx-up   .55s cubic-bezier(.22,1,.36,1) .62s  forwards; }
+  .gx-ready [data-a="trust"]  { animation: gx-up   .55s cubic-bezier(.22,1,.36,1) .72s  forwards; }
+  .gx-ready [data-a="cube"]   { animation: gx-fade .9s  ease                      .2s   forwards; }
+
+  .gx-grid-bg {
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 70% 80% at 20% 50%, black 40%, transparent 100%);
+  }
+
+  .gx-cta-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 48px; padding: 0 28px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: #111; background: #06b6d4; text-decoration: none;
+    position: relative; overflow: hidden;
+    transition: color 0.3s;
+  }
+  .gx-cta-primary::before {
+    content: ''; position: absolute; inset: 0;
+    background: #fff; transform: translateX(-101%);
+    transition: transform 0.35s cubic-bezier(.22,1,.36,1);
+  }
+  .gx-cta-primary:hover::before { transform: translateX(0); }
+  .gx-cta-primary span { position: relative; z-index: 1; }
+
+  .gx-cta-ghost {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 48px; padding: 0 24px;
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(255,255,255,0.5); text-decoration: none;
+    border: 1px solid rgba(255,255,255,0.12);
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .gx-cta-ghost:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+`;
+
+const WORDS = [
+  "Where",
+  "natural",
+  "language",
+  "meets",
+  "stunning",
+  "data",
+  "visualization.",
+];
 
 export default function Hero() {
   const [ready, setReady] = useState(false);
@@ -607,60 +680,264 @@ export default function Hero() {
   }, []);
 
   return (
-    <div className={`gx-hero${ready ? " gx-ready" : ""}`}>
-      <Navbar />
+    <>
+      <style>{HERO_CSS}</style>
+      <div className={`gx-hero${ready ? " gx-ready" : ""}`}>
+        <Navbar />
 
-      <div className="flex flex-col md:flex-row py-12 md:pt-16 justify-between px-4 md:px-8 gap-6">
-        {/* LEFT — text */}
-        <div className="w-full md:w-1/2 shrink-0 relative">
-          <div className="gx-grid-bg" />
-          <div style={{ position: "relative", zIndex: 1 }}>
-            <div
-              data-anim="accent-bar"
-              className="h-px mt-14"
-              style={{ width: "220px" }}
-            />
-            <h1 className="text-white text-4xl md:text-6xl font-extrabold leading-tight md:leading-[1.05] tracking-tighter mb-5">
-              {WORDS.map((word, i) => (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            padding: "56px 32px 64px",
+            gap: 32,
+            minHeight: "calc(100vh - 56px)",
+            alignItems: "center",
+          }}
+        >
+          {/* LEFT */}
+          <div style={{ flex: "0 0 50%", position: "relative" }}>
+            <div className="gx-grid-bg" />
+            <div style={{ position: "relative", zIndex: 1 }}>
+              {/* Live indicator */}
+              <div
+                data-a="sub"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "5px 12px",
+                  borderRadius: 999,
+                  border: "1px solid rgba(6,182,212,0.25)",
+                  background: "rgba(6,182,212,0.06)",
+                  marginBottom: 28,
+                }}
+              >
                 <span
-                  key={i}
-                  data-anim={`word-${i}`}
-                  style={{ display: "inline-block", marginRight: "0.28em" }}
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: "#06b6d4",
+                    animation: "gx-pulse-dot 2s ease infinite",
+                  }}
+                />
+                <span
+                  style={{
+                    fontFamily: "monospace",
+                    fontSize: 10,
+                    color: "rgba(6,182,212,0.8)",
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                  }}
                 >
-                  {word}
+                  AI-powered chart generation
                 </span>
-              ))}
-            </h1>
-            <p
-              data-anim="subtext"
-              className="text-[#666] leading-relaxed mb-8 max-w-[420px]"
-            >
-              Describe the insight you need. Upload your CSV if you want. Graph
-              AI handles the rest — intelligent chart selection, smart styling,
-              instant beauty.
-            </p>
-            <Link
-              href="/dashboard"
-              className="inline-block bg-cyan-600 hover:invert text-white px-7 py-3 text-sm tracking-[0.15em] transition-colors duration-150 no-underline leading-none"
-            >
-              TRY NOW
-            </Link>
+              </div>
+
+              {/* Accent bar */}
+              <div
+                data-a="bar"
+                style={{
+                  height: 2,
+                  background: "linear-gradient(90deg, #06b6d4, transparent)",
+                  marginBottom: 20,
+                  width: 0,
+                }}
+              />
+
+              {/* Headline */}
+              <h1
+                style={{
+                  fontSize: "clamp(2.4rem, 4.5vw, 3.6rem)",
+                  fontWeight: 900,
+                  lineHeight: 1.05,
+                  letterSpacing: "-0.03em",
+                  color: "#fff",
+                  marginBottom: 20,
+                }}
+              >
+                {WORDS.map((word, i) => (
+                  <span
+                    key={i}
+                    data-a={`w${i}`}
+                    style={{ display: "inline-block", marginRight: "0.25em" }}
+                  >
+                    {word === "stunning" ? (
+                      <span style={{ color: "#06b6d4" }}>{word}</span>
+                    ) : (
+                      word
+                    )}
+                  </span>
+                ))}
+              </h1>
+
+              {/* Body */}
+              <p
+                data-a="body"
+                style={{
+                  fontSize: 15,
+                  color: "rgba(255,255,255,0.45)",
+                  lineHeight: 1.75,
+                  maxWidth: 420,
+                  marginBottom: 36,
+                }}
+              >
+                Describe the insight you need — or upload a CSV. Graphix
+                generates beautiful, interactive charts in seconds. No code, no
+                setup, no limits.
+              </p>
+
+              {/* CTAs */}
+              <div
+                data-a="cta"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  marginBottom: 44,
+                }}
+              >
+                <Link href="/signin" className="gx-cta-primary">
+                  <span>Start for free</span>
+                  <span style={{ fontSize: 14 }}>→</span>
+                </Link>
+                <Link href="/panel" className="gx-cta-ghost">
+                  <span>Try Excel editor</span>
+                </Link>
+              </div>
+
+              {/* Trust bar */}
+              <div
+                data-a="trust"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0,
+                  borderTop: "1px solid rgba(255,255,255,0.06)",
+                  paddingTop: 24,
+                }}
+              >
+                {TRUST.map(({ num, label }, i) => (
+                  <div
+                    key={label}
+                    style={{
+                      paddingRight: 24,
+                      marginRight: 24,
+                      borderRight:
+                        i < TRUST.length - 1
+                          ? "1px solid rgba(255,255,255,0.08)"
+                          : "none",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 20,
+                        fontWeight: 900,
+                        color: "#fff",
+                        letterSpacing: "-0.02em",
+                        lineHeight: 1,
+                      }}
+                    >
+                      {num}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: 10,
+                        color: "rgba(255,255,255,0.3)",
+                        marginTop: 3,
+                        fontFamily: "monospace",
+                        textTransform: "uppercase",
+                        letterSpacing: "0.08em",
+                      }}
+                    >
+                      {label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* RIGHT — 3D cube */}
+          <div
+            data-a="cube"
+            style={{
+              flex: "0 0 50%",
+              height: "min(560px, 65vh)",
+              overflow: "visible",
+              opacity: 0,
+            }}
+          >
+            <ThreeCube />
           </div>
         </div>
 
-        {/* RIGHT — 3D cube */}
+        {/* Bottom marquee strip */}
         <div
-          data-anim="cube"
-          className="shrink-0 relative w-full md:w-auto"
           style={{
-            flex: "0 0 52%",
-            height: "min(560px, 65vh)",
-            overflow: "visible",
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            background: "rgba(255,255,255,0.02)",
+            padding: "12px 0",
+            overflow: "hidden",
+            display: "flex",
           }}
         >
-          <ThreeCube />
+          <div
+            style={{
+              display: "flex",
+              gap: 48,
+              animation: "gx-marquee 30s linear infinite",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {[
+              "Bar Charts",
+              "Line Charts",
+              "3D Scatter",
+              "Heatmaps",
+              "Contour Plots",
+              "Violin Plots",
+              "Candlestick",
+              "Waterfall",
+              "Funnel Charts",
+              "Box Plots",
+              "Surface 3D",
+              "Histograms",
+            ]
+              .concat([
+                "Bar Charts",
+                "Line Charts",
+                "3D Scatter",
+                "Heatmaps",
+                "Contour Plots",
+                "Violin Plots",
+                "Candlestick",
+                "Waterfall",
+                "Funnel Charts",
+                "Box Plots",
+                "Surface 3D",
+                "Histograms",
+              ])
+              .map((t, i) => (
+                <span
+                  key={i}
+                  style={{
+                    fontSize: 10,
+                    fontFamily: "monospace",
+                    fontWeight: 700,
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    color: i % 3 === 0 ? "#06b6d4" : "rgba(255,255,255,0.2)",
+                  }}
+                >
+                  {t}
+                </span>
+              ))}
+          </div>
+          <style>{`@keyframes gx-marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }`}</style>
         </div>
       </div>
-    </div>
+    </>
   );
 }

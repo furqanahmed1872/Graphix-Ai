@@ -61,6 +61,7 @@ function saveToStorage(conversations: Conversation[], activeId: string) {
 }
 
 export default function GraphApp() {
+ const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>(() => {
     if (typeof window === "undefined") return [createConversation()];
     const stored = loadFromStorage();
@@ -127,6 +128,33 @@ export default function GraphApp() {
     },
     [],
   );
+
+
+  const handleDeleteConversation = (id: string) => {
+    setDeleteConfirmId(id); // Show confirmation toast
+  };
+
+ const confirmDeleteConversation = (id: string) => {
+   setConversations((prev) => {
+     const filtered = prev.filter((c) => c.id !== id);
+
+     if (id === activeId) {
+       if (filtered.length > 0) {
+         setActiveId(filtered[0].id);
+       } else {
+         const newConv = createConversation();
+         setActiveId(newConv.id);
+         return [newConv];
+       }
+     }
+     return filtered;
+   });
+
+   if (id === activeId) {
+     setSelectedAiId(null);
+   }
+   setDeleteConfirmId(null);
+ };
 
   const newConversation = () => {
     const hasEmpty = conversations.some(
@@ -375,6 +403,7 @@ export default function GraphApp() {
             activeId={activeId}
             onSelect={handleSelect}
             onNew={newConversation}
+            onDelete={handleDeleteConversation}
             onClose={() => setSidebarOpen(false)}
           />
         )}
@@ -448,6 +477,46 @@ export default function GraphApp() {
           />
         )}
       </div>
+      {/* Delete Confirmation Toast - Centered with Backdrop Blur */}
+      {deleteConfirmId && (
+        <>
+          {/* Backdrop Blur Overlay */}
+          <div
+            className="fixed inset-0 z-[99] bg-black/70 backdrop-blur-md"
+            onClick={() => setDeleteConfirmId(null)}
+          />
+
+          {/* Centered Toast */}
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div className="bg-zinc-900 border border-red-500/40 rounded-xl shadow-2xl w-full max-w-[340px] overflow-hidden">
+              <div className="p-6">
+                <div className="text-white text-[15px] leading-snug text-center mb-6">
+                  Are you sure you want to delete this conversation?
+                  <br />
+                  <span className="text-red-400 text-sm mt-1 block">
+                    This action cannot be undone.
+                  </span>
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setDeleteConfirmId(null)}
+                    className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-medium py-3.5 rounded-lg transition-colors text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={() => confirmDeleteConversation(deleteConfirmId)}
+                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3.5 rounded-lg transition-colors text-sm font-semibold"
+                  >
+                    Yes, Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

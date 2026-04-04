@@ -263,9 +263,9 @@ export default function GraphCard({
   const [shareState, setShareState] = useState<"idle" | "loading" | "copied">(
     "idle",
   );
-  const [deleteState, setDeleteState] = useState<
-    "idle" | "confirming" | "deleting"
-  >("idle");
+  const [deleteState, setDeleteState] = useState<"idle" | "deleting">("idle");
+  const [showDeleteToast, setShowDeleteToast] = useState(false);
+  const deleteToastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const plotRef = useRef<any>(null);
 
   const { token, toggleStarChart, markChartShared, removeSavedChart } =
@@ -381,37 +381,39 @@ export default function GraphCard({
   };
 
   // ── Delete ───────────────────────────────────────────────────
-  const handleDelete = async (e: React.MouseEvent) => {
+  // ── Delete ───────────────────────────────────────────────────
+  const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (deleteState === "idle") {
-      // First click — show confirm state
-      setDeleteState("confirming");
-      // Auto-cancel after 3s if no second click
-      setTimeout(
-        () => setDeleteState((s) => (s === "confirming" ? "idle" : s)),
-        3000,
-      );
-      return;
-    }
-    if (deleteState === "confirming") {
-      setDeleteState("deleting");
-      try {
-        const res = await fetch(`${API}/api/charts/${graph.id}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (!res.ok) {
-          const d = await res.json();
-          throw new Error(d.error);
-        }
-        removeSavedChart(graph.id);
-      } catch (err) {
-        console.error("Delete error:", err);
-        setDeleteState("idle");
+    if (deleteState === "deleting") return;
+    // Show toast
+    setShowDeleteToast(true);
+    if (deleteToastTimer.current) clearTimeout(deleteToastTimer.current);
+    deleteToastTimer.current = setTimeout(
+      () => setShowDeleteToast(false),
+      4000,
+    );
+  };
+
+  const confirmDelete = async () => {
+    if (deleteToastTimer.current) clearTimeout(deleteToastTimer.current);
+    setShowDeleteToast(false);
+    setDeleteState("deleting");
+    try {
+      const res = await fetch(`${API}/api/charts/${graph.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) {
+        const d = await res.json();
+        throw new Error(d.error);
       }
+      removeSavedChart(graph.id);
+    } catch (err) {
+      console.error("Delete error:", err);
+      setDeleteState("idle");
     }
   };
 
@@ -435,10 +437,7 @@ export default function GraphCard({
 
       <div
         onMouseEnter={() => setHov(true)}
-        onMouseLeave={() => {
-          setHov(false);
-          if (deleteState === "confirming") setDeleteState("idle");
-        }}
+        onMouseLeave={() => setHov(false)}
         style={{
           opacity: vis ? 1 : 0,
           animation: vis ? "gcFadeUp 0.35s ease both" : "none",
@@ -619,63 +618,116 @@ export default function GraphCard({
             {/* Delete */}
             <IconBtn
               onClick={handleDelete}
-              title={
-                deleteState === "confirming"
-                  ? "Click again to confirm delete"
-                  : "Delete chart"
-              }
+              title="Delete chart"
               danger
               loading={deleteState === "deleting"}
             >
-              {deleteState === "confirming" ? (
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+              >
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+              </svg>
+            </IconBtn>
+          </div>
+
+          {/* Delete confirm banner */}
+          {/* Delete confirmation toast */}
+          {/* Delete confirmation overlay on card */}
+          {showDeleteToast && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                zIndex: 20,
+                background: "rgba(0,0,0,0.75)",
+                backdropFilter: "blur(6px)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 12,
+                borderRadius: 10,
+                animation: "gcFadeUp 0.18s ease both",
+              }}
+            >
+              <div
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  background: "rgba(239,68,68,0.15)",
+                  border: "1px solid rgba(239,68,68,0.3)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <svg
-                  width="10"
-                  height="10"
+                  width="16"
+                  height="16"
                   viewBox="0 0 24 24"
                   fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2.5}
-                  strokeLinecap="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-              ) : (
-                <svg
-                  width="10"
-                  height="10"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
+                  stroke="#ef4444"
                   strokeWidth={2}
                   strokeLinecap="round"
                 >
                   <polyline points="3 6 5 6 21 6" />
                   <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2" />
                 </svg>
-              )}
-            </IconBtn>
-          </div>
-
-          {/* Delete confirm banner */}
-          {deleteState === "confirming" && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: 0,
-                left: 0,
-                right: 0,
-                zIndex: 4,
-                background: "rgba(239,68,68,0.9)",
-                backdropFilter: "blur(4px)",
-                padding: "6px 12px",
-                fontSize: 10,
-                fontWeight: 700,
-                color: "#fff",
-                textAlign: "center",
-                letterSpacing: "0.04em",
-              }}
-            >
-              Click 🗑 again to confirm delete
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+                  Delete this chart?
+                </div>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "rgba(255,255,255,0.4)",
+                    marginTop: 3,
+                  }}
+                >
+                  This cannot be undone
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => setShowDeleteToast(false)}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 600,
+                    color: "rgba(255,255,255,0.6)",
+                    background: "rgba(255,255,255,0.07)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: 8,
+                    padding: "6px 14px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  style={{
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: "#fff",
+                    background: "#ef4444",
+                    border: "none",
+                    borderRadius: 8,
+                    padding: "6px 14px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Delete
+                </button>
+              </div>
             </div>
           )}
 
@@ -886,11 +938,13 @@ export default function GraphCard({
       </div>
 
       {/* ChartEditor portal */}
+      {/* ChartEditor portal */}
       {hasPlotly && editorOpen && fakeMessage && (
         <ChartEditor
           message={fakeMessage}
           divRef={plotRef}
           onClose={() => setEditorOpen(false)}
+          existingChartId={graph.id}
         />
       )}
     </>

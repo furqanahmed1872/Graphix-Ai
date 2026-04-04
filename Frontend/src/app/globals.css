@@ -1,7 +1,106 @@
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=Outfit:wght@300;400;500;600&family=Manrope:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@400;500;600&family=Rubik:wght@400;500;600&family=Barlow:wght@400;500;600&family=Oswald:wght@500;600;700&family=Archivo+Black&display=swap");
+ @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Bricolage+Grotesque:wght@700;800&display=swap');
 
 @import "tailwindcss";
+  
 
+/* Delete button styles */
+.delete-btn {
+  opacity: 0;
+  transition: all 0.2s ease;
+}
+.group:hover .delete-btn {
+  opacity: 1;
+}
+.conv-in:hover .delete-btn {
+  opacity: 1;
+}
+.delete-btn.confirm {
+  opacity: 1;
+  color: #ef4444;
+}
+        /* Precise label collapse (opacity + max-width + transform together) */
+        .sb-label {
+          transition: opacity 0.15s ease, max-width 0.26s cubic-bezier(0.4,0,0.2,1), transform 0.2s ease;
+          overflow: hidden;
+          white-space: nowrap;
+        }
+        .sb-aside.collapsed .sb-label {
+          opacity: 0;
+          max-width: 0 !important;
+          transform: translateX(-5px);
+          pointer-events: none;
+        }
+
+        /* Tooltip exact behavior */
+        .sb-tip {
+          position: absolute;
+          left: calc(100% + 12px);
+          top: 50%;
+          transform: translateY(-50%) translateX(-4px);
+          background: rgba(255,255,255,0.06);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255,255,255,0.08);
+          color: rgba(255,255,255,0.7);
+          font-size: 10px;
+          font-family: 'DM Mono', monospace;
+          letter-spacing: 0.06em;
+          padding: 4px 9px;
+          border-radius: 6px;
+          white-space: nowrap;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.14s ease, transform 0.14s ease;
+          z-index: 50;
+        }
+        .sb-aside.collapsed .sb-tip-trigger:hover .sb-tip {
+          opacity: 1;
+          transform: translateY(-50%) translateX(0);
+        }
+
+        /* Toggle button glow & rotation */
+        .sb-toggle svg {
+          transition: transform 0.26s cubic-bezier(0.4,0,0.2,1);
+        }
+        .sb-aside.collapsed .sb-toggle svg {
+          transform: rotate(180deg);
+        }
+
+        /* Active dot pulse (exact timing & spread) */
+        @keyframes dotGlow {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(6,182,212,0.5); }
+          50%      { box-shadow: 0 0 0 3px rgba(6,182,212,0); }
+        }
+        .dot-glow {
+          animation: dotGlow 2.4s ease infinite;
+        }
+
+        /* New button shimmer */
+        .new-btn {
+          position: relative;
+          overflow: hidden;
+        }
+        .new-btn::after {
+          content: '';
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, transparent 0%, rgba(6,182,212,0.06) 50%, transparent 100%);
+          transform: translateX(-100%);
+          transition: transform 0.4s ease;
+        }
+        .new-btn:hover::after {
+          transform: translateX(100%);
+        }
+
+        /* Custom scrollbar */
+     
+
+        /* Noise (SVG fractal noise) */
+        .sb-noise {
+          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+          background-size: 128px 128px;
+          opacity: 0.025;
+        }
 /* Main body font */
 html,
 body {
@@ -69,7 +168,7 @@ body {
 /* Make scrollbars thin + match dark theme everywhere */
 * {
   scrollbar-width: thin; /* Firefox */
-  scrollbar-color: #ffffff transparent; /* Firefox thumb + track */
+  scrollbar-color: #111212 transparent; /* Firefox thumb + track */
 }
 
 /* Webkit browsers (Chrome, Safari, Edge) */
