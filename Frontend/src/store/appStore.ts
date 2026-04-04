@@ -1,9 +1,5 @@
 /**
  * Zustand Global Store
- *
- * Single source of truth for the entire app.
- * Hydrated ONCE after login via /api/user/bootstrap.
- * All components read from here — no duplicate DB calls.
  */
 
 import { create } from "zustand";
@@ -33,7 +29,7 @@ export interface SavedChart {
   chartConfig: Record<string, any>;
   createdAt: string;
   updatedAt: string;
-  // ── Dashboard display fields (populated by bootstrap) ──
+  // display fields
   tag: string;
   category: string;
   views: number;
@@ -43,6 +39,9 @@ export interface SavedChart {
   desc: string;
   data: number[];
   updated: string;
+  // share fields
+  shareToken: string | null;
+  shared: boolean;
 }
 
 export interface GraphTemplate {
@@ -83,41 +82,33 @@ export interface ActivityItem {
 }
 
 interface AppState {
-  // ── Auth ──────────────────────────────────────────────────
   token: string | null;
   isAuthenticated: boolean;
-
   _hasHydrated: boolean;
   setHasHydrated: (v: boolean) => void;
 
-  // ── User-specific data ────────────────────────────────────
   user: User | null;
   subscription: Subscription | null;
   savedCharts: SavedChart[];
-
-  // ── Dashboard data ────────────────────────────────────────
   dashboardStats: DashboardStat[];
   activityFeed: ActivityItem[];
-
-  // ── Global data ───────────────────────────────────────────
   graphTemplates: GraphTemplate[];
   feedbacks: Feedback[];
 
-  // ── UI state ──────────────────────────────────────────────
   isBootstrapped: boolean;
   isBootstrapping: boolean;
   bootstrapError: string | null;
 
-  // ── Actions ───────────────────────────────────────────────
   setToken: (token: string) => void;
   bootstrap: () => Promise<void>;
   logout: () => void;
 
   addSavedChart: (chart: SavedChart) => void;
   removeSavedChart: (id: string) => void;
-  updateSavedChart: (chart: SavedChart) => void;
   updateChartTitle: (id: string, title: string) => void;
   toggleStarChart: (id: string) => void;
+  markChartShared: (id: string, shareToken: string) => void;
+  updateSavedChart: (chart: SavedChart) => void;
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
@@ -212,14 +203,6 @@ export const useAppStore = create<AppState>()(
         set((s) => ({ savedCharts: s.savedCharts.filter((c) => c.id !== id) }));
       },
 
-      updateSavedChart: (chart: SavedChart) => {
-        set((s) => ({
-          savedCharts: s.savedCharts.map((c) =>
-            c.id === chart.id ? chart : c,
-          ),
-        }));
-      },
-
       updateChartTitle: (id: string, title: string) => {
         set((s) => ({
           savedCharts: s.savedCharts.map((c) =>
@@ -232,6 +215,34 @@ export const useAppStore = create<AppState>()(
         set((s) => ({
           savedCharts: s.savedCharts.map((c) =>
             c.id === id ? { ...c, starred: !c.starred } : c,
+          ),
+        }));
+      },
+
+      // Called after a successful POST /api/charts/:id/share
+      markChartShared: (id: string, shareToken: string) => {
+        set((s) => ({
+          savedCharts: s.savedCharts.map((c) =>
+            c.id === id
+              ? {
+                  ...c,
+                  shared: true,
+                  shareToken,
+                  chartConfig: {
+                    ...c.chartConfig,
+                    shared: true,
+                    share_token: shareToken,
+                  },
+                }
+              : c,
+          ),
+        }));
+      },
+
+      updateSavedChart: (chart: SavedChart) => {
+        set((s) => ({
+          savedCharts: s.savedCharts.map((c) =>
+            c.id === chart.id ? chart : c,
           ),
         }));
       },

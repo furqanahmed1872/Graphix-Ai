@@ -1,10 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { CYAN, W08, W20, C08 } from "@/lib/Tokens";
-import { IC } from "@/lib/Tokens";
-import { Ico } from "./UIKit";
+import { useRouter } from "next/navigation";
 import ChartEditor from "@/components/main-app/ChartEditor";
+import { useAppStore } from "@/store/appStore";
 
 declare global {
   interface Window {
@@ -12,212 +11,160 @@ declare global {
   }
 }
 
-// ── Load Plotly once per page ─────────────────────────────────
-function usePlotlyReady(cb: () => void) {
+const CYAN = "#06b6d4";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
+// ── Plotly CDN loader ─────────────────────────────────────────
+function usePlotlyReady() {
+  const [ready, setReady] = useState(false);
   useEffect(() => {
-    if (typeof window === "undefined") return;
     if (window.Plotly) {
-      cb();
+      setReady(true);
       return;
     }
-    const existing = document.getElementById("plotly-cdn");
+    const existing = document.querySelector(
+      "script[data-plotly]",
+    ) as HTMLScriptElement | null;
     if (existing) {
-      existing.addEventListener("load", cb);
-      return () => existing.removeEventListener("load", cb);
+      existing.addEventListener("load", () => setReady(true));
+      return;
     }
     const s = document.createElement("script");
-    s.id = "plotly-cdn";
-    s.src =
-      "https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js";
-    s.async = true;
-    s.onload = cb;
+    s.src = "https://cdn.plot.ly/plotly-2.27.0.min.js";
+    s.dataset.plotly = "1";
+    s.onload = () => setReady(true);
     document.head.appendChild(s);
   }, []);
+  return ready;
 }
 
-// ── Detect chart type label from traces ───────────────────────
-function detectChartType(data: any[]): string {
-  if (!data?.length) return "CHART";
-  const t = data[0];
+// ── Chart type detector ───────────────────────────────────────
+function detectChartType(traces: any[]): string {
+  if (!traces?.length) return "CHART";
+  const t = traces[0];
   const type = (t.type || "").toLowerCase();
   const mode = (t.mode || "").toLowerCase();
-  if (type === "scatter3d") return "3D SCATTER";
-  if (type === "surface") return "SURFACE";
-  if (type === "mesh3d") return "3D MESH";
   if (type === "pie") return t.hole ? "DONUT" : "PIE";
-  if (type === "funnel") return "FUNNEL";
-  if (type === "waterfall") return "WATERFALL";
-  if (type === "heatmap") return "HEATMAP";
-  if (type === "contour") return "CONTOUR";
-  if (type === "histogram") return "HISTOGRAM";
-  if (type === "histogram2dcontour") return "HIST 2D";
-  if (type === "box") return "BOX";
-  if (type === "violin") return "VIOLIN";
-  if (type === "candlestick") return "CANDLESTICK";
-  if (type === "bar") return "BAR";
-  if (type === "scatter" && mode.includes("lines") && t.fill) return "AREA";
-  if (type === "scatter" && mode.includes("lines")) return "LINE";
-  if (type === "scatter") return "SCATTER";
-  return type.toUpperCase() || "CHART";
+  if (type === "bar") return t.orientation === "h" ? "H-BAR" : "BAR";
+  if (type === "scatter") {
+    if (
+      mode.includes("lines") &&
+      (t.fill === "tonexty" || t.fill === "tozeroy")
+    )
+      return "AREA";
+    if (mode.includes("lines")) return "LINE";
+    return "SCATTER";
+  }
+  const labels: Record<string, string> = {
+    heatmap: "HEATMAP",
+    histogram: "HISTOGRAM",
+    box: "BOX",
+    violin: "VIOLIN",
+    scatter3d: "3D",
+    surface: "SURFACE",
+    funnel: "FUNNEL",
+    waterfall: "WATERFALL",
+    candlestick: "CANDLE",
+  };
+  return (labels[type] ?? type.toUpperCase()) || "CHART";
 }
 
-// ── Mini Plotly preview ───────────────────────────────────────
-function PlotlyMini({ chartConfig }: { chartConfig: Record<string, any> }) {
+// ── Plotly mini preview ───────────────────────────────────────
+function PlotlyMini({ chartConfig }: { chartConfig: any }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [ready, setReady] = useState(
-    typeof window !== "undefined" && !!window.Plotly,
-  );
-
-  usePlotlyReady(() => setReady(true));
+  const ready = usePlotlyReady();
 
   useEffect(() => {
-    if (!ready || !ref.current) return;
-    try {
-      const rawData: any[] = chartConfig.data ?? [];
-      if (!rawData.length) return;
+    if (!ready || !ref.current || !chartConfig?.data?.length) return;
+    const origLayout = chartConfig.layout || {};
+    const traces = chartConfig.data;
+    const is3D = traces.some((t: any) =>
+      ["scatter3d", "surface", "mesh3d"].includes(t.type),
+    );
+    const isHeatmapLike = traces.some((t: any) =>
+      ["heatmap", "contour"].includes(t.type),
+    );
 
-      const types = rawData.map((t: any) => (t.type || "").toLowerCase());
+    const cleanTraces = traces.map((t: any) => ({
+      ...t,
+      showscale: false,
+      colorbar: undefined,
+      marker: ["heatmap", "contour"].includes(t.type)
+        ? t.marker
+        : t.marker
+          ? { ...t.marker, line: undefined }
+          : undefined,
+    }));
 
-      // 3D charts need WebGL (non-static)
-      const is3D = types.some((t) =>
-        [
-          "scatter3d",
-          "surface",
-          "mesh3d",
-          "cone",
-          "streamtube",
-          "isosurface",
-          "volume",
-        ].includes(t),
-      );
+    const base: any = {
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: isHeatmapLike ? "#0f0f0f" : "rgba(0,0,0,0)",
+      margin: { l: 0, r: 0, t: 0, b: 0 },
+      showlegend: false,
+      autosize: true,
+    };
 
-      // contour + heatmap also need canvas rendering — staticPlot breaks them
-      const needsCanvas =
-        is3D ||
-        types.some((t) =>
-          ["contour", "heatmap", "histogram2dcontour"].includes(t),
-        );
-
-      // Strip UI chrome but preserve visual data
-      const data = rawData.map((trace: any) => {
-        const t = (trace.type || "").toLowerCase();
-        const isHeatmapTrace = [
-          "heatmap",
-          "contour",
-          "histogram2dcontour",
-        ].includes(t);
-        const cleaned: any = {
-          ...trace,
-          hoverinfo: "none",
-          text: undefined,
-          texttemplate: undefined,
-          textposition: undefined,
-          showscale: false,
-          colorbar: undefined,
-        };
-        if (!isHeatmapTrace) {
-          cleaned.marker = trace.marker
-            ? { ...trace.marker, showscale: false, colorbar: undefined }
-            : undefined;
-        }
-        return cleaned;
-      });
-
-      const base: any = {
-        paper_bgcolor: "rgba(0,0,0,0)",
-        plot_bgcolor: "rgba(0,0,0,0)",
-        margin: { t: 0, b: 0, l: 0, r: 0, pad: 0 },
-        showlegend: false,
-        height: 150,
-        title: "",
-        annotations: [],
+    if (is3D) {
+      const s = origLayout.scene || {};
+      base.scene = {
+        ...s,
+        xaxis: {
+          ...(s.xaxis ?? {}),
+          showticklabels: false,
+          title: "",
+          showgrid: true,
+          zeroline: false,
+          gridcolor: "rgba(255,255,255,0.08)",
+        },
+        yaxis: {
+          ...(s.yaxis ?? {}),
+          showticklabels: false,
+          title: "",
+          showgrid: true,
+          zeroline: false,
+          gridcolor: "rgba(255,255,255,0.08)",
+        },
+        zaxis: {
+          ...(s.zaxis ?? {}),
+          showticklabels: false,
+          title: "",
+          showgrid: true,
+          zeroline: false,
+          gridcolor: "rgba(255,255,255,0.08)",
+        },
+        camera: { eye: { x: 1.6, y: 1.6, z: 1.0 } },
+        aspectmode: "cube",
       };
+    } else {
+      base.xaxis = {
+        visible: false,
+        fixedrange: true,
+        showgrid: false,
+        zeroline: false,
+      };
+      base.yaxis = {
+        visible: false,
+        fixedrange: true,
+        showgrid: false,
+        zeroline: false,
+      };
+      base.polar = {
+        bgcolor: "rgba(0,0,0,0)",
+        radialaxis: { visible: false },
+        angularaxis: { visible: false },
+      };
+    }
 
-      const isHeatmapLike = types.some((t) =>
-        ["contour", "heatmap", "histogram2dcontour"].includes(t),
-      );
-
-      if (is3D) {
-        const origScene = chartConfig.layout?.scene ?? {};
-        base.scene = {
-          ...origScene,
-          bgcolor: "rgba(0,0,0,0)",
-          xaxis: {
-            ...(origScene.xaxis ?? {}),
-            showticklabels: false,
-            title: "",
-            showgrid: true,
-            zeroline: false,
-            gridcolor: "rgba(255,255,255,0.08)",
-          },
-          yaxis: {
-            ...(origScene.yaxis ?? {}),
-            showticklabels: false,
-            title: "",
-            showgrid: true,
-            zeroline: false,
-            gridcolor: "rgba(255,255,255,0.08)",
-          },
-          zaxis: {
-            ...(origScene.zaxis ?? {}),
-            showticklabels: false,
-            title: "",
-            showgrid: true,
-            zeroline: false,
-            gridcolor: "rgba(255,255,255,0.08)",
-          },
-          camera: { eye: { x: 1.6, y: 1.6, z: 1.0 } },
-          aspectmode: "cube",
-        };
-      } else if (isHeatmapLike) {
-        // heatmap/contour MUST have a solid background — transparent = invisible
-        base.paper_bgcolor = "#0f0f0f";
-        base.plot_bgcolor = "#0f0f0f";
-        base.xaxis = {
-          visible: false,
-          fixedrange: true,
-          showgrid: false,
-          zeroline: false,
-          showline: false,
-        };
-        base.yaxis = {
-          visible: false,
-          fixedrange: true,
-          showgrid: false,
-          zeroline: false,
-          showline: false,
-        };
-        base.margin = { t: 0, b: 0, l: 0, r: 0, pad: 0 };
-      } else {
-        base.xaxis = {
-          visible: false,
-          fixedrange: true,
-          showgrid: false,
-          zeroline: false,
-        };
-        base.yaxis = {
-          visible: false,
-          fixedrange: true,
-          showgrid: false,
-          zeroline: false,
-        };
-        base.polar = {
-          bgcolor: "rgba(0,0,0,0)",
-          radialaxis: { visible: false },
-          angularaxis: { visible: false },
-        };
-      }
-
-      window.Plotly.react(ref.current, data, base, {
+    try {
+      window.Plotly.react(ref.current, cleanTraces, base, {
         displayModeBar: false,
         responsive: true,
-        // staticPlot=true breaks canvas-based charts (contour, heatmap, 3D)
-        staticPlot: !needsCanvas,
+        staticPlot: !is3D,
       });
     } catch {}
   }, [ready, chartConfig]);
 
-  if (!ready) {
+  if (!ready)
     return (
       <div
         style={{
@@ -240,13 +187,59 @@ function PlotlyMini({ chartConfig }: { chartConfig: Record<string, any> }) {
         />
       </div>
     );
-  }
-
   return (
     <div
       ref={ref}
       style={{ width: "100%", height: 150, pointerEvents: "none" }}
     />
+  );
+}
+
+// ── Icon button ───────────────────────────────────────────────
+function IconBtn({
+  onClick,
+  title,
+  active = false,
+  danger = false,
+  loading = false,
+  children,
+}: {
+  onClick: (e: React.MouseEvent) => void;
+  title: string;
+  active?: boolean;
+  danger?: boolean;
+  loading?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      disabled={loading}
+      style={{
+        width: 28,
+        height: 28,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        borderRadius: 6,
+        border: `1px solid ${active ? CYAN : danger ? "rgba(239,68,68,0.3)" : "rgba(255,255,255,0.1)"}`,
+        background: active
+          ? "rgba(6,182,212,0.12)"
+          : danger
+            ? "rgba(239,68,68,0.08)"
+            : "rgba(0,0,0,0.4)",
+        backdropFilter: "blur(4px)",
+        color: active ? CYAN : danger ? "#ef4444" : "rgba(255,255,255,0.5)",
+        cursor: loading ? "wait" : "pointer",
+        opacity: loading ? 0.6 : 1,
+        transition: "all 0.15s",
+        flexShrink: 0,
+        padding: 0,
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -258,11 +251,38 @@ export default function GraphCard({
   graph: any;
   index?: number;
 }) {
+  const router = useRouter();
   const [hov, setHov] = useState(false);
   const [vis, setVis] = useState(false);
-  const [star, setStar] = useState(graph.starred);
+  const [star, setStar] = useState<boolean>(!!graph.starred);
+  const [shared, setShared] = useState<boolean>(
+    !!graph.shared || !!graph.shareToken,
+  );
   const [editorOpen, setEditorOpen] = useState(false);
+  const [starLoading, setStarLoading] = useState(false);
+  const [shareState, setShareState] = useState<"idle" | "loading" | "copied">(
+    "idle",
+  );
+  const [deleteState, setDeleteState] = useState<
+    "idle" | "confirming" | "deleting"
+  >("idle");
   const plotRef = useRef<any>(null);
+
+  const { token, toggleStarChart, markChartShared, removeSavedChart } =
+    useAppStore();
+
+  useEffect(() => {
+    const t = setTimeout(() => setVis(true), index * 55 + 60);
+    return () => clearTimeout(t);
+  }, [index]);
+
+  // Keep in sync when parent re-renders
+  useEffect(() => {
+    setStar(!!graph.starred);
+  }, [graph.starred]);
+  useEffect(() => {
+    setShared(!!graph.shared || !!graph.shareToken);
+  }, [graph.shared, graph.shareToken]);
 
   const hasPlotly =
     Array.isArray(graph.chartConfig?.data) && graph.chartConfig.data.length > 0;
@@ -276,70 +296,185 @@ export default function GraphCard({
     (typeof graph.chartConfig?.layout?.title === "string"
       ? graph.chartConfig.layout.title
       : null) ||
-    (graph.title !== "Untitled Chart" ? graph.title : null) ||
-    graph.prompt?.slice(0, 40) ||
+    graph.title ||
+    graph.prompt ||
     "Untitled Chart";
+
+  const chartSubtitle = graph.chartConfig?.layout?._subtitle || "";
+  const annotations: string[] = Array.isArray(
+    graph.chartConfig?.layout?._annotations,
+  )
+    ? graph.chartConfig.layout._annotations
+    : [];
 
   const fakeMessage = hasPlotly
     ? {
         id: graph.id,
         from: "ai" as const,
-        content: {
-          data: graph.chartConfig.data,
-          layout: {
-            ...(graph.chartConfig.layout ?? {}),
-            title: { text: chartTitle },
-          },
-        },
-        status: "success" as const,
+        content: graph.chartConfig,
+        status: "success",
       }
     : null;
 
-  useEffect(() => {
-    const t = setTimeout(() => setVis(true), index * 55 + 60);
-    return () => clearTimeout(t);
-  }, [index]);
+  // ── Star ─────────────────────────────────────────────────────
+  const handleStar = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (starLoading || !token) return;
+    setStarLoading(true);
+    const newStar = !star;
+    setStar(newStar);
+    toggleStarChart(graph.id);
+    try {
+      const res = await fetch(`${API}/api/charts/${graph.id}/star`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!res.ok) {
+        setStar(!newStar);
+        toggleStarChart(graph.id);
+      }
+    } catch {
+      setStar(!newStar);
+      toggleStarChart(graph.id);
+    } finally {
+      setStarLoading(false);
+    }
+  };
+
+  // ── Share → copy public link ──────────────────────────────────
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (shareState !== "idle" || !token) return;
+    setShareState("loading");
+    try {
+      // If already has a token stored locally, just copy it
+      const existingToken = graph.shareToken;
+      let shareToken = existingToken;
+
+      if (!shareToken) {
+        const res = await fetch(`${API}/api/charts/${graph.id}/share`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Share failed");
+        shareToken = data.shareToken;
+        // Update Zustand so sidebar count and shared page update immediately
+        markChartShared(graph.id, shareToken);
+        setShared(true);
+      }
+
+      const shareUrl = `${window.location.origin}/share/${shareToken}`;
+      await navigator.clipboard.writeText(shareUrl);
+      setShareState("copied");
+      setTimeout(() => setShareState("idle"), 2500);
+    } catch (err) {
+      console.error("Share error:", err);
+      setShareState("idle");
+    }
+  };
+
+  // ── Delete ───────────────────────────────────────────────────
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (deleteState === "idle") {
+      // First click — show confirm state
+      setDeleteState("confirming");
+      // Auto-cancel after 3s if no second click
+      setTimeout(
+        () => setDeleteState((s) => (s === "confirming" ? "idle" : s)),
+        3000,
+      );
+      return;
+    }
+    if (deleteState === "confirming") {
+      setDeleteState("deleting");
+      try {
+        const res = await fetch(`${API}/api/charts/${graph.id}`, {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        if (!res.ok) {
+          const d = await res.json();
+          throw new Error(d.error);
+        }
+        removeSavedChart(graph.id);
+      } catch (err) {
+        console.error("Delete error:", err);
+        setDeleteState("idle");
+      }
+    }
+  };
+
+  // ── Open in /app ─────────────────────────────────────────────
+  const handleOpenInApp = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Store the chart config in sessionStorage so /app can pick it up
+    sessionStorage.setItem(
+      "graphix_open_chart",
+      JSON.stringify(graph.chartConfig),
+    );
+    router.push("/app");
+  };
 
   return (
     <>
-      <style>{`@keyframes gcSpin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`
+        @keyframes gcSpin { to { transform: rotate(360deg); } }
+        @keyframes gcFadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+      `}</style>
 
       <div
         onMouseEnter={() => setHov(true)}
-        onMouseLeave={() => setHov(false)}
-        onClick={() => hasPlotly && setEditorOpen(true)}
+        onMouseLeave={() => {
+          setHov(false);
+          if (deleteState === "confirming") setDeleteState("idle");
+        }}
         style={{
-          border: `1px solid ${hov ? CYAN : W08}`,
-          borderRadius: 8,
+          opacity: vis ? 1 : 0,
+          animation: vis ? "gcFadeUp 0.35s ease both" : "none",
+          background: "#18181b",
+          border: `1px solid ${hov ? "rgba(6,182,212,0.22)" : "rgba(255,255,255,0.07)"}`,
+          borderRadius: 10,
           overflow: "hidden",
-          cursor: hasPlotly ? "pointer" : "default",
-          position: "relative",
           display: "flex",
           flexDirection: "column",
-          opacity: vis ? 1 : 0,
-          transform: vis ? "none" : "translateY(12px)",
-          transition:
-            "opacity 0.35s ease, transform 0.35s ease, border-color 0.2s",
-          background: "#111212",
+          transition: "border-color 0.2s, box-shadow 0.2s",
+          boxShadow: hov ? "0 4px 24px rgba(6,182,212,0.08)" : "none",
         }}
       >
-        {/* top accent */}
+        {/* Top accent bar */}
         <div
           style={{
             height: 2,
-            background: hov
-              ? `linear-gradient(90deg,${CYAN},transparent)`
-              : "transparent",
-            transition: "background 0.3s",
             flexShrink: 0,
+            background: star
+              ? `linear-gradient(90deg,${CYAN},transparent)`
+              : shared
+                ? `linear-gradient(90deg,rgba(6,182,212,0.3),transparent)`
+                : hov
+                  ? `linear-gradient(90deg,rgba(6,182,212,0.15),transparent)`
+                  : "transparent",
+            transition: "background 0.3s",
           }}
         />
 
-        {/* ── PREVIEW ── */}
+        {/* Preview area */}
         <div
           style={{
             position: "relative",
-            background: hov ? C08 : "rgba(255,255,255,0.015)",
+            background: hov
+              ? "rgba(6,182,212,0.04)"
+              : "rgba(255,255,255,0.015)",
             transition: "background 0.2s",
             overflow: "hidden",
             flexShrink: 0,
@@ -369,126 +504,383 @@ export default function GraphCard({
             </div>
           )}
 
-          {/* star button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setStar((s: boolean) => !s);
+          {/* Type badge */}
+          <div
+            style={{
+              position: "absolute",
+              top: 8,
+              left: 8,
+              zIndex: 3,
+              background: "rgba(0,0,0,0.55)",
+              backdropFilter: "blur(4px)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              borderRadius: 5,
+              padding: "2px 7px",
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: "0.1em",
+              color: "rgba(255,255,255,0.5)",
+              textTransform: "uppercase",
             }}
+          >
+            {chartType}
+          </div>
+
+          {/* Action buttons — top right overlay */}
+          <div
             style={{
               position: "absolute",
               top: 8,
               right: 8,
               zIndex: 3,
-              background: "rgba(0,0,0,0.45)",
-              backdropFilter: "blur(4px)",
-              border: `1px solid ${star ? CYAN : "rgba(255,255,255,0.1)"}`,
-              borderRadius: 6,
-              width: 26,
-              height: 26,
               display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-              transition: "all 0.15s",
+              gap: 4,
+              opacity: hov ? 1 : 0,
+              transition: "opacity 0.15s",
+              pointerEvents: hov ? "auto" : "none",
             }}
           >
-            <Ico
-              d={IC.star}
-              size={11}
-              fill={star ? CYAN : "none"}
-              stroke={star ? CYAN : "rgba(255,255,255,0.4)"}
-            />
-          </button>
+            {/* Star */}
+            <IconBtn
+              onClick={handleStar}
+              title={star ? "Remove from favourites" : "Add to favourites"}
+              active={star}
+              loading={starLoading}
+            >
+              <svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill={star ? "currentColor" : "none"}
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              </svg>
+            </IconBtn>
+
+            {/* Share / copy link */}
+            <IconBtn
+              onClick={handleShare}
+              title={
+                shared ? "Copy share link again" : "Create & copy share link"
+              }
+              active={shared || shareState === "copied"}
+              loading={shareState === "loading"}
+            >
+              {shareState === "copied" ? (
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                >
+                  <circle cx="18" cy="5" r="3" />
+                  <circle cx="6" cy="12" r="3" />
+                  <circle cx="18" cy="19" r="3" />
+                  <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+                  <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+                </svg>
+              )}
+            </IconBtn>
+
+            {/* Open in app */}
+            <IconBtn onClick={handleOpenInApp} title="Open in chart builder">
+              <svg
+                width="10"
+                height="10"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+              >
+                <path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6" />
+                <polyline points="15 3 21 3 21 9" />
+                <line x1="10" y1="14" x2="21" y2="3" />
+              </svg>
+            </IconBtn>
+
+            {/* Delete */}
+            <IconBtn
+              onClick={handleDelete}
+              title={
+                deleteState === "confirming"
+                  ? "Click again to confirm delete"
+                  : "Delete chart"
+              }
+              danger
+              loading={deleteState === "deleting"}
+            >
+              {deleteState === "confirming" ? (
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                >
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : (
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                >
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                </svg>
+              )}
+            </IconBtn>
+          </div>
+
+          {/* Delete confirm banner */}
+          {deleteState === "confirming" && (
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                zIndex: 4,
+                background: "rgba(239,68,68,0.9)",
+                backdropFilter: "blur(4px)",
+                padding: "6px 12px",
+                fontSize: 10,
+                fontWeight: 700,
+                color: "#fff",
+                textAlign: "center",
+                letterSpacing: "0.04em",
+              }}
+            >
+              Click 🗑 again to confirm delete
+            </div>
+          )}
+
+          {/* Open-in-editor hover overlay */}
+          {hasPlotly && hov && (
+            <div
+              onClick={() => fakeMessage && setEditorOpen(true)}
+              style={{
+                position: "absolute",
+                inset: 0,
+                bottom: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(0,0,0,0.3)",
+                cursor: "pointer",
+                // Only show in center, don't block the top-right buttons
+                paddingTop: 40,
+              }}
+            >
+              <div
+                style={{
+                  background: CYAN,
+                  color: "#111",
+                  fontWeight: 800,
+                  fontSize: 11,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  padding: "7px 16px",
+                  borderRadius: 6,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                >
+                  <path d="M15 3h6v6M14 10l6.1-6.1M9 21H3v-6M10 14l-6.1 6.1" />
+                </svg>
+                Open in Editor
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* ── FOOTER: title + type ── */}
+        {/* Card footer */}
         <div
           style={{
-            padding: "10px 12px 11px",
+            padding: "10px 13px 12px",
             display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 8,
-            borderTop: `1px solid ${W08}`,
-            flexShrink: 0,
+            flexDirection: "column",
+            gap: 4,
+            flex: 1,
           }}
         >
-          <span
-            style={{
-              color: "#fff",
-              fontWeight: 600,
-              fontSize: 12,
-              lineHeight: 1.3,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              flex: 1,
-            }}
-          >
-            {chartTitle}
-          </span>
-          <span
-            style={{
-              fontSize: 9,
-              fontWeight: 700,
-              letterSpacing: "0.08em",
-              padding: "2px 6px",
-              borderRadius: 3,
-              flexShrink: 0,
-              background: "rgba(6,182,212,0.12)",
-              border: "1px solid rgba(6,182,212,0.25)",
-              color: "#06b6d4",
-              fontFamily: "monospace",
-            }}
-          >
-            {chartType}
-          </span>
-        </div>
+          {/* Title + shared indicator */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+            <p
+              style={{
+                margin: 0,
+                fontSize: 12,
+                fontWeight: 700,
+                color: "#f1f5f9",
+                lineHeight: 1.35,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                flex: 1,
+              }}
+            >
+              {chartTitle}
+            </p>
+            {shared && (
+              <span
+                style={{
+                  fontSize: 8,
+                  padding: "2px 5px",
+                  borderRadius: 4,
+                  flexShrink: 0,
+                  background: "rgba(6,182,212,0.12)",
+                  border: "1px solid rgba(6,182,212,0.25)",
+                  color: CYAN,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                }}
+              >
+                SHARED
+              </span>
+            )}
+          </div>
 
-        {/* ── HOVER OVERLAY ── */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "rgba(0,0,0,0.55)",
-            backdropFilter: "blur(2px)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: hov ? 1 : 0,
-            transition: "opacity 0.18s",
-            pointerEvents: hov ? "auto" : "none",
-            bottom: 43,
-          }}
-        >
+          {/* Subtitle */}
+          {chartSubtitle && (
+            <p
+              style={{
+                margin: 0,
+                fontSize: 10,
+                color: "rgba(255,255,255,0.35)",
+                lineHeight: 1.4,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {chartSubtitle}
+            </p>
+          )}
+
+          {/* Annotation labels */}
+          {annotations.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 4,
+                marginTop: 2,
+              }}
+            >
+              {annotations.slice(0, 3).map((label, i) => (
+                <span
+                  key={i}
+                  style={{
+                    fontSize: 9,
+                    padding: "1px 6px",
+                    borderRadius: 4,
+                    background: "rgba(6,182,212,0.08)",
+                    border: "1px solid rgba(6,182,212,0.18)",
+                    color: "rgba(6,182,212,0.75)",
+                    fontWeight: 600,
+                  }}
+                >
+                  {label}
+                </span>
+              ))}
+              {annotations.length > 3 && (
+                <span
+                  style={{
+                    fontSize: 9,
+                    color: "rgba(255,255,255,0.2)",
+                    padding: "1px 4px",
+                  }}
+                >
+                  +{annotations.length - 3}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* Share copied toast */}
+          {shareState === "copied" && (
+            <p
+              style={{
+                margin: "2px 0 0",
+                fontSize: 10,
+                color: CYAN,
+                fontWeight: 600,
+              }}
+            >
+              ✓ Link copied to clipboard
+            </p>
+          )}
+
+          {/* Meta: views + updated */}
           <div
             style={{
-              background: CYAN,
-              color: "#111212",
-              fontWeight: 800,
-              fontSize: 11,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              padding: "8px 18px",
-              borderRadius: 6,
               display: "flex",
               alignItems: "center",
-              gap: 6,
+              justifyContent: "space-between",
+              marginTop: "auto",
+              paddingTop: 6,
             }}
           >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
+            <span
+              style={{
+                fontSize: 10,
+                color: "rgba(255,255,255,0.2)",
+                display: "flex",
+                alignItems: "center",
+                gap: 3,
+              }}
             >
-              <path d="M15 3h6v6M14 10l6.1-6.1M9 21H3v-6M10 14l-6.1 6.1" />
-            </svg>
-            Open in Editor
+              <svg
+                width="9"
+                height="9"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                <circle cx="12" cy="12" r="3" />
+              </svg>
+              {graph.views ?? 0}
+            </span>
+            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.2)" }}>
+              {graph.updated ?? ""}
+            </span>
           </div>
         </div>
       </div>
@@ -499,7 +891,6 @@ export default function GraphCard({
           message={fakeMessage}
           divRef={plotRef}
           onClose={() => setEditorOpen(false)}
-          existingChartId={graph.id}
         />
       )}
     </>

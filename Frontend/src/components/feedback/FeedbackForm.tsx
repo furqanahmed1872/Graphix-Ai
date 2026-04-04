@@ -247,7 +247,7 @@ export default function FeedbackFormPage() {
 
         {/* Stats row */}
         <div
-          className="flex flex-wrap justify-center gap-px border border-[#1e2227] bg-[#1e2227]"
+          className="flex flex-wrap justify-center gap-px border-y-1"
           style={{
             opacity: heroVis ? 1 : 0,
             transition: "opacity 0.6s ease 0.35s",

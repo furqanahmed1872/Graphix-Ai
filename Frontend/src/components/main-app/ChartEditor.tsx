@@ -2316,6 +2316,10 @@ export default function ChartEditor({
         ? liveLayout.title
         : liveLayout.title?.text || "",
     );
+    setSubtitle(liveLayout._subtitle || "");
+    setAnnotations(
+      Array.isArray(liveLayout._annotations) ? liveLayout._annotations : [],
+    );
     setXLabel(liveLayout.xaxis?.title?.text || liveLayout.xaxis?.title || "");
     setYLabel(liveLayout.yaxis?.title?.text || liveLayout.yaxis?.title || "");
     const detectedId = detectChartTypeId(liveData);
@@ -2328,6 +2332,26 @@ export default function ChartEditor({
     userHasEdited.current = false; // reset — don't run applyChart on first render
     setMounted(true);
   }, [getLiveData]);
+
+  // Sync title/subtitle/annotations back into __graphixChartData so
+  // SingleChartArea.handleSaveCurrentChart can read the latest values.
+  useEffect(() => {
+    if (!mounted) return;
+    const msgId = message?.id;
+    if (!msgId) return;
+    if (!window.__graphixChartData) window.__graphixChartData = {};
+    const existing = window.__graphixChartData[msgId] ?? getLiveData();
+    window.__graphixChartData[msgId] = {
+      ...existing,
+      layout: {
+        ...existing.layout,
+        _subtitle: subtitle,
+        _annotations: annotations,
+        // keep title in sync too (Plotly layout title)
+        title: title ? { text: title } : existing.layout.title,
+      },
+    };
+  }, [mounted, title, subtitle, annotations, message?.id, getLiveData]);
 
   const buildPieData = useCallback(
     (rawData: any[], pal: string[], hole?: number) => {
@@ -2947,7 +2971,12 @@ export default function ChartEditor({
       const live = getLiveData();
       const chartJson = {
         data: plotRef.current?.data ?? live.data,
-        layout: plotRef.current?.layout ?? live.layout,
+        layout: {
+          ...(plotRef.current?.layout ?? live.layout),
+          // Persist sidebar fields into the JSONB blob using private _ keys
+          _subtitle: subtitle,
+          _annotations: annotations,
+        },
       };
       const chartTitle =
         title ||

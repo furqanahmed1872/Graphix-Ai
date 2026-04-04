@@ -1,7 +1,7 @@
 'use client';
 import Link from "next/link";
 
-const FOOTER_LINKS = ["PRIVACY", "TERMS", "STATUS", "TWITTER"];
+const FOOTER_LINKS = ["PRIVACY", "TERMS", "FEEDBACK"];
 
 export default function Footer() {
   return (
@@ -29,7 +29,7 @@ export default function Footer() {
           <Link
             key={link}
             href={
-              link === "PRIVACY" ? "/policy" : link === "TERMS" ? "/terms" : "#"
+              link === "PRIVACY" ? "/policy" : link === "TERMS" ? "/terms" : "/feedback"
             }
             style={{
               fontSize: 10,

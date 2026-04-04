@@ -232,21 +232,21 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
             label="Google Sheets"
             sub="Connect live data"
             cta="Connect"
-            onClick={() => setTab("import-google")}
+            onClick={() => {}}
           />
           <ActionCard
             icon="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"
             label="Upload Excel"
             sub="XLS / XLSX / CSV"
             cta="Upload"
-            onClick={() => setTab("import-excel")}
+            onClick={() => {}}
           />
           <ActionCard
             icon="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"
             label="Paste Data"
             sub="Tabular text / JSON"
             cta="Paste"
-            onClick={() => setTab("import-paste")}
+            onClick={() => {}}
           />
         </div>
       </div>
@@ -278,7 +278,7 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
           ) : savedCharts.length === 0 ? (
             <div className="p-8 text-center">
               <p className="text-white/35 text-[13px] mb-4">No graphs yet.</p>
-              <Btn size="sm" onClick={() => setTab("new-graph")}>
+              <Btn size="sm" onClick={() => router.push("/app")}>
                 Create Graph →
               </Btn>
             </div>
@@ -682,139 +682,6 @@ function HelpPage() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// NEW GRAPH
-// ─────────────────────────────────────────────────────────────
-function NewGraphPage({ setTab }: { setTab: (t: string) => void }) {
-  const [step, setStep] = useState(1);
-  const steps: [string, string][] = [
-    ["1", "Source"],
-    ["2", "Configure"],
-    ["3", "Preview"],
-  ];
-
-  return (
-    <div className="max-w-[560px]">
-      <BackBtn onClick={() => setTab("graphs")} />
-      <h2 className="text-white text-[20px] font-extrabold mb-1">New Graph</h2>
-      <p className="text-white/35 text-[13px] mb-7">
-        Choose a data source to get started
-      </p>
-
-      <Stepper steps={steps} current={step} />
-
-      {step === 1 && (
-        <div
-          className="grid gap-[9px]"
-          style={{ gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))" }}
-        >
-          <ActionCard
-            icon="M9 17H5a2 2 0 00-2 2"
-            label="Google Sheets"
-            sub="Live spreadsheet data"
-            cta="Select"
-            onClick={() => setStep(2)}
-          />
-          <ActionCard
-            icon="M21 15v4a2 2 0 01-2 2H5"
-            label="Upload Excel"
-            sub="XLS / XLSX / CSV"
-            cta="Select"
-            onClick={() => setStep(2)}
-          />
-          <ActionCard
-            icon="M9 5H7a2 2 0 00-2 2v12"
-            label="Paste Data"
-            sub="Manual entry"
-            cta="Select"
-            onClick={() => setStep(2)}
-          />
-        </div>
-      )}
-      {step === 2 && (
-        <div className="flex flex-col gap-4">
-          <p className="text-white/55 text-[13px]">
-            Configure your data source in the next step.
-          </p>
-          <Btn
-            variant="ghost"
-            onClick={() => setStep(1)}
-            style={{ alignSelf: "flex-start" }}
-          >
-            ← Back
-          </Btn>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────
-// IMPORT PAGES
-// ─────────────────────────────────────────────────────────────
-function ImportGooglePage({ setTab }: { setTab: (t: string) => void }) {
-  const [url, setUrl] = useState("");
-  return (
-    <div className="max-w-[480px]">
-      <BackBtn onClick={() => setTab("dashboard")} />
-      <h2 className="text-white text-[20px] font-extrabold mb-1">
-        Google Sheets
-      </h2>
-      <p className="text-white/35 text-[13px] mb-7">
-        Paste your Google Sheets URL to connect live data.
-      </p>
-      <div className="flex flex-col gap-3">
-        <FieldLabel>Sheet URL</FieldLabel>
-        <FieldInput
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://docs.google.com/spreadsheets/d/..."
-        />
-        <Btn style={{ alignSelf: "flex-start" }}>Connect →</Btn>
-      </div>
-    </div>
-  );
-}
-
-function ImportExcelPage({ setTab }: { setTab: (t: string) => void }) {
-  return (
-    <div className="max-w-[480px]">
-      <BackBtn onClick={() => setTab("dashboard")} />
-      <h2 className="text-white text-[20px] font-extrabold mb-1">
-        Upload Excel
-      </h2>
-      <p className="text-white/35 text-[13px] mb-7">
-        Upload XLS, XLSX, or CSV files.
-      </p>
-      <div className="border-2 border-dashed border-white/[0.12] rounded-[7px] p-10 text-center hover:border-[rgba(0,212,200,0.35)] transition-colors cursor-pointer">
-        <p className="text-white/35 text-[13px]">
-          Drop file here or click to browse
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function ImportPastePage({ setTab }: { setTab: (t: string) => void }) {
-  const [text, setText] = useState("");
-  return (
-    <div className="max-w-[480px]">
-      <BackBtn onClick={() => setTab("dashboard")} />
-      <h2 className="text-white text-[20px] font-extrabold mb-1">Paste Data</h2>
-      <p className="text-white/35 text-[13px] mb-7">
-        Paste tabular text or JSON directly.
-      </p>
-      <FieldTextarea
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Paste CSV, TSV, or JSON here…"
-        style={{ minHeight: 180 }}
-      />
-      <Btn style={{ marginTop: 12 }}>Parse & Visualise →</Btn>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────
 // ROOT APP
 // ─────────────────────────────────────────────────────────────
 export default function App() {
@@ -848,10 +715,6 @@ export default function App() {
     settings: <SettingsPage />,
     billing: <BillingPage />,
     help: <HelpPage />,
-    "new-graph": <NewGraphPage setTab={setTab} />,
-    "import-google": <ImportGooglePage setTab={setTab} />,
-    "import-excel": <ImportExcelPage setTab={setTab} />,
-    "import-paste": <ImportPastePage setTab={setTab} />,
   };
 
   return (

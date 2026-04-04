@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import ChartEditor from "./ChartEditor";
 import { useAppStore } from "@/store/appStore";
 import { apiSaveChart } from "@/lib/api";
+import { ClippingGroup } from "three/webgpu";
 declare global {
   interface Window {
     Plotly: any;
@@ -259,7 +260,7 @@ function preprocessTraces(
       const isBar = trace.type === "bar";
       const barColors =
         isBar && data.length === 1 && !hasCustomColors
-          ? (trace.x || trace.y || []).map((_: any, idx: number) =>
+          ? (trace.x || trace.y || [])?.map((_: any, idx: number) =>
               paletteColor(idx, offset),
             )
           : undefined;
@@ -379,7 +380,6 @@ function buildLayout(base: any, chartType?: string, rawData?: any[]) {
     result.geo = { ...(base.geo || {}), bgcolor: "rgba(0,0,0,0)" };
     return result;
   }
-
 
   const result: any = {
     ...base,
@@ -837,8 +837,6 @@ function InlineToolbar({
     }
   };
 
-
-  
   return (
     <div
       className="my-auto"
@@ -1383,9 +1381,7 @@ export default function SingleChartArea({
     title: string,
     prompt: string,
   ) => Promise<void>;
-  }) {
-  
-  
+}) {
   const divRef = useRef<any>(null);
   const cardRef = useRef<any>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
@@ -1400,7 +1396,7 @@ export default function SingleChartArea({
     ? (messages.find((m) => m.id === selectedAiId && m.from === "ai") ??
       messages.filter((m) => m.from === "ai").at(-1))
     : messages.filter((m) => m.from === "ai").at(-1);
-  
+
   const handleSaveCurrentChart = onSaveChart
     ? async () => {
         const perChartData = (window as any).__graphixChartData?.[
@@ -1408,11 +1404,23 @@ export default function SingleChartArea({
         ];
         const data = perChartData?.data ?? aiMsg?.content?.data ?? [];
         const layout = perChartData?.layout ?? aiMsg?.content?.layout ?? {};
+
+        // Title: prefer Plotly layout.title, fallback to _subtitle context
         const title =
           typeof layout.title === "string"
             ? layout.title
             : (layout.title?.text ?? "Untitled Chart");
-        await onSaveChart({ data, layout }, title, title);
+
+        // Carry subtitle and annotation labels through to the saved chartConfig
+        const enrichedLayout = {
+          ...layout,
+          _subtitle: layout._subtitle ?? "",
+          _annotations: Array.isArray(layout._annotations)
+            ? layout._annotations
+            : [],
+        };
+
+        await onSaveChart({ data, layout: enrichedLayout }, title, title);
       }
     : undefined;
 

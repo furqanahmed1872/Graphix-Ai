@@ -129,6 +129,7 @@ router.get("/bootstrap", requireAuth, async (req, res) => {
            id, title, prompt, chart_config,
            tag, category, description,
            views, trend, trend_up, starred, sparkline,
+           share_token,
            created_at, updated_at
          FROM saved_charts
          WHERE user_id = $1
@@ -166,10 +167,10 @@ router.get("/bootstrap", requireAuth, async (req, res) => {
       ),
     ]);
 
-    // ── 404 guard ─────────────────────────────────────────────
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ error: "User not found." });
-    }
+     // ── 404 guard ─────────────────────────────────────────────
+     FIND: if (userResult.rows.length === 0) {
+       return res.status(404).json({ error: "User not found." });
+     }
 
     const u = userResult.rows[0];
     const sub = subResult.rows[0] || {
@@ -200,6 +201,8 @@ router.get("/bootstrap", requireAuth, async (req, res) => {
       // raw timestamps
       createdAt: c.created_at,
       updatedAt: c.updated_at,
+      shareToken: c.share_token ?? null, // ← ADD
+      shared: !!c.share_token, // ← ADD
     }));
 
     // ── Shape activityFeed ────────────────────────────────────

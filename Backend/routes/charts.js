@@ -1,4 +1,5 @@
 import { Router } from "express";
+import crypto from "crypto";
 import pool from "../db/pool.js";
 import { requireAuth } from "../middleware/auth.js";
 
@@ -15,14 +16,13 @@ function timeAgo(date) {
   return new Date(date).toLocaleDateString();
 }
 
-/** Shape a raw saved_charts DB row into the full frontend SavedChart object */
+// shapeChart now includes shareToken and shared flag
 function shapeChart(c) {
   return {
     id: c.id,
     title: c.title,
     prompt: c.prompt,
     chartConfig: c.chart_config,
-    // display fields
     tag: c.tag,
     category: c.category,
     desc: c.description,
@@ -32,13 +32,13 @@ function shapeChart(c) {
     starred: c.starred,
     data: Array.isArray(c.sparkline) ? c.sparkline : [],
     updated: timeAgo(c.updated_at),
-    // raw timestamps
     createdAt: c.created_at,
     updatedAt: c.updated_at,
+    shareToken: c.share_token ?? null,
+    shared: !!c.share_token,
   };
 }
 
-/** Write an activity_log row — never throws, failures are soft */
 async function logActivity(userId, action, chartId, chartTitle) {
   try {
     const userRow = await pool.query("SELECT avatar FROM users WHERE id = $1", [
@@ -55,15 +55,23 @@ async function logActivity(userId, action, chartId, chartTitle) {
   }
 }
 
+// ── Ensure share_token column exists (safe idempotent migration) ──
+pool
+  .query(
+    `
+  ALTER TABLE saved_charts
+  ADD COLUMN IF NOT EXISTS share_token TEXT UNIQUE DEFAULT NULL
+`,
+  )
+  .catch((err) => console.warn("share_token migration note:", err.message));
+
 // ── POST /api/charts ──────────────────────────────────────────
-// Create a new chart. Accepts all display fields from the frontend.
 router.post("/", requireAuth, async (req, res) => {
   const { userId } = req.user;
   const {
     title,
     prompt,
     chartConfig,
-    // display fields — optional, defaults applied in DB
     tag = "Line",
     category = "General",
     description = "",
@@ -72,22 +80,17 @@ router.post("/", requireAuth, async (req, res) => {
     sparkline = [],
   } = req.body;
 
-  if (!chartConfig) {
+  if (!chartConfig)
     return res.status(400).json({ error: "chartConfig is required." });
-  }
 
   try {
     const { rows } = await pool.query(
       `INSERT INTO saved_charts
-         (user_id, title, prompt, chart_config,
-          tag, category, description,
-          trend, trend_up, sparkline)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING
-         id, title, prompt, chart_config,
-         tag, category, description,
-         views, trend, trend_up, starred, sparkline,
-         created_at, updated_at`,
+         (user_id, title, prompt, chart_config, tag, category, description, trend, trend_up, sparkline)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+       RETURNING id, title, prompt, chart_config, tag, category, description,
+                 views, trend, trend_up, starred, sparkline, share_token,
+                 created_at, updated_at`,
       [
         userId,
         title || "Untitled Chart",
@@ -101,12 +104,8 @@ router.post("/", requireAuth, async (req, res) => {
         JSON.stringify(sparkline),
       ],
     );
-
     const chart = shapeChart(rows[0]);
-
-    // Log activity
     await logActivity(userId, "Created", chart.id, chart.title);
-
     return res.status(201).json(chart);
   } catch (err) {
     console.error("Save chart error:", err);
@@ -114,35 +113,60 @@ router.post("/", requireAuth, async (req, res) => {
   }
 });
 
+// ── GET /api/charts/share/:token ──────────────────────────────
+// PUBLIC — no auth required. Registered BEFORE /:id to avoid Express
+// treating "share" as a UUID param.
+router.get("/share/:token", async (req, res) => {
+  const { token } = req.params;
+  try {
+    const { rows } = await pool.query(
+      `SELECT id, title, chart_config, tag, views, created_at
+         FROM saved_charts WHERE share_token = $1`,
+      [token],
+    );
+    if (rows.length === 0)
+      return res.status(404).json({ error: "Shared chart not found." });
+
+    // Fire-and-forget view increment
+    pool
+      .query(`UPDATE saved_charts SET views = views + 1 WHERE id = $1`, [
+        rows[0].id,
+      ])
+      .catch(() => {});
+
+    const c = rows[0];
+    return res.json({
+      id: c.id,
+      title: c.title,
+      chartConfig: c.chart_config,
+      tag: c.tag,
+      views: c.views,
+      createdAt: c.created_at,
+    });
+  } catch (err) {
+    console.error("Public share fetch error:", err);
+    return res.status(500).json({ error: "Failed to fetch shared chart." });
+  }
+});
+
 // ── GET /api/charts/:id ───────────────────────────────────────
-// Fetch a single chart + increment view counter
 router.get("/:id", requireAuth, async (req, res) => {
   const { userId } = req.user;
   const { id } = req.params;
-
   try {
-    // Increment views first (fire-and-forget is fine but we await to keep it simple)
     await pool.query(
-      `UPDATE saved_charts SET views = views + 1
-         WHERE id = $1 AND user_id = $2`,
+      `UPDATE saved_charts SET views = views + 1 WHERE id = $1 AND user_id = $2`,
       [id, userId],
     );
-
     const { rows } = await pool.query(
-      `SELECT
-         id, title, prompt, chart_config,
-         tag, category, description,
-         views, trend, trend_up, starred, sparkline,
-         created_at, updated_at
-       FROM saved_charts
-       WHERE id = $1 AND user_id = $2`,
+      `SELECT id, title, prompt, chart_config, tag, category, description,
+              views, trend, trend_up, starred, sparkline, share_token,
+              created_at, updated_at
+         FROM saved_charts WHERE id = $1 AND user_id = $2`,
       [id, userId],
     );
-
-    if (rows.length === 0) {
+    if (rows.length === 0)
       return res.status(404).json({ error: "Chart not found." });
-    }
-
     return res.json(shapeChart(rows[0]));
   } catch (err) {
     console.error("Get chart error:", err);
@@ -151,8 +175,6 @@ router.get("/:id", requireAuth, async (req, res) => {
 });
 
 // ── PATCH /api/charts/:id ─────────────────────────────────────
-// Update any combination of fields. All fields optional — only
-// provided ones are updated (COALESCE pattern).
 router.patch("/:id", requireAuth, async (req, res) => {
   const { userId } = req.user;
   const { id } = req.params;
@@ -167,27 +189,23 @@ router.patch("/:id", requireAuth, async (req, res) => {
     sparkline,
     chartConfig,
   } = req.body;
-
   try {
     const { rows } = await pool.query(
-      `UPDATE saved_charts
-         SET
-           title        = COALESCE($3,  title),
-           tag          = COALESCE($4,  tag),
-           category     = COALESCE($5,  category),
-           description  = COALESCE($6,  description),
-           trend        = COALESCE($7,  trend),
-           trend_up     = COALESCE($8,  trend_up),
-           starred      = COALESCE($9,  starred),
-           sparkline    = COALESCE($10, sparkline),
-           chart_config = COALESCE($11, chart_config),
-           updated_at   = NOW()
-         WHERE id = $1 AND user_id = $2
-         RETURNING
-           id, title, prompt, chart_config,
-           tag, category, description,
-           views, trend, trend_up, starred, sparkline,
-           created_at, updated_at`,
+      `UPDATE saved_charts SET
+         title        = COALESCE($3,  title),
+         tag          = COALESCE($4,  tag),
+         category     = COALESCE($5,  category),
+         description  = COALESCE($6,  description),
+         trend        = COALESCE($7,  trend),
+         trend_up     = COALESCE($8,  trend_up),
+         starred      = COALESCE($9,  starred),
+         sparkline    = COALESCE($10, sparkline),
+         chart_config = COALESCE($11, chart_config),
+         updated_at   = NOW()
+       WHERE id = $1 AND user_id = $2
+       RETURNING id, title, prompt, chart_config, tag, category, description,
+                 views, trend, trend_up, starred, sparkline, share_token,
+                 created_at, updated_at`,
       [
         id,
         userId,
@@ -202,18 +220,11 @@ router.patch("/:id", requireAuth, async (req, res) => {
         chartConfig ?? null,
       ],
     );
-
-    if (rows.length === 0) {
+    if (rows.length === 0)
       return res.status(404).json({ error: "Chart not found or not yours." });
-    }
-
     const chart = shapeChart(rows[0]);
-
-    // Only log "Edited" — star toggles have their own dedicated route below
-    if (starred === undefined) {
+    if (starred === undefined)
       await logActivity(userId, "Edited", chart.id, chart.title);
-    }
-
     return res.json(chart);
   } catch (err) {
     console.error("Update chart error:", err);
@@ -222,29 +233,19 @@ router.patch("/:id", requireAuth, async (req, res) => {
 });
 
 // ── POST /api/charts/:id/star ─────────────────────────────────
-// Dedicated star toggle so the frontend can call it cleanly
-// and get a focused activity log entry.
 router.post("/:id/star", requireAuth, async (req, res) => {
   const { userId } = req.user;
   const { id } = req.params;
-
   try {
     const { rows } = await pool.query(
-      `UPDATE saved_charts
-         SET starred    = NOT starred,
-             updated_at = NOW()
-         WHERE id = $1 AND user_id = $2
-         RETURNING id, title, starred`,
+      `UPDATE saved_charts SET starred = NOT starred, updated_at = NOW()
+         WHERE id = $1 AND user_id = $2 RETURNING id, title, starred`,
       [id, userId],
     );
-
-    if (rows.length === 0) {
+    if (rows.length === 0)
       return res.status(404).json({ error: "Chart not found or not yours." });
-    }
-
     const { title, starred } = rows[0];
     await logActivity(userId, starred ? "Starred" : "Unstarred", id, title);
-
     return res.json({ id, starred });
   } catch (err) {
     console.error("Star toggle error:", err);
@@ -253,28 +254,38 @@ router.post("/:id/star", requireAuth, async (req, res) => {
 });
 
 // ── POST /api/charts/:id/share ────────────────────────────────
-// Mark chart as shared (sets chart_config.shared = true)
+// Generates a unique share_token (idempotent). Returns { id, shareToken }.
+// Frontend builds: window.location.origin + "/share/" + shareToken
 router.post("/:id/share", requireAuth, async (req, res) => {
   const { userId } = req.user;
   const { id } = req.params;
 
   try {
-    const { rows } = await pool.query(
-      `UPDATE saved_charts
-         SET chart_config = chart_config || '{"shared": true}',
-             updated_at   = NOW()
-         WHERE id = $1 AND user_id = $2
-         RETURNING id, title, chart_config`,
+    const { rows: existing } = await pool.query(
+      `SELECT id, title, share_token FROM saved_charts WHERE id = $1 AND user_id = $2`,
       [id, userId],
     );
 
-    if (rows.length === 0) {
+    if (existing.length === 0) {
       return res.status(404).json({ error: "Chart not found or not yours." });
     }
 
-    await logActivity(userId, "Shared", id, rows[0].title);
+    // Already shared — return existing token (idempotent)
+    if (existing[0].share_token) {
+      return res.json({ id, shareToken: existing[0].share_token });
+    }
 
-    return res.json({ id, shared: true });
+    // Generate new token
+    const shareToken = crypto.randomBytes(16).toString("hex");
+
+    const { rows } = await pool.query(
+      `UPDATE saved_charts SET share_token = $3, updated_at = NOW()
+         WHERE id = $1 AND user_id = $2 RETURNING id, title, share_token`,
+      [id, userId, shareToken],
+    );
+
+    await logActivity(userId, "Shared", id, rows[0].title);
+    return res.json({ id, shareToken: rows[0].share_token });
   } catch (err) {
     console.error("Share chart error:", err);
     return res.status(500).json({ error: "Failed to share chart." });
@@ -285,22 +296,14 @@ router.post("/:id/share", requireAuth, async (req, res) => {
 router.delete("/:id", requireAuth, async (req, res) => {
   const { userId } = req.user;
   const { id } = req.params;
-
   try {
     const result = await pool.query(
-      `DELETE FROM saved_charts
-         WHERE id = $1 AND user_id = $2
-         RETURNING id, title`,
+      `DELETE FROM saved_charts WHERE id = $1 AND user_id = $2 RETURNING id, title`,
       [id, userId],
     );
-
-    if (result.rows.length === 0) {
+    if (result.rows.length === 0)
       return res.status(404).json({ error: "Chart not found or not yours." });
-    }
-
-    // Log with null chart_id because row is gone; title snapshot preserved
     await logActivity(userId, "Deleted", null, result.rows[0].title);
-
     return res.json({ deleted: id });
   } catch (err) {
     console.error("Delete chart error:", err);
