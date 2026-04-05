@@ -1,10 +1,16 @@
-"use client";
-import dynamic from "next/dynamic";
+'use client';
 
-const DataChartEditor = dynamic(() => import("./ExelChartEditor"), {
-  ssr: false,
-});
+import DataChartEditor from "./ExelChartEditor";
+import RouteGuard from "@/components/RouteGuard";
 
-export default function Page() {
-  return <DataChartEditor />;
+export default function Panel() {
+  return (
+    <RouteGuard>
+      <div className="w-full h-screen grid items-center justify-center">
+   
+        <DataChartEditor />
+      </div>
+    </RouteGuard>
+  );
 }
+  

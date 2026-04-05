@@ -481,29 +481,77 @@ function StepResult({ active }: { active: boolean }) {
             {
               x: ["North", "South", "East", "West"],
               y: [67, 44, 58, 51],
+              z: [82, 56, 71, 63],
+              type: "scatter3d",
+              mode: "markers",
               name: "Q3",
-              type: "bar",
-              marker: { color: "#06b6d4", opacity: 0.85 },
+              marker: {
+                size: 12,
+                color: "#06b6d4",
+                opacity: 0.9,
+                line: {
+                  color: "#ffffff",
+                  width: 2,
+                },
+              },
             },
             {
               x: ["North", "South", "East", "West"],
               y: [82, 56, 71, 63],
+              z: [95, 68, 84, 76],
+              type: "scatter3d",
+              mode: "markers",
               name: "Q4",
-              type: "bar",
-              marker: { color: "#a855f7", opacity: 0.85 },
+              marker: {
+                size: 14,
+                color: "#a855f7",
+                opacity: 0.9,
+                line: {
+                  color: "#ffffff",
+                  width: 2,
+                },
+              },
             },
           ],
           {
-            barmode: "group",
             paper_bgcolor: "transparent",
             plot_bgcolor: "transparent",
             font: { color: "#374151", size: 10, family: "DM Mono" },
-            margin: { t: 8, b: 32, l: 36, r: 8 },
+            margin: { t: 8, b: 8, l: 8, r: 8 },
             showlegend: true,
-            legend: { orientation: "h", y: -0.22, font: { size: 9 } },
-            xaxis: { gridcolor: "rgba(0,0,0,0.06)", tickfont: { size: 10 } },
-            yaxis: { gridcolor: "rgba(0,0,0,0.06)", tickfont: { size: 10 } },
-            bargap: 0.2,
+            legend: {
+              orientation: "h",
+              y: -0.15,
+              x: 0.5,
+              xanchor: "center",
+              font: { size: 9 },
+            },
+            scene: {
+              camera: {
+                eye: { x: 1.8, y: 1.8, z: 1.3 },
+              },
+              xaxis: {
+                title: { text: "Region", font: { size: 9 } },
+                gridcolor: "rgba(0,0,0,0.1)",
+                showbackground: true,
+                backgroundcolor: "rgba(249,250,251,0.5)",
+                tickfont: { size: 9 },
+              },
+              yaxis: {
+                title: { text: "Q3 Sales", font: { size: 9 } },
+                gridcolor: "rgba(0,0,0,0.1)",
+                showbackground: true,
+                backgroundcolor: "rgba(249,250,251,0.5)",
+                tickfont: { size: 9 },
+              },
+              zaxis: {
+                title: { text: "Q4 Sales", font: { size: 9 } },
+                gridcolor: "rgba(0,0,0,0.1)",
+                showbackground: true,
+                backgroundcolor: "rgba(249,250,251,0.5)",
+                tickfont: { size: 9 },
+              },
+            },
           },
           { displayModeBar: false, responsive: true },
         ).then(() => {
@@ -540,7 +588,7 @@ function StepResult({ active }: { active: boolean }) {
         <span
           style={{ fontFamily: "monospace", fontSize: 10, color: "#6b7280" }}
         >
-          Q4 Sales by Region — Grouped Bar
+          Q4 Sales by Region — 3D Scatter
         </span>
         <div style={{ display: "flex", gap: 8 }}>
           {["PNG", "SVG", "CSV"].map((f) => (
@@ -614,7 +662,6 @@ function StepResult({ active }: { active: boolean }) {
     </div>
   );
 }
-
 // ─── Step definitions ──────────────────────────────────────────
 const STEPS = [
   {

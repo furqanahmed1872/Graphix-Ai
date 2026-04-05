@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import Navbar from "../NavBar";
 import Link from "next/link";
-
+import { useAppStore } from "@/store/appStore";
 type ChartMode = "bar" | "line" | "scatter";
 interface BarPair {
   a: THREE.Mesh;
@@ -670,6 +670,8 @@ const WORDS = [
 ];
 
 export default function Hero() {
+  const isAuthenticated = useAppStore((s) => s.isAuthenticated);
+  const _hasHydrated = useAppStore((s) => s._hasHydrated);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -678,6 +680,7 @@ export default function Hero() {
     );
     return () => cancelAnimationFrame(id);
   }, []);
+ const showDashboard = _hasHydrated && isAuthenticated;
 
   return (
     <>
@@ -798,8 +801,13 @@ export default function Hero() {
                   marginBottom: 44,
                 }}
               >
-                <Link href="/signin" className="gx-cta-primary">
-                  <span>Start for free</span>
+                <Link href="/dashboard" className="gx-cta-primary">
+                {showDashboard ? (
+                  <>
+                    <span>Go to dashboard</span>
+                  </>) : (
+                    <span>Start for free</span>
+                  )}
                   <span style={{ fontSize: 14 }}>→</span>
                 </Link>
                 <Link href="/panel" className="gx-cta-ghost">

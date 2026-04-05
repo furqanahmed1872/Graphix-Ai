@@ -132,10 +132,11 @@ export default function Navbar() {
         {/* Nav links */}
         <div style={{ display: "flex", alignItems: "center", gap: 36 }}>
           {[
-            { label: "Product", href: "#features" },
+            { label: "About", href: "/about" },
             { label: "How it works", href: "#how-it-works" },
             { label: "Pricing", href: "#pricing" },
             { label: "Excel Editor", href: "/panel" },
+
           ].map(({ label, href }) => (
             <a key={label} href={href} className="gx-nav-link">
               {label}

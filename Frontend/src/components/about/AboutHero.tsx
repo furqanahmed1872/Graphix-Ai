@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback } from "react";
 
 const stats = [
   { num: "12K+", label: "Teams using Graphix" },
@@ -11,79 +11,52 @@ const stats = [
 
 export default function AboutHero() {
   const [hoveredStat, setHoveredStat] = useState(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  // Use refs for RAF throttling
-  const rafRef = useRef();
-  const mouseRef = useRef({ x: 0, y: 0 });
+  // Mouse glow: move the DOM node directly — zero re-renders
+  const glowRef = useRef(null);
 
-  // Optimized mouse move handler with RAF
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      mouseRef.current = { x: e.clientX, y: e.clientY };
-
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-
-      rafRef.current = requestAnimationFrame(() => {
-        setMousePosition(mouseRef.current);
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
+  const handleMouseMove = useCallback((e) => {
+    if (glowRef.current) {
+      glowRef.current.style.transform = `translate3d(${e.clientX - 300}px, ${e.clientY - 300}px, 0)`;
+    }
   }, []);
 
-  // Memoize static assets to prevent recreation
-  const noiseTexture = useMemo(
-    () =>
-      `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' fill='black'/%3E%3C/svg%3E")`,
-    [],
-  );
-
-  // Optimized glow style using transform instead of left/top
-  const glowStyle = useMemo(
-    () => ({
-      transform: `translate3d(${mousePosition.x - 300}px, ${mousePosition.y - 300}px, 0)`,
-      willChange: "transform",
-    }),
-    [mousePosition.x, mousePosition.y],
-  );
-
   return (
-    <div className="relative w-full min-h-screen bg-[#111212] overflow-hidden">
-      {/* BLACK NOISE TEXTURE - memoized background */}
-      <div
-        className="absolute inset-0 pointer-events-none z-0 opacity-[0.08]"
-        style={{
-          backgroundImage: noiseTexture,
-          backgroundRepeat: "repeat",
-        }}
-      />
-
-      {/* SUBTLE GRADIENT OVERLAY */}
+    <div
+      className="relative w-full min-h-screen bg-[#111212] overflow-hidden"
+      onMouseMove={handleMouseMove}
+    >
+      {/* SUBTLE GRADIENT OVERLAY — static, no filter cost */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#faf9f8] via-[#f5f4f3] to-[#efeeed] z-0" />
 
-      {/* FLOATING ORBS - added will-change for smoother animation */}
-      <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-[#111212]/10 blur-3xl pointer-events-none will-change-transform" />
-      <div className="absolute bottom-20 left-20 w-80 h-80 rounded-full bg-[#111212]/10 blur-3xl pointer-events-none will-change-transform" />
-
-      {/* MOUSE-FOLLOW GLOW - FIXED: added missing style and optimized */}
+      {/* STATIC BLOBS — radial-gradient, no blur filter repaint */}
       <div
-        className="absolute w-[600px] h-[600px] rounded-full bg-[#111212]/5 blur-3xl pointer-events-none z-0"
+        className="absolute top-20 right-20 w-64 h-64 rounded-full pointer-events-none"
         style={{
-          ...glowStyle,
-          transition: "transform 0.05s linear",
+          background:
+            "radial-gradient(circle, rgba(0,212,200,0.06) 0%, transparent 70%)",
+        }}
+      />
+      <div
+        className="absolute bottom-20 left-20 w-80 h-80 rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(17,18,18,0.07) 0%, transparent 70%)",
         }}
       />
 
-      {/* Top left - The Continental - reduced transition duration */}
+      {/* MOUSE-FOLLOW GLOW — DOM mutation only, no setState, no re-render */}
+      <div
+        ref={glowRef}
+        className="absolute w-[600px] h-[600px] rounded-full pointer-events-none z-0"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(0,212,200,0.06) 0%, transparent 70%)",
+          willChange: "transform",
+        }}
+      />
+
+      {/* Top left branding */}
       <div className="absolute top-10 left-10 z-20 group">
         <div className="text-[0.6rem] text-[#8b8b8b] tracking-[0.25em] uppercase mb-1.5 group-hover:text-[#00d4c8] transition-colors duration-200">
           A project by
@@ -96,10 +69,10 @@ export default function AboutHero() {
 
       {/* Main content */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-6 py-24">
-        {/* Tag - refined */}
+        {/* Badge — no backdrop-blur */}
         <div className="mb-20 text-center">
-          <div className="inline-flex items-center gap-3 px-4 py-2 border border-[#e8e8e8] rounded-full bg-white/50 backdrop-blur-sm shadow-sm">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#00d4c8] animate-pulse" />
+          <div className="inline-flex items-center gap-3 px-4 py-2 border border-[#e8e8e8] rounded-full bg-white/70 shadow-sm">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#00d4c8]" />
             <span className="text-[0.6rem] tracking-[0.15em] text-[#8b8b8b] uppercase font-medium">
               About Graphix
             </span>
@@ -107,7 +80,7 @@ export default function AboutHero() {
           </div>
         </div>
 
-        {/* Massive headline - brutalist with details */}
+        {/* Headline */}
         <div className="max-w-6xl mx-auto text-center mb-16">
           <h1 className="text-[clamp(3rem,10vw,7rem)] font-bold leading-[0.95] tracking-tighter text-black">
             <span className="relative inline-block">
@@ -147,7 +120,7 @@ export default function AboutHero() {
           </h1>
         </div>
 
-        {/* Description with quote mark detail */}
+        {/* Description */}
         <div className="max-w-md mx-auto text-center mb-24 relative">
           <div className="absolute -top-6 -left-8 text-6xl text-[#00d4c8]/10 font-serif">
             "
@@ -161,7 +134,7 @@ export default function AboutHero() {
           </p>
         </div>
 
-        {/* Stats - detailed design */}
+        {/* Stats */}
         <div className="w-full max-w-4xl mx-auto">
           <div className="border-t border-[#e8e8e8] pt-12">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-10">
@@ -172,13 +145,11 @@ export default function AboutHero() {
                   onMouseEnter={() => setHoveredStat(idx)}
                   onMouseLeave={() => setHoveredStat(null)}
                 >
-                  {/* Background highlight on hover - optimized duration */}
                   <div
                     className={`absolute inset-0 bg-[#00d4c8]/5 rounded-2xl transition-opacity duration-200 ${
                       hoveredStat === idx ? "opacity-100" : "opacity-0"
                     }`}
                   />
-
                   <div className="relative py-4">
                     <div
                       className={`text-4xl md:text-5xl font-bold transition-all duration-200 ${
@@ -186,14 +157,11 @@ export default function AboutHero() {
                           ? "text-[#00d4c8] scale-110"
                           : "text-black"
                       }`}
-                      style={{
-                        willChange: hoveredStat === idx ? "transform" : "auto",
-                      }}
                     >
                       {stat.num}
                     </div>
                     <div
-                      className={`text-[0.6rem] uppercase tracking-wider mt-2 transition-all duration-200 ${
+                      className={`text-[0.6rem] uppercase mt-2 transition-all duration-200 ${
                         hoveredStat === idx
                           ? "text-[#00d4c8] tracking-[0.2em]"
                           : "text-[#8b8b8b] tracking-[0.15em]"
@@ -201,10 +169,8 @@ export default function AboutHero() {
                     >
                       {stat.label}
                     </div>
-
-                    {/* Decorative line under stat on hover */}
                     <div
-                      className={`w-8 h-px bg-[#00d4c8] mx-auto mt-3 transition-all duration-300 ${
+                      className={`h-px bg-[#00d4c8] mx-auto mt-3 transition-all duration-300 ${
                         hoveredStat === idx
                           ? "opacity-100 w-12"
                           : "opacity-0 w-8"
@@ -217,7 +183,7 @@ export default function AboutHero() {
           </div>
         </div>
 
-        {/* Bottom accent - detailed */}
+        {/* Scroll indicator */}
         <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3">
           <div className="w-px h-8 bg-gradient-to-b from-[#00d4c8] to-transparent" />
           <div className="text-[0.55rem] text-[#c0c0c0] tracking-[0.3em] uppercase">
@@ -226,7 +192,7 @@ export default function AboutHero() {
         </div>
       </div>
 
-      {/* Decorative elements - bottom right grid pattern */}
+      {/* Decorative bottom-right */}
       <div className="absolute bottom-10 right-10 w-40 h-40 opacity-20 pointer-events-none">
         <svg
           viewBox="0 0 100 100"
@@ -309,7 +275,7 @@ export default function AboutHero() {
         </svg>
       </div>
 
-      {/* Top right - subtle chart icon */}
+      {/* Decorative top-right */}
       <div className="absolute top-10 right-10 opacity-20 pointer-events-none">
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
           <path d="M4 28 L28 28" stroke="#00d4c8" strokeWidth="1" />

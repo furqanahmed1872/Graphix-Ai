@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 
 const principles = [
   {
@@ -51,80 +51,52 @@ const teamValues = [
 export default function MissionSection() {
   const [hoveredPrinciple, setHoveredPrinciple] = useState(null);
   const [hoveredValue, setHoveredValue] = useState(null);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
-  // Use RAF for smoother mouse tracking
-  const rafRef = useRef();
-  const mouseRef = useRef({ x: 0, y: 0 });
+  // Mouse glow via direct DOM mutation — zero re-renders
+  const glowRef = useRef(null);
 
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      // Store latest mouse position
-      mouseRef.current = { x: e.clientX, y: e.clientY };
-
-      // Cancel previous RAF
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-
-      // Update state on next animation frame
-      rafRef.current = requestAnimationFrame(() => {
-        setMousePosition(mouseRef.current);
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      if (rafRef.current) {
-        cancelAnimationFrame(rafRef.current);
-      }
-    };
+  const handleMouseMove = useCallback((e) => {
+    if (glowRef.current) {
+      glowRef.current.style.transform = `translate3d(${e.clientX - 250}px, ${e.clientY - 250}px, 0)`;
+    }
   }, []);
 
-  // Memoize noise texture to prevent recreation
-  const noiseTexture =
-    "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' fill='black'/%3E%3C/svg%3E\")";
-
-  // Use will-change for elements that animate
-  const glowStyle = {
-    left: mousePosition.x - 250,
-    top: mousePosition.y - 250,
-    willChange: "transform",
-    transform: "translateZ(0)",
-  };
-
   return (
-    <div className="relative w-full bg-[#111212] overflow-hidden">
-      {/* BLACK NOISE TEXTURE - Fixed with static background */}
-      <div
-        className="absolute inset-0 pointer-events-none z-0 opacity-[0.08]"
-        style={{
-          backgroundImage: noiseTexture,
-          backgroundRepeat: "repeat",
-          willChange: "auto",
-        }}
-      />
-
-      {/* SUBTLE GRADIENT OVERLAY */}
+    <div
+      className="relative w-full bg-[#111212] overflow-hidden"
+      onMouseMove={handleMouseMove}
+    >
+      {/* STATIC GRADIENT OVERLAY */}
       <div className="absolute inset-0 bg-gradient-to-br from-[#faf9f8] via-[#f5f4f3] to-[#efeeed] z-0" />
 
-      {/* FLOATING ORBS - Added back the third orb */}
-      <div className="absolute top-40 right-20 w-96 h-96 rounded-full bg-[#111212]/8 blur-3xl pointer-events-none will-change-transform" />
-      <div className="absolute bottom-40 left-20 w-[500px] h-[500px] rounded-full bg-[#111212]/5 blur-3xl pointer-events-none will-change-transform" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[300px] rounded-full bg-[#00d4c8]/3 blur-3xl pointer-events-none will-change-transform" />
-
-      {/* MOUSE-FOLLOW GLOW - Optimized with transform instead of left/top */}
+      {/* STATIC BLOBS — radial-gradient, no blur filter repaint */}
       <div
-        className="absolute w-[500px] h-[500px] rounded-full bg-[#00d4c8]/5 blur-3xl pointer-events-none z-0"
+        className="absolute top-40 right-20 w-96 h-96 rounded-full pointer-events-none"
         style={{
-          transform: `translate3d(${mousePosition.x - 250}px, ${mousePosition.y - 250}px, 0)`,
-          willChange: "transform",
-          transition: "transform 0.05s linear", // Faster transition for smoother feel
+          background:
+            "radial-gradient(circle, rgba(0,212,200,0.06) 0%, transparent 70%)",
+        }}
+      />
+      <div
+        className="absolute bottom-40 left-20 w-[500px] h-[500px] rounded-full pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(17,18,18,0.06) 0%, transparent 70%)",
         }}
       />
 
-      {/* Top left - The Continental */}
+      {/* MOUSE-FOLLOW GLOW — DOM mutation only, no setState */}
+      <div
+        ref={glowRef}
+        className="absolute w-[500px] h-[500px] rounded-full pointer-events-none z-0"
+        style={{
+          background:
+            "radial-gradient(circle, rgba(0,212,200,0.07) 0%, transparent 70%)",
+          willChange: "transform",
+        }}
+      />
+
+      {/* Top left branding */}
       <div className="absolute top-10 left-10 z-20 group">
         <div className="text-[0.6rem] text-[#8b8b8b] tracking-[0.25em] uppercase mb-1.5 group-hover:text-[#00d4c8] transition-colors duration-200">
           A project by
@@ -138,8 +110,9 @@ export default function MissionSection() {
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-32">
         {/* Section header */}
         <div className="text-center mb-24">
-          <div className="inline-flex items-center gap-3 px-4 py-2 border border-[#e8e8e8] rounded-full bg-white/50 backdrop-blur-sm shadow-sm mb-8">
-            <div className="w-1.5 h-1.5 rounded-full bg-[#00d4c8] animate-pulse" />
+          {/* Badge — no backdrop-blur, no animate-pulse */}
+          <div className="inline-flex items-center gap-3 px-4 py-2 border border-[#e8e8e8] rounded-full bg-white/70 shadow-sm mb-8">
+            <div className="w-1.5 h-1.5 rounded-full bg-[#00d4c8]" />
             <span className="text-[0.6rem] tracking-[0.15em] text-[#8b8b8b] uppercase font-medium">
               Our Mission
             </span>
@@ -165,11 +138,10 @@ export default function MissionSection() {
           {principles.map((principle, idx) => (
             <div
               key={principle.number}
-              className="group cursor-pointer relative will-change-transform"
+              className="group cursor-pointer relative"
               onMouseEnter={() => setHoveredPrinciple(idx)}
               onMouseLeave={() => setHoveredPrinciple(null)}
             >
-              {/* Background highlight on hover - Optimized */}
               <div
                 className={`absolute inset-0 rounded-2xl transition-opacity duration-300 ${
                   hoveredPrinciple === idx ? "opacity-100" : "opacity-0"
@@ -178,8 +150,6 @@ export default function MissionSection() {
                   background: `linear-gradient(135deg, ${principle.accent}08, transparent)`,
                 }}
               />
-
-              {/* Border glow on hover - Optimized */}
               <div
                 className={`absolute inset-0 rounded-2xl transition-opacity duration-300 pointer-events-none ${
                   hoveredPrinciple === idx ? "opacity-100" : "opacity-0"
@@ -194,18 +164,16 @@ export default function MissionSection() {
                   <div
                     className={`text-6xl font-black transition-all duration-200 ${
                       hoveredPrinciple === idx
-                        ? `scale-110 translate-x-1`
+                        ? "scale-110 translate-x-1"
                         : "text-black/20"
                     }`}
                     style={{
                       color:
                         hoveredPrinciple === idx ? principle.accent : undefined,
-                      willChange: "transform",
                     }}
                   >
                     {principle.number}
                   </div>
-
                   <div
                     className={`text-right transition-opacity duration-200 ${hoveredPrinciple === idx ? "opacity-100" : "opacity-50"}`}
                   >
@@ -223,11 +191,7 @@ export default function MissionSection() {
 
                 <div className="relative inline-block mb-3">
                   <div
-                    className={`text-xl font-bold transition-colors duration-200 ${
-                      hoveredPrinciple === idx
-                        ? `text-[${principle.accent}]`
-                        : "text-black"
-                    }`}
+                    className="text-xl font-bold transition-colors duration-200"
                     style={{
                       color:
                         hoveredPrinciple === idx ? principle.accent : undefined,
@@ -282,9 +246,10 @@ export default function MissionSection() {
               >
                 <div className="flex justify-between text-sm mb-1">
                   <span
-                    className={`text-black/70 transition-colors duration-200`}
+                    className="transition-colors duration-200"
                     style={{
-                      color: hoveredValue === idx ? value.color : undefined,
+                      color:
+                        hoveredValue === idx ? value.color : "rgba(0,0,0,0.7)",
                     }}
                   >
                     {value.label}
@@ -295,7 +260,7 @@ export default function MissionSection() {
                 </div>
                 <div className="h-1 bg-[#e8e8e8] rounded-full overflow-hidden">
                   <div
-                    className={`h-full rounded-full transition-all duration-300 ${
+                    className={`h-full rounded-full transition-opacity duration-300 ${
                       hoveredValue === idx ? "opacity-100" : "opacity-80"
                     }`}
                     style={{
@@ -313,7 +278,7 @@ export default function MissionSection() {
           </div>
         </div>
 
-        {/* Quote / Callout block */}
+        {/* Quote block */}
         <div className="relative max-w-4xl mx-auto text-center mb-32">
           <div className="absolute -top-10 -left-10 text-8xl text-[#00d4c8]/10 font-serif">
             "
@@ -332,13 +297,11 @@ export default function MissionSection() {
                 that should have existed from the start.
               </span>
             </p>
-
             <div className="flex justify-center gap-2 mt-8">
               <div className="w-8 h-px bg-[#00d4c8]/30" />
               <div className="w-12 h-px bg-[#00d4c8]" />
               <div className="w-8 h-px bg-[#00d4c8]/30" />
             </div>
-
             <div className="mt-6 text-[0.55rem] text-[#c0c0c0] tracking-[0.3em] uppercase">
               — Since 2021 —
             </div>
@@ -348,27 +311,19 @@ export default function MissionSection() {
         {/* Bottom stats / CTA */}
         <div className="border-t border-[#e8e8e8] pt-12">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-black">12K+</div>
-              <div className="text-[0.6rem] text-[#8b8b8b] tracking-wider mt-1">
-                TEAMS
+            {[
+              ["12K+", "TEAMS"],
+              ["149+", "CHART TYPES"],
+              ["<3s", "GENERATION"],
+            ].map(([num, label]) => (
+              <div key={label} className="text-center">
+                <div className="text-3xl font-bold text-black">{num}</div>
+                <div className="text-[0.6rem] text-[#8b8b8b] tracking-wider mt-1">
+                  {label}
+                </div>
+                <div className="w-8 h-px bg-[#00d4c8]/30 mx-auto mt-2" />
               </div>
-              <div className="w-8 h-px bg-[#00d4c8]/30 mx-auto mt-2" />
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-black">149+</div>
-              <div className="text-[0.6rem] text-[#8b8b8b] tracking-wider mt-1">
-                CHART TYPES
-              </div>
-              <div className="w-8 h-px bg-[#00d4c8]/30 mx-auto mt-2" />
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-black">&lt;3s</div>
-              <div className="text-[0.6rem] text-[#8b8b8b] tracking-wider mt-1">
-                GENERATION
-              </div>
-              <div className="w-8 h-px bg-[#00d4c8]/30 mx-auto mt-2" />
-            </div>
+            ))}
           </div>
 
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 pt-8 border-t border-[#e8e8e8]">
@@ -380,7 +335,6 @@ export default function MissionSection() {
                 Start telling better stories with your data
               </div>
             </div>
-
             <div className="flex gap-4">
               <button className="group relative px-8 py-3 bg-[#00d4c8] text-black font-medium rounded-lg overflow-hidden transition-all hover:scale-105">
                 <span className="relative z-10">Start for free →</span>
@@ -407,7 +361,7 @@ export default function MissionSection() {
         </div>
       </div>
 
-      {/* Decorative elements - bottom right grid pattern */}
+      {/* Decorative bottom-right */}
       <div className="absolute bottom-10 right-10 w-40 h-40 opacity-20 pointer-events-none">
         <svg
           viewBox="0 0 100 100"
@@ -489,7 +443,7 @@ export default function MissionSection() {
         </svg>
       </div>
 
-      {/* Top right - subtle chart icon */}
+      {/* Decorative top-right */}
       <div className="absolute top-10 right-10 opacity-20 pointer-events-none">
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
           <path d="M4 28 L28 28" stroke="#00d4c8" strokeWidth="1" />
