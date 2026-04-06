@@ -103,8 +103,8 @@ export default function InputBar({ onSend, isLoading }: InputBarProps) {
     let fp = input.trim();
     if (chartType)
       fp += chartType.prompt
-        ? ` — make this  a  new "${chartType.prompt}"`
-        : ` — make this  a new ${chartType.groupLabel} chart `;
+        ? ` — make this  as a  new "${chartType.prompt}"`
+        : ` — make this  as a new ${chartType.groupLabel} chart `;
     onSend(fp, "", "");
     afterSend();
   };

@@ -5,38 +5,40 @@ import * as THREE from "three";
 import Navbar from "../NavBar";
 import Link from "next/link";
 import { useAppStore } from "@/store/appStore";
-
 type ChartMode = "bar" | "line" | "scatter";
-interface BP {
+interface BarPair {
   a: THREE.Mesh;
   b: THREE.Mesh;
 }
 
-const DA = [
+const DATA_A = [
   0.55, 0.62, 0.48, 0.71, 0.58, 0.82, 0.67, 0.74, 0.6, 0.88, 0.72, 0.65, 0.78,
   0.53, 0.69, 0.91,
 ];
-const DB = [
+const DATA_B = [
   0.3, 0.44, 0.38, 0.52, 0.41, 0.6, 0.5, 0.55, 0.45, 0.68, 0.57, 0.48, 0.63,
   0.35, 0.51, 0.72,
 ];
-const N = DA.length,
-  HOLD = 300,
-  MORPH = 150;
-const CY: ChartMode[] = ["bar", "line", "scatter"];
-const ez = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
-const COL = {
-  bA: new THREE.Color(0x44ee99),
-  bB: new THREE.Color(0x55ddee),
-  lA: new THREE.Color(0xee33bb),
-  lB: new THREE.Color(0xffaa33),
-  sA: new THREE.Color(0x44ee99),
-  sB: new THREE.Color(0xff5577),
+const N = DATA_A.length;
+const HOLD = 300;
+const MORPH = 150;
+const CYCLE: ChartMode[] = ["bar", "line", "scatter"];
+const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+
+const C = {
+  barA: new THREE.Color(0x44ee99),
+  barB: new THREE.Color(0x55ddee),
+  lineA: new THREE.Color(0xee33bb),
+  lineB: new THREE.Color(0xffaa33),
+  scatterA: new THREE.Color(0x44ee99),
+  scatterB: new THREE.Color(0xff5577),
+  axis: new THREE.Color(0x888899),
   grid: new THREE.Color(0x444455),
   cage: new THREE.Color(0xbbbbcc),
 };
 
-/* ─── 3-D Cube ─────────────────────────────────────────────── */
+// ─── ThreeCube ───────────────────────────────────────────────────────────────
+
 function ThreeCube() {
   const mountRef = useRef<HTMLDivElement>(null);
 
@@ -709,7 +711,7 @@ const CSS = `
     align-items: center; box-sizing: border-box; width: 100%;
   }
   .gxh-left  { flex: 0 0 50%; position: relative; min-width: 0; }
-  .gxh-cube  { flex: 0 0 50%; height: min(560px,65vh); overflow: visible; }
+  .gxh-cube  { flex: 0 0 50%; height: min(500px,85vh); overflow: visible; }
   .gxh-tbar  { display: flex; align-items: center; border-top: 1px solid rgba(255,255,255,.06); padding-top: 24px; }
   .gxh-titem { padding-right: 24px; margin-right: 24px; }
   .gxh-titem:last-child { padding-right: 0; margin-right: 0; border-right: none !important; }

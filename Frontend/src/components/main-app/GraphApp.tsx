@@ -29,7 +29,6 @@ interface Conversation {
 
 const STORAGE_KEY = "graphix_conversations_v2";
 
-
 function loadFromStorage(): {
   conversations: Conversation[];
   activeId: string;
@@ -61,7 +60,7 @@ function saveToStorage(conversations: Conversation[], activeId: string) {
 }
 
 export default function GraphApp() {
- const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>(() => {
     if (typeof window === "undefined") return [createConversation()];
     const stored = loadFromStorage();
@@ -76,6 +75,11 @@ export default function GraphApp() {
   const [sidebarOpen, setSidebarOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  // Mobile panel states
+  const [mobileTemplatesOpen, setMobileTemplatesOpen] = useState(false);
+  const [mobileHistoryOpen, setMobileHistoryOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
   const { token, isAuthenticated, addSavedChart } = useAppStore();
 
   const handleSaveChart = async (
@@ -89,15 +93,26 @@ export default function GraphApp() {
   };
 
   useEffect(() => {
-    if (typeof window !== "undefined" && window.innerWidth >= 640)
-      setSidebarOpen(true);
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 640;
+      setIsMobile(mobile);
+      if (!mobile) setSidebarOpen(true);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
   }, []);
+
+  // Close mobile panels when switching conversations
+  useEffect(() => {
+    setMobileTemplatesOpen(false);
+    setMobileHistoryOpen(false);
+  }, [activeId]);
 
   useEffect(() => {
     if (typeof window !== "undefined") saveToStorage(conversations, activeId);
   }, [conversations, activeId]);
 
-  // Auto-select latest AI chart whenever active conversation changes
   useEffect(() => {
     const conv = conversations.find((c) => c.id === activeId);
     const aiMsgs =
@@ -109,6 +124,11 @@ export default function GraphApp() {
 
   const activeConv = conversations.find((c) => c.id === activeId);
   const hasMessages = (activeConv?.messages?.length ?? 0) > 0;
+
+  const chartMsgsCount =
+    activeConv?.messages.filter(
+      (m) => m.from === "ai" && m.status === "success" && m.content?.data,
+    ).length ?? 0;
 
   const updateMessages = useCallback(
     (convId: string, updater: Message[] | ((prev: Message[]) => Message[])) => {
@@ -129,32 +149,27 @@ export default function GraphApp() {
     [],
   );
 
-
   const handleDeleteConversation = (id: string) => {
-    setDeleteConfirmId(id); // Show confirmation toast
+    setDeleteConfirmId(id);
   };
 
- const confirmDeleteConversation = (id: string) => {
-   setConversations((prev) => {
-     const filtered = prev.filter((c) => c.id !== id);
-
-     if (id === activeId) {
-       if (filtered.length > 0) {
-         setActiveId(filtered[0].id);
-       } else {
-         const newConv = createConversation();
-         setActiveId(newConv.id);
-         return [newConv];
-       }
-     }
-     return filtered;
-   });
-
-   if (id === activeId) {
-     setSelectedAiId(null);
-   }
-   setDeleteConfirmId(null);
- };
+  const confirmDeleteConversation = (id: string) => {
+    setConversations((prev) => {
+      const filtered = prev.filter((c) => c.id !== id);
+      if (id === activeId) {
+        if (filtered.length > 0) {
+          setActiveId(filtered[0].id);
+        } else {
+          const newConv = createConversation();
+          setActiveId(newConv.id);
+          return [newConv];
+        }
+      }
+      return filtered;
+    });
+    if (id === activeId) setSelectedAiId(null);
+    setDeleteConfirmId(null);
+  };
 
   const newConversation = () => {
     const hasEmpty = conversations.some(
@@ -171,14 +186,12 @@ export default function GraphApp() {
       setActiveId(c.id);
     }
     setSelectedAiId(null);
-    if (typeof window !== "undefined" && window.innerWidth < 640)
-      setSidebarOpen(false);
+    if (isMobile) setSidebarOpen(false);
   };
 
   const handleSelect = (id: string) => {
     setActiveId(id);
-    if (typeof window !== "undefined" && window.innerWidth < 640)
-      setSidebarOpen(false);
+    if (isMobile) setSidebarOpen(false);
   };
 
   const handleSend = async (
@@ -190,6 +203,10 @@ export default function GraphApp() {
     if (!input.trim() || isLoading || !activeId) return;
     const convId = activeId;
     const newAiId = crypto.randomUUID();
+
+    // Close mobile panels when sending
+    setMobileTemplatesOpen(false);
+    setMobileHistoryOpen(false);
 
     const userMsg: Message = {
       id: crypto.randomUUID(),
@@ -207,35 +224,12 @@ export default function GraphApp() {
       status: "loading",
     };
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // FIX: Build previousChart from the SELECTED chart's frozen message
-    // content ONLY — never from window.__graphixCurrentData.
-    //
-    // WHY THIS WAS BROKEN:
-    // window.__graphixCurrentData holds whatever chart is currently rendered
-    // in the DOM (SingleChartArea's div). When you have a 3D chart rendered
-    // and you click a different chart in the sidebar (selectedAiId changes),
-    // the DOM still shows the 3D chart — so window.__graphixCurrentData still
-    // has the 3D chart's data. Then when you say "make it red", the AI
-    // receives the 3D chart as context and edits THAT instead of your
-    // selected chart.
-    //
-    // THE FIX:
-    // Read previousChart directly from the frozen message state (which is
-    // keyed by message ID). This is always accurate regardless of what's
-    // currently rendered in the DOM.
-    //
-    // TOOLBAR EDITS (palette changes, type conversions, etc.) are stored
-    // per-chart in window.__graphixChartData[messageId] by SingleChartArea,
-    // so we can still pick those up without reading the wrong chart.
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     const conv = conversations.find((c) => c.id === convId);
     const aiMessages =
       conv?.messages.filter(
         (m) => m.from === "ai" && m.status === "success" && m.content?.data,
       ) ?? [];
 
-    // Resolve which chart the user has selected
     const contextAiId = selectedAiId ?? aiMessages.at(-1)?.id ?? null;
     const contextMsg =
       aiMessages.find((m) => m.id === contextAiId) ?? aiMessages.at(-1) ?? null;
@@ -243,9 +237,6 @@ export default function GraphApp() {
     let previousChart: { data: any[]; layout: any } | null = null;
 
     if (contextMsg) {
-      // Check if the user made toolbar/template edits to this specific chart.
-      // SingleChartArea now stores edits keyed by message ID so we never
-      // accidentally read a different chart's state.
       const perChartData =
         typeof window !== "undefined"
           ? (window as any).__graphixChartData?.[contextMsg.id]
@@ -257,12 +248,10 @@ export default function GraphApp() {
       };
     }
 
-    // Append user message + loading AI slot
     updateMessages(convId, (msgs) => [...msgs, userMsg, loadingAiMsg]);
     setSelectedAiId(newAiId);
     setIsLoading(true);
 
-    // If this is a prebuilt config from CSV fast-path, skip API
     if (prebuiltConfig) {
       updateMessages(convId, (msgs) =>
         msgs.map((m) =>
@@ -313,13 +302,8 @@ export default function GraphApp() {
         return;
       }
 
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-      // SMART EDIT vs CREATE:
-      // If action is "edit", REPLACE the previous chart instead of appending
-      // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
       if (config.action === "edit" && contextMsg) {
         const prevAiId = contextMsg.id;
-
         updateMessages(convId, (msgs) => {
           const withoutLoading = msgs.filter((m) => m.id !== newAiId);
           return withoutLoading.map((m) =>
@@ -332,17 +316,13 @@ export default function GraphApp() {
               : m,
           );
         });
-
-        // Also clear any stale per-chart toolbar state for the edited chart
         if (typeof window !== "undefined") {
           if ((window as any).__graphixChartData) {
             delete (window as any).__graphixChartData[prevAiId];
           }
         }
-
         setSelectedAiId(prevAiId);
       } else {
-        // Normal "create" flow — add as new chart
         updateMessages(convId, (msgs) =>
           msgs.map((m) =>
             m.id === newAiId
@@ -384,15 +364,39 @@ export default function GraphApp() {
       <StarField />
 
       <div className="flex h-dvh relative z-10">
-        {/* Mobile backdrop */}
-        {sidebarOpen && (
+        {/* Mobile backdrop for sidebar */}
+        {sidebarOpen && isMobile && (
           <div
-            className="fixed inset-0 z-[9] sm:hidden"
+            className="fixed inset-0 z-[9]"
             style={{
               background: "rgba(0,0,0,0.7)",
               backdropFilter: "blur(4px)",
             }}
             onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        {/* Mobile backdrop for template panel */}
+        {mobileTemplatesOpen && isMobile && (
+          <div
+            className="fixed inset-0 z-[19]"
+            style={{
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(2px)",
+            }}
+            onClick={() => setMobileTemplatesOpen(false)}
+          />
+        )}
+
+        {/* Mobile backdrop for history sidebar */}
+        {mobileHistoryOpen && isMobile && (
+          <div
+            className="fixed inset-0 z-[19]"
+            style={{
+              background: "rgba(0,0,0,0.6)",
+              backdropFilter: "blur(2px)",
+            }}
+            onClick={() => setMobileHistoryOpen(false)}
           />
         )}
 
@@ -408,6 +412,43 @@ export default function GraphApp() {
           />
         )}
 
+        {/* Mobile template panel — slides in from left */}
+        {isMobile && mobileTemplatesOpen && hasMessages && (
+          <div
+            className="fixed left-0 top-0 bottom-0 z-20"
+            style={{
+              animation: "slideInLeft 0.2s ease both",
+            }}
+          >
+            <style>{`@keyframes slideInLeft{from{transform:translateX(-100%)}to{transform:translateX(0)}}`}</style>
+            <div style={{ paddingTop: 48 }}>
+              <ChartTemplatePanel />
+            </div>
+          </div>
+        )}
+
+        {/* Mobile history sidebar — slides in from right */}
+        {isMobile && mobileHistoryOpen && hasMessages && (
+          <div
+            className="fixed right-0 top-0 bottom-0 z-20"
+            style={{
+              animation: "slideInRight 0.2s ease both",
+            }}
+          >
+            <style>{`@keyframes slideInRight{from{transform:translateX(100%)}to{transform:translateX(0)}}`}</style>
+            <div style={{ paddingTop: 48 }}>
+              <MessageHistorySidebar
+                messages={activeConv?.messages ?? []}
+                selectedAiId={selectedAiId}
+                onSelectAiId={(id) => {
+                  setSelectedAiId(id);
+                  setMobileHistoryOpen(false);
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* CENTER — main area */}
         <div className="flex-1 flex flex-col min-w-0 relative">
           {/* Topbar */}
@@ -417,6 +458,7 @@ export default function GraphApp() {
               background: "rgba(9,9,15,0.85)",
               backdropFilter: "blur(12px)",
               borderBottom: "1px solid rgba(255,255,255,0.06)",
+              height: 48,
             }}
           >
             {!sidebarOpen && (
@@ -441,12 +483,105 @@ export default function GraphApp() {
             >
               {activeConv?.title || "Graphix"}
             </span>
+
+            <div className="flex items-center gap-2  flex-shrink-0">
+              <a
+                className="flex text-black text-xs px-2 items-center justify-center bg-white h-6 rounded-lg transition-all"
+                href="/dashboard"
+                aria-label="Go to dashboard"
+              >
+                Dashboad
+              </a>
+            </div>
+
+            {/* Mobile action buttons — show when there are charts */}
+            {isMobile && hasMessages && (
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                {/* Templates toggle */}
+                <button
+                  onClick={() => {
+                    setMobileTemplatesOpen((v) => !v);
+                    setMobileHistoryOpen(false);
+                  }}
+                  className="flex items-center justify-center w-8 h-8 rounded-lg transition-all"
+                  style={{
+                    color: mobileTemplatesOpen
+                      ? "#06b6d4"
+                      : "rgba(255,255,255,0.4)",
+                    border: `1px solid ${mobileTemplatesOpen ? "rgba(6,182,212,0.35)" : "rgba(255,255,255,0.07)"}`,
+                    background: mobileTemplatesOpen
+                      ? "rgba(6,182,212,0.1)"
+                      : "transparent",
+                  }}
+                  aria-label="Templates"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  >
+                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                  </svg>
+                </button>
+
+                {/* Charts history toggle */}
+                <button
+                  onClick={() => {
+                    setMobileHistoryOpen((v) => !v);
+                    setMobileTemplatesOpen(false);
+                  }}
+                  className="relative flex items-center justify-center w-8 h-8 rounded-lg transition-all"
+                  style={{
+                    color: mobileHistoryOpen
+                      ? "#06b6d4"
+                      : "rgba(255,255,255,0.4)",
+                    border: `1px solid ${mobileHistoryOpen ? "rgba(6,182,212,0.35)" : "rgba(255,255,255,0.07)"}`,
+                    background: mobileHistoryOpen
+                      ? "rgba(6,182,212,0.1)"
+                      : "transparent",
+                  }}
+                  aria-label="Chart history"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                  >
+                    <polyline points="3 17 9 11 13 15 21 7" />
+                  </svg>
+                  {chartMsgsCount > 0 && (
+                    <span
+                      className="absolute -top-1 -right-1 flex items-center justify-center rounded-full text-[9px] font-bold"
+                      style={{
+                        width: 14,
+                        height: 14,
+                        background: "#06b6d4",
+                        color: "#000",
+                      }}
+                    >
+                      {chartMsgsCount > 9 ? "9+" : chartMsgsCount}
+                    </span>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Body */}
           <div className="flex-1 flex min-h-0">
-            {/* Template panel — left, only when chart exists */}
-            {hasMessages && <ChartTemplatePanel />}
+            {/* Template panel — desktop only (left) */}
+            {!isMobile && hasMessages && <ChartTemplatePanel />}
 
             {/* Chart or Hero */}
             <div className="flex-1 flex flex-col min-w-0">
@@ -468,8 +603,8 @@ export default function GraphApp() {
           </div>
         </div>
 
-        {/* RIGHT — chart history sidebar */}
-        {hasMessages && (
+        {/* RIGHT — chart history sidebar (desktop only) */}
+        {!isMobile && hasMessages && (
           <MessageHistorySidebar
             messages={activeConv?.messages ?? []}
             selectedAiId={selectedAiId}
@@ -477,16 +612,14 @@ export default function GraphApp() {
           />
         )}
       </div>
-      {/* Delete Confirmation Toast - Centered with Backdrop Blur */}
+
+      {/* Delete Confirmation Toast */}
       {deleteConfirmId && (
         <>
-          {/* Backdrop Blur Overlay */}
           <div
             className="fixed inset-0 z-[99] bg-black/70 backdrop-blur-md"
             onClick={() => setDeleteConfirmId(null)}
           />
-
-          {/* Centered Toast */}
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <div className="bg-zinc-900 border border-red-500/40 rounded-xl shadow-2xl w-full max-w-[340px] overflow-hidden">
               <div className="p-6">
@@ -497,7 +630,6 @@ export default function GraphApp() {
                     This action cannot be undone.
                   </span>
                 </div>
-
                 <div className="flex gap-3">
                   <button
                     onClick={() => setDeleteConfirmId(null)}
