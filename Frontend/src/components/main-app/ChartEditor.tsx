@@ -3589,19 +3589,27 @@ export default function ChartEditor({
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const getLiveData = useCallback((): { data: any[]; layout: any } => {
-    const liveDiv = divRef?.current;
-    if (liveDiv && liveDiv.data && liveDiv.data.length > 0)
-      return {
-        data: liveDiv.data,
-        layout: liveDiv.layout || message?.content?.layout || {},
-      };
+const getLiveData = useCallback((): { data: any[]; layout: any } => {
+  const liveDiv = divRef?.current;
+  const msgLayout = message?.content?.layout || {};
+  if (liveDiv && liveDiv.data && liveDiv.data.length > 0) {
+    const liveLayout = liveDiv.layout || {};
+    // Always preserve title from message.content if live div has stripped it
+    const resolvedTitle = liveLayout.title || msgLayout.title;
     return {
-      data: message?.content?.data || [],
-      layout: message?.content?.layout || {},
+      data: liveDiv.data,
+      layout: {
+        ...msgLayout,
+        ...liveLayout,
+        title: resolvedTitle,
+      },
     };
-  }, [divRef, message]);
-
+  }
+  return {
+    data: message?.content?.data || [],
+    layout: msgLayout,
+  };
+}, [divRef, message]);
   const { token, isAuthenticated, addSavedChart, updateSavedChart } =
     useAppStore();
   const [dbSaveStatus, setDbSaveStatus] = useState<

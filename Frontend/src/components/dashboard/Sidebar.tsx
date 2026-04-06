@@ -61,8 +61,12 @@ export default function Sidebar({
   const savedCharts = useAppStore((s) => s.savedCharts);
   const logout = useAppStore((s) => s.logout);
 
-  const initials = user ? `${user.firstName[0]}${user.lastName[0]}` : "…";
-  const fullName = user ? `${user.firstName} ${user.lastName}` : "";
+const initials = user
+  ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.trim() || "…"
+  : "…";
+const fullName = user
+  ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
+  : "";
   const planLabel = subscription?.plan ?? "free";
 
   const totalGraphs = savedCharts.length;

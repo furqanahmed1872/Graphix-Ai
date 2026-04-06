@@ -18,6 +18,7 @@ export default function SharePage() {
   const [chart, setChart] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
   const plotRef = useRef<HTMLDivElement>(null);
   const [plotlyReady, setPlotlyReady] = useState(false);
 
@@ -50,6 +51,23 @@ export default function SharePage() {
   useEffect(() => {
     if (!plotlyReady || !chart || !plotRef.current) return;
     const { data, layout } = chart.chartConfig;
+
+    const traces = data || [];
+    const is3D = traces.some((t: any) =>
+      [
+        "scatter3d",
+        "surface",
+        "mesh3d",
+        "cone",
+        "streamtube",
+        "isosurface",
+        "volume",
+      ].includes(t.type),
+    );
+    const isHeat = traces.some((t: any) =>
+      ["heatmap", "contour", "histogram2d"].includes(t.type),
+    );
+
     try {
       window.Plotly.react(
         plotRef.current,
@@ -58,10 +76,51 @@ export default function SharePage() {
           ...layout,
           autosize: true,
           paper_bgcolor: "rgba(0,0,0,0)",
-          plot_bgcolor: "rgba(0,0,0,0)",
-          font: { color: "#e2e8f0", family: "DM Mono, monospace" },
+          plot_bgcolor: isHeat ? "#0f0f0f" : "rgba(0,0,0,0)",
+          font: { color: "#cbd5e1", family: "DM Mono, monospace", size: 12 },
+          margin: is3D
+            ? { l: 0, r: 0, t: 20, b: 0 }
+            : { l: 40, r: 20, t: 20, b: 40 },
+          xaxis: layout?.xaxis
+            ? {
+                ...layout.xaxis,
+                gridcolor: "rgba(255,255,255,0.06)",
+                linecolor: "rgba(255,255,255,0.1)",
+                tickfont: { color: "#64748b", size: 11 },
+                title: layout.xaxis.title
+                  ? {
+                      ...layout.xaxis.title,
+                      font: { color: "#94a3b8", size: 12 },
+                    }
+                  : undefined,
+              }
+            : undefined,
+          yaxis: layout?.yaxis
+            ? {
+                ...layout.yaxis,
+                gridcolor: "rgba(255,255,255,0.06)",
+                linecolor: "rgba(255,255,255,0.1)",
+                tickfont: { color: "#64748b", size: 11 },
+                title: layout.yaxis.title
+                  ? {
+                      ...layout.yaxis.title,
+                      font: { color: "#94a3b8", size: 12 },
+                    }
+                  : undefined,
+              }
+            : undefined,
+          legend: {
+            bgcolor: "rgba(0,0,0,0)",
+            font: { color: "#94a3b8", size: 11 },
+          },
+          title: undefined,
         },
-        { responsive: true, displayModeBar: true, displaylogo: false },
+        {
+          responsive: true,
+          displayModeBar: true,
+          displaylogo: false,
+          modeBarButtonsToRemove: ["toImage"],
+        },
       );
     } catch (e) {
       console.error("Plotly render error", e);
@@ -83,195 +142,378 @@ export default function SharePage() {
     ? chart.chartConfig.layout._annotations
     : [];
 
+  const shareUrl = typeof window !== "undefined" ? window.location.href : "";
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#09090f",
+        background: "#08080f",
         color: "#e2e8f0",
         fontFamily: "'DM Mono', monospace",
         display: "flex",
         flexDirection: "column",
       }}
     >
-      {/* Top bar */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "14px 24px",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
-          background: "rgba(9,9,15,0.9)",
-          backdropFilter: "blur(12px)",
-          position: "sticky",
-          top: 0,
-          zIndex: 10,
-        }}
-      >
-        <a
-          href="/"
-          style={{
-            textDecoration: "none",
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="7" fill="rgba(6,182,212,0.15)" />
-            <path
-              d="M8 22L14 10L20 18L24 13"
-              stroke="#06b6d4"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <circle cx="24" cy="13" r="2" fill="#06b6d4" />
-          </svg>
-          <span
-            style={{
-              color: "#fff",
-              fontWeight: 800,
-              fontSize: 14,
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Graphix
-          </span>
-        </a>
-        <a
-          href="/signup"
-          style={{
-            fontSize: 11,
-            padding: "6px 14px",
-            borderRadius: 6,
-            background: "linear-gradient(135deg,#06b6d4,#0891b2)",
-            color: "#fff",
-            textDecoration: "none",
-            fontWeight: 700,
-            letterSpacing: "0.04em",
-          }}
-        >
-          Create your own →
-        </a>
-      </div>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap');
 
-      {/* Content */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          padding: "40px 24px",
-        }}
-      >
+        * { box-sizing: border-box; }
+
+        .share-nav { 
+          position: sticky; top: 0; z-index: 50;
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0 24px; height: 56px;
+          background: rgba(8,8,15,0.85);
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          backdrop-filter: blur(16px);
+        }
+
+        .share-logo {
+          display: flex; align-items: center; gap: 9px;
+          text-decoration: none;
+        }
+        .share-logo-mark {
+          width: 28px; height: 28px; border-radius: 8px;
+          background: rgba(6,182,212,0.12);
+          border: 1px solid rgba(6,182,212,0.25);
+          display: flex; align-items: center; justify-content: center;
+        }
+        .share-logo-text {
+          font-family: 'Syne', sans-serif;
+          font-weight: 800; font-size: 15px;
+          color: #fff; letter-spacing: -0.02em;
+        }
+
+        .share-cta-btn {
+          padding: 7px 16px; border-radius: 8px;
+          background: linear-gradient(135deg, #06b6d4, #0891b2);
+          color: #fff; text-decoration: none;
+          font-size: 11px; font-weight: 700;
+          letter-spacing: 0.04em;
+          border: none; cursor: pointer;
+          transition: all 0.2s;
+          box-shadow: 0 2px 12px rgba(6,182,212,0.25);
+          white-space: nowrap;
+        }
+        .share-cta-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(6,182,212,0.4); }
+
+        .share-body {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          padding: 40px 20px 80px;
+        }
+
+        .share-card {
+          width: 100%;
+          max-width: 900px;
+          animation: fadeUp 0.45s cubic-bezier(0.22,1,0.36,1) both;
+        }
+
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .share-header {
+          margin-bottom: 28px;
+        }
+
+        .share-meta-row {
+          display: flex; align-items: center; gap: 10; margin-bottom: 12px; flex-wrap: wrap;
+        }
+
+        .share-type-badge {
+          display: inline-flex; align-items: center; gap: 5px;
+          padding: 3px 10px; border-radius: 6px;
+          background: rgba(6,182,212,0.1);
+          border: 1px solid rgba(6,182,212,0.2);
+          font-size: 9px; font-weight: 700; color: #06b6d4;
+          letter-spacing: 0.12em; text-transform: uppercase;
+        }
+
+        .share-views-badge {
+          display: inline-flex; align-items: center; gap: 4px;
+          font-size: 10px; color: rgba(255,255,255,0.25);
+        }
+
+        .share-title {
+          font-family: 'Syne', sans-serif;
+          font-weight: 800; font-size: clamp(22px, 4vw, 32px);
+          color: #f1f5f9; letter-spacing: -0.03em;
+          margin: 0 0 8px; line-height: 1.15;
+        }
+
+        .share-subtitle {
+          font-size: 14px; color: rgba(255,255,255,0.4);
+          margin: 0 0 12px; line-height: 1.5;
+        }
+
+        .share-annotations {
+          display: flex; flex-wrap: wrap; gap: 6px;
+          margin-bottom: 8px;
+        }
+
+        .share-ann-tag {
+          font-size: 10px; padding: 2px 9px; border-radius: 5px;
+          background: rgba(6,182,212,0.08);
+          border: 1px solid rgba(6,182,212,0.18);
+          color: rgba(6,182,212,0.8); font-weight: 600;
+        }
+
+        .share-chart-wrap {
+          border-radius: 16px;
+          border: 1px solid rgba(255,255,255,0.08);
+          background: rgba(255,255,255,0.02);
+          overflow: hidden;
+          padding: 20px;
+          box-shadow: 0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
+          margin-bottom: 24px;
+        }
+
+        .share-plot { width: 100%; min-height: 420px; }
+
+        .share-actions {
+          display: flex; align-items: center; justify-content: space-between;
+          gap: 12px; flex-wrap: wrap;
+          margin-bottom: 48px;
+        }
+
+        .share-url-box {
+          flex: 1; min-width: 0;
+          display: flex; align-items: center; gap: 8px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.09);
+          border-radius: 10px; padding: 9px 9px 9px 14px;
+        }
+
+        .share-url-text {
+          flex: 1; font-size: 11px; color: rgba(255,255,255,0.35);
+          overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+          font-family: 'DM Mono', monospace;
+        }
+
+        .copy-btn {
+          flex-shrink: 0; padding: 6px 14px; border-radius: 7px;
+          font-size: 11px; font-weight: 700; cursor: pointer;
+          transition: all 0.2s; border: 1px solid;
+          font-family: 'DM Mono', monospace;
+        }
+        .copy-btn.idle {
+          background: rgba(6,182,212,0.12);
+          border-color: rgba(6,182,212,0.3);
+          color: #06b6d4;
+        }
+        .copy-btn.done {
+          background: rgba(16,185,129,0.12);
+          border-color: rgba(16,185,129,0.3);
+          color: #10b981;
+        }
+
+        .share-footer-cta {
+          border-radius: 16px;
+          background: linear-gradient(135deg, rgba(6,182,212,0.07) 0%, rgba(6,182,212,0.03) 100%);
+          border: 1px solid rgba(6,182,212,0.12);
+          padding: 36px 32px;
+          text-align: center;
+        }
+
+        .footer-cta-title {
+          font-family: 'Syne', sans-serif;
+          font-weight: 800; font-size: clamp(18px, 3vw, 24px);
+          color: #fff; letter-spacing: -0.02em;
+          margin: 0 0 10px;
+        }
+
+        .footer-cta-sub {
+          font-size: 13px; color: rgba(255,255,255,0.4);
+          margin: 0 0 24px; line-height: 1.6; max-width: 400px;
+          margin-left: auto; margin-right: auto;
+        }
+
+        .footer-cta-link {
+          display: inline-flex; align-items: center; gap: 7px;
+          padding: 12px 28px; border-radius: 10px;
+          background: linear-gradient(135deg, #06b6d4, #0891b2);
+          color: #fff; text-decoration: none;
+          font-size: 13px; font-weight: 700;
+          letter-spacing: 0.02em;
+          box-shadow: 0 4px 20px rgba(6,182,212,0.3);
+          transition: all 0.2s;
+        }
+        .footer-cta-link:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(6,182,212,0.45); }
+
+        /* Loading */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+        .loader-ring {
+          width: 36px; height: 36px;
+          border: 2.5px solid rgba(6,182,212,0.2);
+          border-top-color: #06b6d4;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+          .share-body { padding: 24px 16px 60px; }
+          .share-chart-wrap { padding: 12px; }
+          .share-actions { flex-direction: column; align-items: stretch; }
+          .share-url-box { min-width: 0; }
+          .share-footer-cta { padding: 28px 20px; }
+        }
+      `}</style>
+
+      {/* Nav */}
+      <nav className="share-nav">
+        <a href="/" className="share-logo">
+          <div className="share-logo-mark">
+            <svg width="14" height="14" viewBox="0 0 32 32" fill="none">
+              <path
+                d="M8 22L14 10L20 18L24 13"
+                stroke="#06b6d4"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <circle cx="24" cy="13" r="2" fill="#06b6d4" />
+            </svg>
+          </div>
+          <span className="share-logo-text">Graphix</span>
+        </a>
+        <a href="/signup" className="share-cta-btn">
+          Create yours free →
+        </a>
+      </nav>
+
+      {/* Body */}
+      <main className="share-body">
+        {/* Loading */}
         {loading && (
           <div
             style={{
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: 16,
-              marginTop: 80,
+              gap: 14,
+              marginTop: 100,
             }}
           >
-            <div
+            <div className="loader-ring" />
+            <p
               style={{
-                width: 40,
-                height: 40,
-                border: "3px solid rgba(6,182,212,0.2)",
-                borderTopColor: "#06b6d4",
-                borderRadius: "50%",
-                animation: "spin 0.8s linear infinite",
+                color: "rgba(255,255,255,0.25)",
+                fontSize: 12,
+                margin: 0,
               }}
-            />
-            <p style={{ color: "rgba(255,255,255,0.3)", fontSize: 12 }}>
+            >
               Loading chart…
             </p>
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
           </div>
         )}
 
-        {error && (
+        {/* Error */}
+        {error && !loading && (
           <div
             style={{
               marginTop: 80,
               textAlign: "center",
-              background: "rgba(239,68,68,0.08)",
-              border: "1px solid rgba(239,68,68,0.2)",
-              borderRadius: 12,
-              padding: "32px 40px",
-              maxWidth: 400,
+              background: "rgba(239,68,68,0.07)",
+              border: "1px solid rgba(239,68,68,0.18)",
+              borderRadius: 16,
+              padding: "40px 32px",
+              maxWidth: 380,
             }}
           >
-            <div style={{ fontSize: 32, marginBottom: 12 }}>🔒</div>
+            <div style={{ fontSize: 40, marginBottom: 16 }}>🔒</div>
             <p
               style={{
                 color: "#ef4444",
                 fontWeight: 700,
                 margin: "0 0 8px",
-                fontSize: 14,
+                fontSize: 15,
+                fontFamily: "'Syne',sans-serif",
               }}
             >
               Chart not found
             </p>
             <p
               style={{
-                color: "rgba(255,255,255,0.35)",
+                color: "rgba(255,255,255,0.3)",
                 fontSize: 12,
-                margin: 0,
+                margin: "0 0 24px",
+                lineHeight: 1.6,
               }}
             >
               {error === "Shared chart not found."
-                ? "This link may have expired or been removed."
+                ? "This link may have expired or been removed by the owner."
                 : error}
             </p>
+            <a
+              href="/"
+              style={{
+                color: "#06b6d4",
+                fontSize: 12,
+                textDecoration: "none",
+                fontWeight: 600,
+              }}
+            >
+              ← Go to Graphix
+            </a>
           </div>
         )}
 
+        {/* Chart content */}
         {chart && !loading && (
-          <div style={{ width: "100%", maxWidth: 960 }}>
-            {/* Chart header */}
-            <div style={{ marginBottom: 24 }}>
-              <h1
-                style={{
-                  margin: "0 0 6px",
-                  fontSize: 22,
-                  fontWeight: 800,
-                  color: "#f1f5f9",
-                  letterSpacing: "-0.02em",
-                }}
-              >
-                {titleText}
-              </h1>
-              {subtitle && (
-                <p
-                  style={{
-                    margin: "0 0 10px",
-                    fontSize: 13,
-                    color: "rgba(255,255,255,0.4)",
-                  }}
-                >
-                  {subtitle}
-                </p>
-              )}
+          <div className="share-card">
+            {/* Header */}
+            <div className="share-header">
+              <div className="share-meta-row">
+                <span className="share-type-badge">
+                  <span
+                    style={{
+                      width: 5,
+                      height: 5,
+                      borderRadius: "50%",
+                      background: "#06b6d4",
+                      display: "inline-block",
+                    }}
+                  />
+                  {chart.tag || "CHART"}
+                </span>
+                <span className="share-views-badge">
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  {chart.views ?? 0} views
+                </span>
+              </div>
+
+              <h1 className="share-title">{titleText}</h1>
+
+              {subtitle && <p className="share-subtitle">{subtitle}</p>}
+
               {annotations.length > 0 && (
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {annotations.map((label, i) => (
-                    <span
-                      key={i}
-                      style={{
-                        fontSize: 10,
-                        padding: "2px 8px",
-                        borderRadius: 5,
-                        background: "rgba(6,182,212,0.1)",
-                        border: "1px solid rgba(6,182,212,0.2)",
-                        color: "rgba(6,182,212,0.8)",
-                        fontWeight: 600,
-                      }}
-                    >
+                <div className="share-annotations">
+                  {annotations.map((label: string, i: number) => (
+                    <span key={i} className="share-ann-tag">
                       {label}
                     </span>
                   ))}
@@ -280,76 +522,86 @@ export default function SharePage() {
             </div>
 
             {/* Chart */}
-            <div
-              style={{
-                background: "#18181b",
-                borderRadius: 12,
-                border: "1px solid rgba(255,255,255,0.08)",
-                overflow: "hidden",
-                padding: 16,
-              }}
-            >
-              <div ref={plotRef} style={{ width: "100%", minHeight: 420 }} />
+            <div className="share-chart-wrap">
+              <div ref={plotRef} className="share-plot" />
             </div>
 
-            {/* Footer meta */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginTop: 16,
-                padding: "0 4px",
-              }}
-            >
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.2)" }}>
-                {chart.views} views
-              </span>
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.2)" }}>
-                Shared via Graphix
-              </span>
+            {/* Share URL + copy */}
+            <div className="share-actions">
+              <div className="share-url-box">
+                <svg
+                  width="11"
+                  height="11"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="rgba(255,255,255,0.25)"
+                  strokeWidth={2}
+                  strokeLinecap="round"
+                  style={{ flexShrink: 0 }}
+                >
+                  <path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71" />
+                  <path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71" />
+                </svg>
+                <span className="share-url-text">{shareUrl}</span>
+                <button
+                  onClick={handleCopy}
+                  className={`copy-btn ${copied ? "done" : "idle"}`}
+                >
+                  {copied ? "✓ Copied!" : "Copy link"}
+                </button>
+              </div>
             </div>
 
-            {/* CTA */}
-            <div
-              style={{
-                marginTop: 40,
-                textAlign: "center",
-                padding: 28,
-                borderRadius: 12,
-                background: "rgba(6,182,212,0.05)",
-                border: "1px solid rgba(6,182,212,0.12)",
-              }}
-            >
-              <p
+            {/* Footer CTA */}
+            <div className="share-footer-cta">
+              <div
                 style={{
-                  margin: "0 0 14px",
-                  fontSize: 14,
-                  color: "rgba(255,255,255,0.6)",
+                  width: 44,
+                  height: 44,
+                  borderRadius: 12,
+                  margin: "0 auto 18px",
+                  background: "rgba(6,182,212,0.12)",
+                  border: "1px solid rgba(6,182,212,0.2)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                Build and share your own charts with Graphix — free to start.
+                <svg width="20" height="20" viewBox="0 0 32 32" fill="none">
+                  <path
+                    d="M8 22L14 10L20 18L24 13"
+                    stroke="#06b6d4"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <circle cx="24" cy="13" r="2" fill="#06b6d4" />
+                </svg>
+              </div>
+              <p className="footer-cta-title">Build your own charts</p>
+              <p className="footer-cta-sub">
+                Create stunning interactive visualisations in seconds with
+                Graphix. Free to start — no credit card needed.
               </p>
-              <a
-                href="/signup"
-                style={{
-                  display: "inline-block",
-                  padding: "10px 28px",
-                  background: "linear-gradient(135deg,#06b6d4,#0891b2)",
-                  color: "#fff",
-                  textDecoration: "none",
-                  borderRadius: 8,
-                  fontWeight: 700,
-                  fontSize: 13,
-                  letterSpacing: "0.04em",
-                }}
-              >
-                Get started free →
+              <a href="/signup" className="footer-cta-link">
+                Start for free
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  strokeLinecap="round"
+                >
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
               </a>
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }

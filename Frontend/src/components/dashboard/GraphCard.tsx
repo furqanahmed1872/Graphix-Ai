@@ -475,14 +475,20 @@ export default function GraphCard({
     graph.title ||
     graph.prompt ||
     "Untitled Chart";
-  const fakeMsg = hasPlotly
-    ? {
-        id: graph.id,
-        from: "ai" as const,
-        content: graph.chartConfig,
-        status: "success",
-      }
-    : null;
+const fakeMsg = hasPlotly
+  ? {
+      id: graph.id,
+      from: "ai" as const,
+      content: {
+        ...graph.chartConfig,
+        layout: {
+          ...graph.chartConfig.layout,
+          title: graph.chartConfig?.layout?.title || { text: chartTitle },
+        },
+      },
+      status: "success",
+    }
+  : null;
 
   // ── Star — persists to DB ─────────────────────────────────────
   const handleStar = async (e: React.MouseEvent) => {

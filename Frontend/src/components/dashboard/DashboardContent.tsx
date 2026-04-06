@@ -1983,9 +1983,16 @@ export default function App() {
               fontFamily: "'DM Mono',monospace",
               boxShadow: "0 0 0 1px rgba(6,182,212,0.1)",
             }}
-            title={user ? `${user.firstName} ${user.lastName}` : ""}
+            title={
+              user
+                ? `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
+                : ""
+            }
           >
-            {user ? `${user.firstName[0]}${user.lastName[0]}` : "…"}
+            {user
+              ? `${user.firstName?.[0] ?? ""}${user.lastName?.[0] ?? ""}`.trim() ||
+                "…"
+              : "…"}
           </div>
         </header>
 
