@@ -5,40 +5,38 @@ import * as THREE from "three";
 import Navbar from "../NavBar";
 import Link from "next/link";
 import { useAppStore } from "@/store/appStore";
+
 type ChartMode = "bar" | "line" | "scatter";
-interface BarPair {
+interface BP {
   a: THREE.Mesh;
   b: THREE.Mesh;
 }
 
-const DATA_A = [
+const DA = [
   0.55, 0.62, 0.48, 0.71, 0.58, 0.82, 0.67, 0.74, 0.6, 0.88, 0.72, 0.65, 0.78,
   0.53, 0.69, 0.91,
 ];
-const DATA_B = [
+const DB = [
   0.3, 0.44, 0.38, 0.52, 0.41, 0.6, 0.5, 0.55, 0.45, 0.68, 0.57, 0.48, 0.63,
   0.35, 0.51, 0.72,
 ];
-const N = DATA_A.length;
-const HOLD = 300;
-const MORPH = 150;
-const CYCLE: ChartMode[] = ["bar", "line", "scatter"];
-const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
-
-const C = {
-  barA: new THREE.Color(0x44ee99),
-  barB: new THREE.Color(0x55ddee),
-  lineA: new THREE.Color(0xee33bb),
-  lineB: new THREE.Color(0xffaa33),
-  scatterA: new THREE.Color(0x44ee99),
-  scatterB: new THREE.Color(0xff5577),
-  axis: new THREE.Color(0x888899),
+const N = DA.length,
+  HOLD = 300,
+  MORPH = 150;
+const CY: ChartMode[] = ["bar", "line", "scatter"];
+const ez = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+const COL = {
+  bA: new THREE.Color(0x44ee99),
+  bB: new THREE.Color(0x55ddee),
+  lA: new THREE.Color(0xee33bb),
+  lB: new THREE.Color(0xffaa33),
+  sA: new THREE.Color(0x44ee99),
+  sB: new THREE.Color(0xff5577),
   grid: new THREE.Color(0x444455),
   cage: new THREE.Color(0xbbbbcc),
 };
 
-// ─── ThreeCube ───────────────────────────────────────────────────────────────
-
+/* ─── 3-D Cube ─────────────────────────────────────────────── */
 function ThreeCube() {
   const mountRef = useRef<HTMLDivElement>(null);
 
@@ -592,73 +590,13 @@ function ThreeCube() {
   return <div ref={mountRef} className="w-full h-full" />;
 }
 
-// ─── Trust badges ──────────────────────────────────────────────
+/* ─── Static data ──────────────────────────────────────────── */
 const TRUST = [
   { num: "80+", label: "Chart types" },
   { num: "3s", label: "Avg generation" },
   { num: "Free", label: "During beta" },
   { num: "No code", label: "Required" },
 ];
-
-// ─── Hero ──────────────────────────────────────────────────────
-const HERO_CSS = `
-  @keyframes gx-word { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes gx-fade { from{opacity:0} to{opacity:1} }
-  @keyframes gx-up   { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes gx-bar  { from{width:0} to{width:220px} }
-  @keyframes gx-pulse-dot { 0%,100%{opacity:0.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.3)} }
-
-  .gx-hero [data-a] { opacity: 0; }
-
-  .gx-ready [data-a="bar"]    { animation: gx-bar  .7s  cubic-bezier(.22,1,.36,1) 0s    forwards; }
-  .gx-ready [data-a="sub"]    { animation: gx-fade .5s  ease                      .05s  forwards; }
-  .gx-ready [data-a="w0"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .08s  forwards; }
-  .gx-ready [data-a="w1"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .14s  forwards; }
-  .gx-ready [data-a="w2"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .20s  forwards; }
-  .gx-ready [data-a="w3"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .26s  forwards; }
-  .gx-ready [data-a="w4"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .32s  forwards; }
-  .gx-ready [data-a="w5"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .38s  forwards; }
-  .gx-ready [data-a="w6"]     { animation: gx-word .55s cubic-bezier(.22,1,.36,1) .44s  forwards; }
-  .gx-ready [data-a="body"]   { animation: gx-up   .55s cubic-bezier(.22,1,.36,1) .52s  forwards; }
-  .gx-ready [data-a="cta"]    { animation: gx-up   .55s cubic-bezier(.22,1,.36,1) .62s  forwards; }
-  .gx-ready [data-a="trust"]  { animation: gx-up   .55s cubic-bezier(.22,1,.36,1) .72s  forwards; }
-  .gx-ready [data-a="cube"]   { animation: gx-fade .9s  ease                      .2s   forwards; }
-
-  .gx-grid-bg {
-    position: absolute; inset: 0;
-    background-image: linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px);
-    background-size: 44px 44px;
-    mask-image: radial-gradient(ellipse 70% 80% at 20% 50%, black 40%, transparent 100%);
-  }
-
-  .gx-cta-primary {
-    display: inline-flex; align-items: center; gap: 8px;
-    height: 48px; padding: 0 28px;
-    font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-    color: #111; background: #06b6d4; text-decoration: none;
-    position: relative; overflow: hidden;
-    transition: color 0.3s;
-  }
-  .gx-cta-primary::before {
-    content: ''; position: absolute; inset: 0;
-    background: #fff; transform: translateX(-101%);
-    transition: transform 0.35s cubic-bezier(.22,1,.36,1);
-  }
-  .gx-cta-primary:hover::before { transform: translateX(0); }
-  .gx-cta-primary span { position: relative; z-index: 1; }
-
-  .gx-cta-ghost {
-    display: inline-flex; align-items: center; gap: 6px;
-    height: 48px; padding: 0 24px;
-    font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
-    color: rgba(255,255,255,0.5); text-decoration: none;
-    border: 1px solid rgba(255,255,255,0.12);
-    transition: color 0.2s, border-color 0.2s;
-  }
-  .gx-cta-ghost:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
-`;
-
 const WORDS = [
   "Where",
   "natural",
@@ -668,10 +606,141 @@ const WORDS = [
   "data",
   "visualization.",
 ];
+const CHART_TYPES = [
+  "Bar Charts",
+  "Line Charts",
+  "3D Scatter",
+  "Heatmaps",
+  "Contour Plots",
+  "Violin Plots",
+  "Candlestick",
+  "Waterfall",
+  "Funnel Charts",
+  "Box Plots",
+  "Surface 3D",
+  "Histograms",
+];
 
+/* ─── All CSS self-contained ───────────────────────────────── */
+const CSS = `
+  @keyframes gxh-word   { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes gxh-fade   { from{opacity:0} to{opacity:1} }
+  @keyframes gxh-up     { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes gxh-bar    { from{width:0} to{width:220px} }
+  @keyframes gxh-pulse  { 0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.3)} }
+  @keyframes gxh-marquee{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+  /* hide all animated elements until ready */
+  .gxh-root [data-a] { opacity: 0; }
+
+  /* fire animations once .gxh-ready is added */
+  .gxh-ready [data-a="bar"]   { animation: gxh-bar  .7s  cubic-bezier(.22,1,.36,1) 0s    forwards; }
+  .gxh-ready [data-a="sub"]   { animation: gxh-fade .5s  ease                      .05s  forwards; }
+  .gxh-ready [data-a="w0"]    { animation: gxh-word .55s cubic-bezier(.22,1,.36,1) .08s  forwards; }
+  .gxh-ready [data-a="w1"]    { animation: gxh-word .55s cubic-bezier(.22,1,.36,1) .14s  forwards; }
+  .gxh-ready [data-a="w2"]    { animation: gxh-word .55s cubic-bezier(.22,1,.36,1) .20s  forwards; }
+  .gxh-ready [data-a="w3"]    { animation: gxh-word .55s cubic-bezier(.22,1,.36,1) .26s  forwards; }
+  .gxh-ready [data-a="w4"]    { animation: gxh-word .55s cubic-bezier(.22,1,.36,1) .32s  forwards; }
+  .gxh-ready [data-a="w5"]    { animation: gxh-word .55s cubic-bezier(.22,1,.36,1) .38s  forwards; }
+  .gxh-ready [data-a="w6"]    { animation: gxh-word .55s cubic-bezier(.22,1,.36,1) .44s  forwards; }
+  .gxh-ready [data-a="body"]  { animation: gxh-up   .55s cubic-bezier(.22,1,.36,1) .52s  forwards; }
+  .gxh-ready [data-a="cta"]   { animation: gxh-up   .55s cubic-bezier(.22,1,.36,1) .62s  forwards; }
+  .gxh-ready [data-a="trust"] { animation: gxh-up   .55s cubic-bezier(.22,1,.36,1) .72s  forwards; }
+  .gxh-ready [data-a="cube"]  { animation: gxh-fade .9s  ease                      .2s   forwards; }
+
+  /* ── Grid dot background ── */
+  .gxh-gridbg {
+    position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      linear-gradient(rgba(6,182,212,0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(6,182,212,0.045) 1px, transparent 1px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 80% at 20% 50%, black 40%, transparent 100%);
+    mask-image: radial-gradient(ellipse 70% 80% at 20% 50%, black 40%, transparent 100%);
+  }
+  /* cyan dots at intersections */
+  .gxh-gridbg::after {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(34,211,238,0.22) 1.2px, transparent 1.2px);
+    background-size: 44px 44px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 80% at 20% 50%, black 40%, transparent 100%);
+    mask-image: radial-gradient(ellipse 70% 80% at 20% 50%, black 40%, transparent 100%);
+  }
+
+  /* ── Accent bar ── */
+  .gxh-accent-bar {
+    height: 2px;
+    background: linear-gradient(90deg, #06b6d4, transparent);
+    margin-bottom: 20px;
+    width: 0;
+  }
+
+  /* ── CTA buttons ── */
+  .gxh-btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    height: 48px; padding: 0 28px;
+    font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    color: #111; background: #06b6d4; text-decoration: none;
+    position: relative; overflow: hidden; transition: color .3s; flex-shrink: 0;
+  }
+  .gxh-btn-primary::before {
+    content: ''; position: absolute; inset: 0; background: #fff;
+    transform: translateX(-101%); transition: transform .35s cubic-bezier(.22,1,.36,1);
+  }
+  .gxh-btn-primary:hover::before { transform: translateX(0); }
+  .gxh-btn-primary span { position: relative; z-index: 1; }
+
+  .gxh-btn-ghost {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 48px; padding: 0 24px;
+    font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+    color: rgba(255,255,255,.5); text-decoration: none;
+    border: 1px solid rgba(255,255,255,.12);
+    transition: color .2s, border-color .2s; flex-shrink: 0;
+  }
+  .gxh-btn-ghost:hover { color: #fff; border-color: rgba(255,255,255,.3); }
+
+  /* ── Layout ── */
+  .gxh-inner {
+    display: flex; flex-direction: row;
+    padding: 56px 32px 64px; gap: 32px;
+    min-height: calc(100vh - 56px);
+    align-items: center; box-sizing: border-box; width: 100%;
+  }
+  .gxh-left  { flex: 0 0 50%; position: relative; min-width: 0; }
+  .gxh-cube  { flex: 0 0 50%; height: min(560px,65vh); overflow: visible; }
+  .gxh-tbar  { display: flex; align-items: center; border-top: 1px solid rgba(255,255,255,.06); padding-top: 24px; }
+  .gxh-titem { padding-right: 24px; margin-right: 24px; }
+  .gxh-titem:last-child { padding-right: 0; margin-right: 0; border-right: none !important; }
+  .gxh-crow  { display: flex; align-items: center; gap: 12px; margin-bottom: 44px; }
+
+  /* ── Tablet ── */
+  @media (min-width:768px) and (max-width:1023px) {
+    .gxh-inner { padding: 40px 24px 56px; gap: 20px; }
+    .gxh-left  { flex: 0 0 55%; }
+    .gxh-cube  { flex: 1; height: min(420px,55vh); }
+  }
+
+  /* ── Mobile ── */
+  @media (max-width:767px) {
+    .gxh-inner  { flex-direction: column; padding: 36px 20px 44px; gap: 0; min-height: auto; }
+    .gxh-left   { flex: none; width: 100%; }
+    .gxh-cube   { display: none; }
+    .gxh-gridbg { -webkit-mask-image: radial-gradient(ellipse 100% 60% at 50% 30%, black 40%, transparent 100%); mask-image: radial-gradient(ellipse 100% 60% at 50% 30%, black 40%, transparent 100%); }
+    .gxh-gridbg::after { -webkit-mask-image: radial-gradient(ellipse 100% 60% at 50% 30%, black 40%, transparent 100%); mask-image: radial-gradient(ellipse 100% 60% at 50% 30%, black 40%, transparent 100%); }
+    .gxh-accent-bar { max-width: 160px; }
+    .gxh-tbar   { flex-wrap: wrap; gap: 20px; padding-top: 20px; }
+    .gxh-titem  { padding-right: 0; margin-right: 0; border-right: none !important; min-width: calc(50% - 10px); }
+    .gxh-crow   { flex-wrap: wrap; margin-bottom: 32px; }
+    .gxh-btn-primary, .gxh-btn-ghost { flex: 1; justify-content: center; min-width: 140px; }
+  }
+`;
+
+/* ─── Hero component ───────────────────────────────────────── */
 export default function Hero() {
-  const isAuthenticated = useAppStore((s) => s.isAuthenticated);
-  const _hasHydrated = useAppStore((s) => s._hasHydrated);
+  const isAuth = useAppStore((s) => s.isAuthenticated);
+  const hydrated = useAppStore((s) => s._hasHydrated);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -680,29 +749,23 @@ export default function Hero() {
     );
     return () => cancelAnimationFrame(id);
   }, []);
- const showDashboard = _hasHydrated && isAuthenticated;
+
+  const showDashboard = hydrated && isAuth;
 
   return (
     <>
-      <style>{HERO_CSS}</style>
-      <div className={`gx-hero${ready ? " gx-ready" : ""}`}>
+      <style>{CSS}</style>
+      <div className={`gxh-root${ready ? " gxh-ready" : ""}`}>
         <Navbar />
 
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "row",
-            padding: "56px 32px 64px",
-            gap: 32,
-            minHeight: "calc(100vh - 56px)",
-            alignItems: "center",
-          }}
-        >
-          {/* LEFT */}
-          <div style={{ flex: "0 0 50%", position: "relative" }}>
-            <div className="gx-grid-bg" />
+        <div className="gxh-inner">
+          {/* ── LEFT: text content ── */}
+          <div className="gxh-left">
+            {/* Grid + dot pattern background */}
+            <div className="gxh-gridbg" />
+
             <div style={{ position: "relative", zIndex: 1 }}>
-              {/* Live indicator */}
+              {/* Live indicator badge */}
               <div
                 data-a="sub"
                 style={{
@@ -722,7 +785,7 @@ export default function Hero() {
                     height: 6,
                     borderRadius: "50%",
                     background: "#06b6d4",
-                    animation: "gx-pulse-dot 2s ease infinite",
+                    animation: "gxh-pulse 2s ease infinite",
                   }}
                 />
                 <span
@@ -738,21 +801,13 @@ export default function Hero() {
                 </span>
               </div>
 
-              {/* Accent bar */}
-              <div
-                data-a="bar"
-                style={{
-                  height: 2,
-                  background: "linear-gradient(90deg, #06b6d4, transparent)",
-                  marginBottom: 20,
-                  width: 0,
-                }}
-              />
+              {/* Cyan accent bar */}
+              <div data-a="bar" className="gxh-accent-bar" />
 
-              {/* Headline */}
+              {/* Headline — word by word animation */}
               <h1
                 style={{
-                  fontSize: "clamp(2.4rem, 4.5vw, 3.6rem)",
+                  fontSize: "clamp(2rem,5vw,3.6rem)",
                   fontWeight: 900,
                   lineHeight: 1.05,
                   letterSpacing: "-0.03em",
@@ -775,7 +830,7 @@ export default function Hero() {
                 ))}
               </h1>
 
-              {/* Body */}
+              {/* Body copy */}
               <p
                 data-a="body"
                 style={{
@@ -791,47 +846,29 @@ export default function Hero() {
                 setup, no limits.
               </p>
 
-              {/* CTAs */}
-              <div
-                data-a="cta"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  marginBottom: 44,
-                }}
-              >
-                <Link href="/dashboard" className="gx-cta-primary">
-                {showDashboard ? (
-                  <>
-                    <span>Go to dashboard</span>
-                  </>) : (
-                    <span>Start for free</span>
-                  )}
+              {/* CTA buttons */}
+              <div data-a="cta" className="gxh-crow">
+                <Link
+                  href={showDashboard ? "/dashboard" : "/signin"}
+                  className="gxh-btn-primary"
+                >
+                  <span>
+                    {showDashboard ? "Go to dashboard" : "Start for free"}
+                  </span>
                   <span style={{ fontSize: 14 }}>→</span>
                 </Link>
-                <Link href="/panel" className="gx-cta-ghost">
+                <Link href="/panel" className="gxh-btn-ghost">
                   <span>Try Excel editor</span>
                 </Link>
               </div>
 
               {/* Trust bar */}
-              <div
-                data-a="trust"
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0,
-                  borderTop: "1px solid rgba(255,255,255,0.06)",
-                  paddingTop: 24,
-                }}
-              >
+              <div data-a="trust" className="gxh-tbar">
                 {TRUST.map(({ num, label }, i) => (
                   <div
                     key={label}
+                    className="gxh-titem"
                     style={{
-                      paddingRight: 24,
-                      marginRight: 24,
                       borderRight:
                         i < TRUST.length - 1
                           ? "1px solid rgba(255,255,255,0.08)"
@@ -867,21 +904,13 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* RIGHT — 3D cube */}
-          <div
-            data-a="cube"
-            style={{
-              flex: "0 0 50%",
-              height: "min(560px, 65vh)",
-              overflow: "visible",
-              opacity: 0,
-            }}
-          >
+          {/* ── RIGHT: 3D cube (hidden on mobile via CSS) ── */}
+          <div data-a="cube" className="gxh-cube" style={{ opacity: 0 }}>
             <ThreeCube />
           </div>
         </div>
 
-        {/* Bottom marquee strip */}
+        {/* ── Bottom marquee strip ── */}
         <div
           style={{
             borderTop: "1px solid rgba(255,255,255,0.06)",
@@ -895,55 +924,27 @@ export default function Hero() {
             style={{
               display: "flex",
               gap: 48,
-              animation: "gx-marquee 30s linear infinite",
+              animation: "gxh-marquee 30s linear infinite",
               whiteSpace: "nowrap",
             }}
           >
-            {[
-              "Bar Charts",
-              "Line Charts",
-              "3D Scatter",
-              "Heatmaps",
-              "Contour Plots",
-              "Violin Plots",
-              "Candlestick",
-              "Waterfall",
-              "Funnel Charts",
-              "Box Plots",
-              "Surface 3D",
-              "Histograms",
-            ]
-              .concat([
-                "Bar Charts",
-                "Line Charts",
-                "3D Scatter",
-                "Heatmaps",
-                "Contour Plots",
-                "Violin Plots",
-                "Candlestick",
-                "Waterfall",
-                "Funnel Charts",
-                "Box Plots",
-                "Surface 3D",
-                "Histograms",
-              ])
-              .map((t, i) => (
-                <span
-                  key={i}
-                  style={{
-                    fontSize: 10,
-                    fontFamily: "monospace",
-                    fontWeight: 700,
-                    letterSpacing: "0.15em",
-                    textTransform: "uppercase",
-                    color: i % 3 === 0 ? "#06b6d4" : "rgba(255,255,255,0.2)",
-                  }}
-                >
-                  {t}
-                </span>
-              ))}
+            {[...CHART_TYPES, ...CHART_TYPES].map((t, i) => (
+              <span
+                key={i}
+                style={{
+                  fontSize: 10,
+                  fontFamily: "monospace",
+                  fontWeight: 700,
+                  letterSpacing: "0.15em",
+                  textTransform: "uppercase",
+                  color: i % 3 === 0 ? "#06b6d4" : "rgba(255,255,255,0.2)",
+                }}
+              >
+                {i % 4 === 0 ? "✦ " : ""}
+                {t}
+              </span>
+            ))}
           </div>
-          <style>{`@keyframes gx-marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }`}</style>
         </div>
       </div>
     </>

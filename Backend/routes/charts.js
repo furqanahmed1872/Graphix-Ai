@@ -16,7 +16,6 @@ function timeAgo(date) {
   return new Date(date).toLocaleDateString();
 }
 
-// shapeChart now includes shareToken and shared flag
 function shapeChart(c) {
   return {
     id: c.id,
@@ -51,19 +50,14 @@ async function logActivity(userId, action, chartId, chartTitle) {
       [userId, action, chartId ?? null, chartTitle, avatar],
     );
   } catch (err) {
+    // Activity log failures are non-fatal — never let them break the main request
     console.error("Activity log error:", err);
   }
 }
 
-// ── Ensure share_token column exists (safe idempotent migration) ──
-pool
-  .query(
-    `
-  ALTER TABLE saved_charts
-  ADD COLUMN IF NOT EXISTS share_token TEXT UNIQUE DEFAULT NULL
-`,
-  )
-  .catch((err) => console.warn("share_token migration note:", err.message));
+// NOTE: The share_token column is now declared in db/init.sql directly.
+// The old runtime ALTER TABLE that used to run here on every server start
+// has been removed — it was noisy and unnecessary since we control the schema.
 
 // ── POST /api/charts ──────────────────────────────────────────
 router.post("/", requireAuth, async (req, res) => {
@@ -80,8 +74,9 @@ router.post("/", requireAuth, async (req, res) => {
     sparkline = [],
   } = req.body;
 
-  if (!chartConfig)
+  if (!chartConfig) {
     return res.status(400).json({ error: "chartConfig is required." });
+  }
 
   try {
     const { rows } = await pool.query(
@@ -114,8 +109,8 @@ router.post("/", requireAuth, async (req, res) => {
 });
 
 // ── GET /api/charts/share/:token ──────────────────────────────
-// PUBLIC — no auth required. Registered BEFORE /:id to avoid Express
-// treating "share" as a UUID param.
+// PUBLIC — no auth required.
+// Registered BEFORE /:id so Express doesn't treat "share" as a UUID param.
 router.get("/share/:token", async (req, res) => {
   const { token } = req.params;
   try {
@@ -124,10 +119,11 @@ router.get("/share/:token", async (req, res) => {
          FROM saved_charts WHERE share_token = $1`,
       [token],
     );
-    if (rows.length === 0)
+    if (rows.length === 0) {
       return res.status(404).json({ error: "Shared chart not found." });
+    }
 
-    // Fire-and-forget view increment
+    // Fire-and-forget view increment — never let it block the response
     pool
       .query(`UPDATE saved_charts SET views = views + 1 WHERE id = $1`, [
         rows[0].id,
@@ -154,6 +150,8 @@ router.get("/:id", requireAuth, async (req, res) => {
   const { userId } = req.user;
   const { id } = req.params;
   try {
+    // Increment views and fetch in one round-trip would require a CTE;
+    // two queries is fine for single-chart opens.
     await pool.query(
       `UPDATE saved_charts SET views = views + 1 WHERE id = $1 AND user_id = $2`,
       [id, userId],
@@ -165,8 +163,9 @@ router.get("/:id", requireAuth, async (req, res) => {
          FROM saved_charts WHERE id = $1 AND user_id = $2`,
       [id, userId],
     );
-    if (rows.length === 0)
+    if (rows.length === 0) {
       return res.status(404).json({ error: "Chart not found." });
+    }
     return res.json(shapeChart(rows[0]));
   } catch (err) {
     console.error("Get chart error:", err);
@@ -189,6 +188,7 @@ router.patch("/:id", requireAuth, async (req, res) => {
     sparkline,
     chartConfig,
   } = req.body;
+
   try {
     const { rows } = await pool.query(
       `UPDATE saved_charts SET
@@ -220,11 +220,13 @@ router.patch("/:id", requireAuth, async (req, res) => {
         chartConfig ?? null,
       ],
     );
-    if (rows.length === 0)
+    if (rows.length === 0) {
       return res.status(404).json({ error: "Chart not found or not yours." });
+    }
     const chart = shapeChart(rows[0]);
-    if (starred === undefined)
+    if (starred === undefined) {
       await logActivity(userId, "Edited", chart.id, chart.title);
+    }
     return res.json(chart);
   } catch (err) {
     console.error("Update chart error:", err);
@@ -239,11 +241,13 @@ router.post("/:id/star", requireAuth, async (req, res) => {
   try {
     const { rows } = await pool.query(
       `UPDATE saved_charts SET starred = NOT starred, updated_at = NOW()
-         WHERE id = $1 AND user_id = $2 RETURNING id, title, starred`,
+         WHERE id = $1 AND user_id = $2
+         RETURNING id, title, starred`,
       [id, userId],
     );
-    if (rows.length === 0)
+    if (rows.length === 0) {
       return res.status(404).json({ error: "Chart not found or not yours." });
+    }
     const { title, starred } = rows[0];
     await logActivity(userId, starred ? "Starred" : "Unstarred", id, title);
     return res.json({ id, starred });
@@ -254,8 +258,7 @@ router.post("/:id/star", requireAuth, async (req, res) => {
 });
 
 // ── POST /api/charts/:id/share ────────────────────────────────
-// Generates a unique share_token (idempotent). Returns { id, shareToken }.
-// Frontend builds: window.location.origin + "/share/" + shareToken
+// Idempotent — returns the existing token if one already exists.
 router.post("/:id/share", requireAuth, async (req, res) => {
   const { userId } = req.user;
   const { id } = req.params;
@@ -275,12 +278,12 @@ router.post("/:id/share", requireAuth, async (req, res) => {
       return res.json({ id, shareToken: existing[0].share_token });
     }
 
-    // Generate new token
     const shareToken = crypto.randomBytes(16).toString("hex");
 
     const { rows } = await pool.query(
       `UPDATE saved_charts SET share_token = $3, updated_at = NOW()
-         WHERE id = $1 AND user_id = $2 RETURNING id, title, share_token`,
+         WHERE id = $1 AND user_id = $2
+         RETURNING id, title, share_token`,
       [id, userId, shareToken],
     );
 
@@ -301,8 +304,9 @@ router.delete("/:id", requireAuth, async (req, res) => {
       `DELETE FROM saved_charts WHERE id = $1 AND user_id = $2 RETURNING id, title`,
       [id, userId],
     );
-    if (result.rows.length === 0)
+    if (result.rows.length === 0) {
       return res.status(404).json({ error: "Chart not found or not yours." });
+    }
     await logActivity(userId, "Deleted", null, result.rows[0].title);
     return res.json({ deleted: id });
   } catch (err) {

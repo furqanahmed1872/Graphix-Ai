@@ -10,15 +10,35 @@ const SALT_ROUNDS = 10;
 router.post("/signup", async (req, res) => {
   const { firstName, lastName, email, password } = req.body;
 
+  // ── Field presence ────────────────────────────────────────
   if (!email || !password || !firstName) {
     return res
       .status(400)
       .json({ error: "firstName, email, and password are required." });
   }
 
+  // ── Password strength ─────────────────────────────────────
+  if (typeof password !== "string" || password.length < 8) {
+    return res
+      .status(400)
+      .json({ error: "Password must be at least 8 characters." });
+  }
+
+  // ── Basic email format ────────────────────────────────────
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+    return res
+      .status(400)
+      .json({ error: "A valid email address is required." });
+  }
+
+  // ── firstName sanity ──────────────────────────────────────
+  if (typeof firstName !== "string" || firstName.trim().length < 1) {
+    return res.status(400).json({ error: "First name is required." });
+  }
+
   try {
     const existing = await pool.query("SELECT id FROM users WHERE email = $1", [
-      email,
+      email.toLowerCase().trim(),
     ]);
     if (existing.rows.length > 0) {
       return res
@@ -31,7 +51,8 @@ router.post("/signup", async (req, res) => {
 
     const { rows } = await pool.query(
       `INSERT INTO users (email, password_hash, first_name, last_name, avatar)
-       VALUES ($1, $2, $3, $4, $5) RETURNING id, email, first_name, last_name, avatar, created_at`,
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, email, first_name, last_name, avatar, created_at`,
       [
         email.toLowerCase().trim(),
         passwordHash,
@@ -79,11 +100,13 @@ router.post("/login", async (req, res) => {
 
   try {
     const { rows } = await pool.query(
-      "SELECT id, email, password_hash, first_name, last_name, avatar, created_at FROM users WHERE email = $1",
+      `SELECT id, email, password_hash, first_name, last_name, avatar, created_at
+         FROM users WHERE email = $1`,
       [email.toLowerCase().trim()],
     );
 
     if (rows.length === 0) {
+      // Use the same message as a wrong password to avoid user enumeration
       return res.status(401).json({ error: "Invalid email or password." });
     }
 
@@ -118,11 +141,13 @@ router.post("/login", async (req, res) => {
 router.get("/me", requireAuth, async (req, res) => {
   try {
     const { rows } = await pool.query(
-      "SELECT id, email, first_name, last_name, avatar, created_at FROM users WHERE id = $1",
+      `SELECT id, email, first_name, last_name, avatar, created_at
+         FROM users WHERE id = $1`,
       [req.user.userId],
     );
     if (rows.length === 0)
       return res.status(404).json({ error: "User not found." });
+
     const u = rows[0];
     return res.json({
       id: u.id,

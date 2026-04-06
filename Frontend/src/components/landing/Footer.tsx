@@ -34,19 +34,96 @@ export default function Footer() {
         fontFamily: "monospace",
       }}
     >
+      <style>{`
+        .gx-footer-grid {
+          max-width: 1100px;
+          margin: 0 auto;
+          padding: 56px 24px 40px;
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr 1fr;
+          gap: 40px;
+        }
+        .gx-footer-bottom {
+          border-top: 1px solid rgba(255,255,255,0.05);
+          padding: 16px 24px;
+          max-width: 1100px;
+          margin: 0 auto;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 12px;
+        }
+        .gx-footer-link-list {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .gx-footer-col-title {
+          font-size: 10px;
+          font-weight: 700;
+          color: rgba(255,255,255,0.35);
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          margin-bottom: 16px;
+        }
+        .gx-footer-link {
+          font-size: 12px;
+          color: rgba(255,255,255,0.4);
+          text-decoration: none;
+          transition: color 0.15s;
+          letter-spacing: 0.02em;
+        }
+        .gx-footer-link:hover { color: #fff; }
+        .gx-footer-legal-links {
+          display: flex;
+          gap: 24px;
+          align-items: center;
+          flex-wrap: wrap;
+        }
+        .gx-footer-legal-link {
+          font-size: 10px;
+          color: rgba(255,255,255,0.25);
+          text-decoration: none;
+          letter-spacing: 0.15em;
+          transition: color 0.15s;
+        }
+        .gx-footer-legal-link:hover { color: #06b6d4; }
+
+        @media (max-width: 767px) {
+          .gx-footer-grid {
+            grid-template-columns: 1fr 1fr !important;
+            gap: 32px 24px !important;
+            padding: 40px 20px 32px !important;
+          }
+          .gx-footer-brand {
+            grid-column: 1 / -1;
+          }
+          .gx-footer-bottom {
+            padding: 16px 20px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+          }
+          .gx-footer-legal-links {
+            gap: 16px;
+          }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .gx-footer-grid {
+            grid-template-columns: 1fr 1fr 1fr !important;
+            gap: 32px !important;
+          }
+          .gx-footer-brand {
+            grid-column: 1 / -1;
+          }
+        }
+      `}</style>
+
       {/* Main footer body */}
-      <div
-        style={{
-          maxWidth: 1100,
-          margin: "0 auto",
-          padding: "56px 24px 40px",
-          display: "grid",
-          gridTemplateColumns: "2fr 1fr 1fr 1fr",
-          gap: 40,
-        }}
-      >
+      <div className="gx-footer-grid">
         {/* Brand col */}
-        <div>
+        <div className="gx-footer-brand">
           <div
             style={{
               display: "flex",
@@ -111,35 +188,10 @@ export default function Footer() {
         {/* Link columns */}
         {Object.entries(LINKS).map(([col, items]) => (
           <div key={col}>
-            <p
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                color: "rgba(255,255,255,0.35)",
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                marginBottom: 16,
-              }}
-            >
-              {col}
-            </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <p className="gx-footer-col-title">{col}</p>
+            <div className="gx-footer-link-list">
               {items.map(({ label, href }) => (
-                <Link
-                  key={label}
-                  href={href}
-                  style={{
-                    fontSize: 12,
-                    color: "rgba(255,255,255,0.4)",
-                    textDecoration: "none",
-                    transition: "color 0.15s",
-                    letterSpacing: "0.02em",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "#fff")}
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.color = "rgba(255,255,255,0.4)")
-                  }
-                >
+                <Link key={label} href={href} className="gx-footer-link">
                   {label}
                 </Link>
               ))}
@@ -149,19 +201,7 @@ export default function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div
-        style={{
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-          padding: "16px 24px",
-          maxWidth: 1100,
-          margin: "0 auto",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
+      <div className="gx-footer-bottom">
         <span
           style={{
             fontSize: 10,
@@ -171,28 +211,14 @@ export default function Footer() {
         >
           © 2025 GRAPHIX · ALL RIGHTS RESERVED
         </span>
-        <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+        <div className="gx-footer-legal-links">
           {[
             { label: "PRIVACY", href: "/policy" },
             { label: "TERMS", href: "/terms" },
             { label: "STATUS", href: "#" },
             { label: "FEEDBACK", href: "/feedback" },
           ].map(({ label, href }) => (
-            <Link
-              key={label}
-              href={href}
-              style={{
-                fontSize: 10,
-                color: "rgba(255,255,255,0.25)",
-                textDecoration: "none",
-                letterSpacing: "0.15em",
-                transition: "color 0.15s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#06b6d4")}
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "rgba(255,255,255,0.25)")
-              }
-            >
+            <Link key={label} href={href} className="gx-footer-legal-link">
               {label}
             </Link>
           ))}

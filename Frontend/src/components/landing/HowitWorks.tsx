@@ -365,7 +365,7 @@ function StepProcessing({ active }: { active: boolean }) {
               <span
                 style={{
                   fontSize: 14,
-                  color: done ? "#06b6d4" : current ? "#06b6d4" : "#d1d5db",
+                  color: done || current ? "#06b6d4" : "#d1d5db",
                   transition: "color 0.3s",
                   flexShrink: 0,
                 }}
@@ -489,74 +489,57 @@ function StepResult({ active }: { active: boolean }) {
                 size: 12,
                 color: "#06b6d4",
                 opacity: 0.9,
-                line: {
-                  color: "#ffffff",
-                  width: 2,
-                },
+                line: { color: "#ffffff", width: 2 },
               },
             },
             {
               x: ["North", "South", "East", "West"],
               y: [82, 56, 71, 63],
-              z: [95, 68, 84, 76],
+              z: [94, 68, 85, 77],
               type: "scatter3d",
               mode: "markers",
               name: "Q4",
               marker: {
-                size: 14,
+                size: 12,
                 color: "#a855f7",
                 opacity: 0.9,
-                line: {
-                  color: "#ffffff",
-                  width: 2,
-                },
+                line: { color: "#ffffff", width: 2 },
               },
             },
           ],
           {
             paper_bgcolor: "transparent",
             plot_bgcolor: "transparent",
-            font: { color: "#374151", size: 10, family: "DM Mono" },
-            margin: { t: 8, b: 8, l: 8, r: 8 },
-            showlegend: true,
-            legend: {
-              orientation: "h",
-              y: -0.15,
-              x: 0.5,
-              xanchor: "center",
-              font: { size: 9 },
-            },
             scene: {
-              camera: {
-                eye: { x: 1.8, y: 1.8, z: 1.3 },
-              },
+              bgcolor: "transparent",
               xaxis: {
-                title: { text: "Region", font: { size: 9 } },
-                gridcolor: "rgba(0,0,0,0.1)",
-                showbackground: true,
-                backgroundcolor: "rgba(249,250,251,0.5)",
-                tickfont: { size: 9 },
+                gridcolor: "rgba(0,0,0,0.08)",
+                tickfont: { size: 8 },
+                title: "",
               },
               yaxis: {
-                title: { text: "Q3 Sales", font: { size: 9 } },
-                gridcolor: "rgba(0,0,0,0.1)",
-                showbackground: true,
-                backgroundcolor: "rgba(249,250,251,0.5)",
-                tickfont: { size: 9 },
+                gridcolor: "rgba(0,0,0,0.08)",
+                tickfont: { size: 8 },
+                title: "",
               },
               zaxis: {
-                title: { text: "Q4 Sales", font: { size: 9 } },
-                gridcolor: "rgba(0,0,0,0.1)",
-                showbackground: true,
-                backgroundcolor: "rgba(249,250,251,0.5)",
-                tickfont: { size: 9 },
+                gridcolor: "rgba(0,0,0,0.08)",
+                tickfont: { size: 8 },
+                title: "",
               },
             },
+            margin: { t: 8, b: 8, l: 0, r: 0 },
+            height: 220,
+            legend: {
+              font: { size: 10 },
+              bgcolor: "rgba(255,255,255,0.8)",
+              bordercolor: "#e5e7eb",
+              borderwidth: 1,
+            },
           },
-          { displayModeBar: false, responsive: true },
-        ).then(() => {
-          if (!cancelled) setReady(true);
-        });
+          { responsive: true, displayModeBar: false, staticPlot: false },
+        );
+        setReady(true);
       });
     }, 400);
     return () => {
@@ -585,63 +568,58 @@ function StepResult({ active }: { active: boolean }) {
           alignItems: "center",
         }}
       >
-        <span
-          style={{ fontFamily: "monospace", fontSize: 10, color: "#6b7280" }}
-        >
-          Q4 Sales by Region — 3D Scatter
-        </span>
-        <div style={{ display: "flex", gap: 8 }}>
-          {["PNG", "SVG", "CSV"].map((f) => (
-            <span
-              key={f}
+        <div style={{ display: "flex", gap: 6 }}>
+          {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
+            <div
+              key={c}
               style={{
-                fontSize: 8,
-                fontFamily: "monospace",
-                fontWeight: 700,
-                color: "#9ca3af",
-                letterSpacing: "0.08em",
+                width: 10,
+                height: 10,
+                borderRadius: "50%",
+                background: c,
               }}
-            >
-              ↓{f}
-            </span>
+            />
           ))}
         </div>
+        <span
+          style={{ fontFamily: "monospace", fontSize: 9, color: "#9ca3af" }}
+        >
+          3D Scatter · Interactive
+        </span>
       </div>
-      <div
-        style={{
-          height: 200,
-          padding: 8,
-          opacity: ready ? 1 : 0,
-          transition: "opacity 0.5s ease",
-        }}
-      >
-        <div ref={plotRef} style={{ width: "100%", height: "100%" }} />
-      </div>
-      {!ready && (
+      <div style={{ position: "relative", height: 232 }}>
         <div
           style={{
-            height: 200,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
             position: "absolute",
-            top: 44,
-            left: 0,
-            right: 0,
+            inset: 0,
+            opacity: ready ? 1 : 0,
+            transition: "opacity 0.5s ease",
           }}
         >
+          <div ref={plotRef} style={{ width: "100%", height: "100%" }} />
+        </div>
+        {!ready && (
           <div
             style={{
-              width: 20,
-              height: 20,
-              border: "2px solid rgba(6,182,212,0.2)",
-              borderTopColor: "#06b6d4",
-              borderRadius: "50%",
-              animation: "hiw-spin 0.8s linear infinite",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-          />
-        </div>
-      )}
+          >
+            <div
+              style={{
+                width: 20,
+                height: 20,
+                border: "2px solid rgba(6,182,212,0.2)",
+                borderTopColor: "#06b6d4",
+                borderRadius: "50%",
+                animation: "hiw-spin 0.8s linear infinite",
+              }}
+            />
+          </div>
+        )}
+      </div>
       <div
         style={{
           padding: "10px 14px",
@@ -662,6 +640,7 @@ function StepResult({ active }: { active: boolean }) {
     </div>
   );
 }
+
 // ─── Step definitions ──────────────────────────────────────────
 const STEPS = [
   {
@@ -758,6 +737,49 @@ export default function HowItWorks() {
         @keyframes hiw-spin  { to { transform: rotate(360deg); } }
         @keyframes hiw-pulse { 0%,100%{opacity:0.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
         @keyframes hiw-up    { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── RESPONSIVE STEP GRID ── */
+        .hiw-step-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 48px;
+          align-items: center;
+        }
+        .hiw-inner-wrap {
+          max-width: 1120px;
+          margin: 0 auto;
+          padding: 96px 24px 80px;
+          position: relative;
+        }
+
+        @media (max-width: 767px) {
+          .hiw-step-grid {
+            grid-template-columns: 1fr !important;
+            gap: 24px !important;
+            padding: 36px 0 !important;
+          }
+          /* Always show text first, visual second on mobile */
+          .hiw-text-side { order: 1 !important; }
+          .hiw-visual-side { order: 2 !important; }
+          .hiw-inner-wrap {
+            padding: 56px 16px 48px !important;
+          }
+          .hiw-step-nav {
+            gap: 6px !important;
+          }
+          .hiw-step-nav button {
+            padding: 5px 10px !important;
+            font-size: 10px !important;
+          }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .hiw-step-grid {
+            gap: 28px !important;
+          }
+          .hiw-inner-wrap {
+            padding: 72px 20px 60px !important;
+          }
+        }
       `}</style>
 
       <section
@@ -768,7 +790,7 @@ export default function HowItWorks() {
           overflow: "hidden",
         }}
       >
-        {/* grid */}
+        {/* Background grid */}
         <div
           style={{
             position: "absolute",
@@ -780,14 +802,7 @@ export default function HowItWorks() {
           }}
         />
 
-        <div
-          style={{
-            maxWidth: 1120,
-            margin: "0 auto",
-            padding: "96px 24px 80px",
-            position: "relative",
-          }}
-        >
+        <div className="hiw-inner-wrap">
           {/* Header */}
           <div
             ref={headerRef}
@@ -865,6 +880,7 @@ export default function HowItWorks() {
 
           {/* Step nav pills */}
           <div
+            className="hiw-step-nav"
             style={{
               display: "flex",
               justifyContent: "center",
@@ -926,18 +942,18 @@ export default function HowItWorks() {
                   ref={(el) => {
                     stepRefs.current[i] = el;
                   }}
+                  className="hiw-step-grid"
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 48,
-                    padding: "64px 0",
                     borderTop:
                       i > 0 ? "1px solid rgba(255,255,255,0.05)" : "none",
-                    alignItems: "center",
+                    padding: "64px 0",
                   }}
                 >
                   {/* Text side */}
-                  <div style={{ order: isEven ? 1 : 2, padding: "0 16px" }}>
+                  <div
+                    className="hiw-text-side"
+                    style={{ order: isEven ? 1 : 2, padding: "0 16px" }}
+                  >
                     <div
                       style={{
                         display: "flex",
@@ -960,12 +976,11 @@ export default function HowItWorks() {
                       </span>
                       <span
                         style={{
-                          fontSize: 9,
+                          padding: "3px 10px",
+                          borderRadius: 999,
+                          fontSize: 10,
                           fontWeight: 700,
-                          letterSpacing: "0.12em",
-                          textTransform: "uppercase",
-                          padding: "3px 8px",
-                          borderRadius: 4,
+                          letterSpacing: "0.1em",
                           background: isActive
                             ? s.color + "18"
                             : "rgba(255,255,255,0.04)",
@@ -1040,29 +1055,15 @@ export default function HowItWorks() {
                   </div>
 
                   {/* Visual side */}
-                  <div style={{ order: isEven ? 2 : 1, position: "relative" }}>
-                    {/* Glow behind card */}
+                  <div
+                    className="hiw-visual-side"
+                    style={{ order: isEven ? 2 : 1 }}
+                  >
                     <div
                       style={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "50%",
-                        transform: "translate(-50%,-50%)",
-                        width: 200,
-                        height: 200,
-                        borderRadius: "50%",
-                        background: s.color,
-                        opacity: isActive ? 0.06 : 0,
-                        filter: "blur(60px)",
-                        transition: "opacity 0.5s",
-                        pointerEvents: "none",
-                      }}
-                    />
-                    <div
-                      style={{
-                        opacity: isActive ? 1 : 0.35,
+                        opacity: isActive ? 1 : 0.4,
                         transform: isActive ? "scale(1)" : "scale(0.97)",
-                        transition: "opacity 0.5s ease, transform 0.5s ease",
+                        transition: "all 0.4s ease",
                       }}
                     >
                       <Comp active={isActive} />

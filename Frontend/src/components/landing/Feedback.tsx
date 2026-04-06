@@ -93,68 +93,45 @@ function TestimonialCard({
       className="testimonial-card"
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(30px)",
-        transition: `opacity 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1) ${index * 0.06}s, transform 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) ${index * 0.06}s`,
-        background:
-          "linear-gradient(135deg, rgba(20,21,21,0.95) 0%, rgba(16,17,17,0.98) 100%)",
-        backdropFilter: "blur(2px)",
-        border: "1px solid rgba(6,182,212,0.12)",
-        borderRadius: 20,
-        padding: "24px 22px 20px",
+        transform: visible ? "translateY(0)" : "translateY(24px)",
+        transition: `opacity 0.5s ease ${index * 0.08}s, transform 0.5s ease ${index * 0.08}s`,
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.07)",
+        borderRadius: 16,
+        padding: "20px",
         display: "flex",
         flexDirection: "column",
         gap: 14,
-        transitionProperty: "all",
-        boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.borderColor = "rgba(6,182,212,0.35)";
-        e.currentTarget.style.boxShadow =
-          "0 12px 28px -8px rgba(0,0,0,0.5), 0 0 0 1px rgba(6,182,212,0.2)";
-        e.currentTarget.style.transform = "translateY(-4px)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.borderColor = "rgba(6,182,212,0.12)";
-        e.currentTarget.style.boxShadow = "0 4px 20px rgba(0,0,0,0.3)";
-        e.currentTarget.style.transform = "translateY(0)";
+        backdropFilter: "blur(8px)",
       }}
     >
       <Stars n={t.stars} />
       <p
         style={{
-          fontSize: 13.5,
-          color: "rgba(255,255,255,0.75)",
+          fontSize: 13,
+          color: "rgba(255,255,255,0.7)",
           lineHeight: 1.65,
           margin: 0,
-          fontStyle: "normal",
-          fontWeight: 400,
+          flex: 1,
         }}
       >
-        “{t.quote}”
+        "{t.quote}"
       </p>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          marginTop: "auto",
-          paddingTop: 8,
-        }}
-      >
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <div
           style={{
-            width: 36,
-            height: 36,
+            width: 32,
+            height: 32,
             borderRadius: "50%",
-            background: "linear-gradient(135deg, #06b6d4, #c084fc)",
+            background:
+              "linear-gradient(135deg, rgba(6,182,212,0.3), rgba(168,85,247,0.3))",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 13,
+            fontSize: 12,
             fontWeight: 700,
             color: "#fff",
             flexShrink: 0,
-            boxShadow: "0 2px 8px rgba(6,182,212,0.3)",
           }}
         >
           {t.author[0]}
@@ -175,7 +152,6 @@ function TestimonialCard({
               fontSize: 10,
               color: "rgba(255,255,255,0.4)",
               fontFamily: "monospace",
-              letterSpacing: "0.2px",
             }}
           >
             {t.role}
@@ -273,14 +249,15 @@ function FeedbackForm() {
         </h3>
         <p
           style={{
-            fontSize: 13,
-            color: "rgba(255,255,255,0.45)",
-            lineHeight: 1.7,
-            maxWidth: 260,
+            fontSize: 14,
+            color: "rgba(255,255,255,0.4)",
+            lineHeight: 1.6,
+            maxWidth: 280,
             margin: "0 auto",
           }}
         >
-          Your thoughts just landed in a real inbox. We'll read every word.
+          Your feedback just landed in front of someone who genuinely cares.
+          We'll read every word.
         </p>
       </div>
     );
@@ -290,20 +267,34 @@ function FeedbackForm() {
     <form
       onSubmit={handleSubmit(onSubmit)}
       noValidate
-      style={{ display: "flex", flexDirection: "column", gap: 18 }}
+      style={{ display: "flex", flexDirection: "column", gap: 16 }}
     >
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-        <div>
+      {serverError && (
+        <div
+          style={{
+            padding: "10px 14px",
+            background: "rgba(239,68,68,0.1)",
+            border: "1px solid rgba(239,68,68,0.3)",
+            borderRadius: 8,
+            fontSize: 13,
+            color: "#f87171",
+          }}
+        >
+          {serverError}
+        </div>
+      )}
+      <div
+        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}
+        className="fb-name-email-grid"
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <label
             style={{
-              fontSize: 11,
-              fontFamily: "monospace",
+              fontSize: 10,
               textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              color: "rgba(255,255,255,0.5)",
-              display: "block",
-              marginBottom: 8,
-              fontWeight: 500,
+              letterSpacing: "0.1em",
+              color: "rgba(255,255,255,0.35)",
+              fontFamily: "monospace",
             }}
           >
             Name
@@ -311,43 +302,24 @@ function FeedbackForm() {
           <input
             type="text"
             placeholder="Alex Chen"
+            autoComplete="name"
             style={fieldStyle(!!errors.name)}
             {...register("name")}
-            onFocus={(e) => {
-              e.target.style.borderColor = "#06b6d4";
-              e.target.style.boxShadow = "0 0 0 3px rgba(6,182,212,0.1)";
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = errors.name
-                ? "rgba(239,68,68,0.6)"
-                : "rgba(255,255,255,0.08)";
-              e.target.style.boxShadow = "none";
-            }}
           />
           {errors.name && (
-            <p
-              style={{
-                color: "#f87171",
-                fontSize: 10,
-                marginTop: 6,
-                fontWeight: 500,
-              }}
-            >
+            <p style={{ fontSize: 11, color: "#f87171", margin: 0 }}>
               {errors.name.message}
             </p>
           )}
         </div>
-        <div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           <label
             style={{
-              fontSize: 11,
-              fontFamily: "monospace",
+              fontSize: 10,
               textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              color: "rgba(255,255,255,0.5)",
-              display: "block",
-              marginBottom: 8,
-              fontWeight: 500,
+              letterSpacing: "0.1em",
+              color: "rgba(255,255,255,0.35)",
+              fontFamily: "monospace",
             }}
           >
             Email
@@ -355,160 +327,91 @@ function FeedbackForm() {
           <input
             type="email"
             placeholder="you@company.com"
+            autoComplete="email"
             style={fieldStyle(!!errors.email)}
             {...register("email")}
-            onFocus={(e) => {
-              e.target.style.borderColor = "#06b6d4";
-              e.target.style.boxShadow = "0 0 0 3px rgba(6,182,212,0.1)";
-            }}
-            onBlur={(e) => {
-              e.target.style.borderColor = errors.email
-                ? "rgba(239,68,68,0.6)"
-                : "rgba(255,255,255,0.08)";
-              e.target.style.boxShadow = "none";
-            }}
           />
           {errors.email && (
-            <p
-              style={{
-                color: "#f87171",
-                fontSize: 10,
-                marginTop: 6,
-                fontWeight: 500,
-              }}
-            >
+            <p style={{ fontSize: 11, color: "#f87171", margin: 0 }}>
               {errors.email.message}
             </p>
           )}
         </div>
       </div>
-
-      <div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         <div
           style={{
             display: "flex",
             justifyContent: "space-between",
-            marginBottom: 8,
+            alignItems: "center",
           }}
         >
           <label
             style={{
-              fontSize: 11,
-              fontFamily: "monospace",
+              fontSize: 10,
               textTransform: "uppercase",
-              letterSpacing: "0.12em",
-              color: "rgba(255,255,255,0.5)",
-              fontWeight: 500,
+              letterSpacing: "0.1em",
+              color: "rgba(255,255,255,0.35)",
+              fontFamily: "monospace",
             }}
           >
-            Your thoughts
+            Your Thoughts
           </label>
           <span
             style={{
               fontSize: 10,
+              color: "rgba(255,255,255,0.2)",
               fontFamily: "monospace",
-              color:
-                thoughts.length > 900
-                  ? "rgba(245,158,11,0.7)"
-                  : "rgba(255,255,255,0.3)",
-              transition: "color 0.2s",
             }}
           >
-            {thoughts.length}/1000
+            {thoughts.length} / 1000
           </span>
         </div>
         <textarea
-          rows={4}
+          rows={5}
           maxLength={1000}
-          placeholder="What's working? What isn't? What do you wish Graphix could do?"
+          placeholder="What's working? What isn't? Be as specific or vague as you like — every word helps."
           style={{
             ...fieldStyle(!!errors.thoughts),
             resize: "vertical",
-            fontFamily: "inherit",
+            minHeight: 100,
           }}
           {...register("thoughts")}
-          onFocus={(e) => {
-            e.target.style.borderColor = "#06b6d4";
-            e.target.style.boxShadow = "0 0 0 3px rgba(6,182,212,0.1)";
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = errors.thoughts
-              ? "rgba(239,68,68,0.6)"
-              : "rgba(255,255,255,0.08)";
-            e.target.style.boxShadow = "none";
-          }}
         />
         {errors.thoughts && (
-          <p
-            style={{
-              color: "#f87171",
-              fontSize: 10,
-              marginTop: 6,
-              fontWeight: 500,
-            }}
-          >
+          <p style={{ fontSize: 11, color: "#f87171", margin: 0 }}>
             {errors.thoughts.message}
           </p>
         )}
       </div>
-
-      {serverError && (
-        <p
-          style={{
-            color: "#f87171",
-            fontSize: 11,
-            padding: "10px 14px",
-            background: "rgba(239,68,68,0.1)",
-            borderRadius: 10,
-            border: "1px solid rgba(239,68,68,0.25)",
-            backdropFilter: "blur(4px)",
-          }}
-        >
-          {serverError}
-        </p>
-      )}
-
       <button
         type="submit"
         disabled={isSubmitting}
         style={{
-          height: 50,
-          background: "linear-gradient(135deg, #06b6d4, #0891b2)",
-          color: "#fff",
-          fontWeight: 700,
-          fontSize: 12,
-          letterSpacing: "0.12em",
-          textTransform: "uppercase",
-          border: "none",
-          borderRadius: 12,
-          cursor: isSubmitting ? "not-allowed" : "pointer",
-          opacity: isSubmitting ? 0.7 : 1,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          gap: 10,
-          transition: "all 0.25s ease",
-          boxShadow: "0 4px 12px rgba(6,182,212,0.25)",
-        }}
-        onMouseEnter={(e) => {
-          if (!isSubmitting) {
-            e.currentTarget.style.transform = "translateY(-2px)";
-            e.currentTarget.style.boxShadow = "0 8px 20px rgba(6,182,212,0.35)";
-          }
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.boxShadow = "0 4px 12px rgba(6,182,212,0.25)";
+          gap: 8,
+          padding: "13px 24px",
+          background: isSubmitting ? "rgba(6,182,212,0.5)" : "#06b6d4",
+          color: "#111",
+          border: "none",
+          borderRadius: 10,
+          fontSize: 13,
+          fontWeight: 700,
+          cursor: isSubmitting ? "not-allowed" : "pointer",
+          transition: "all 0.2s",
+          letterSpacing: "0.05em",
         }}
       >
         {isSubmitting ? (
           <>
             <span
               style={{
-                width: 16,
-                height: 16,
-                border: "2px solid rgba(255,255,255,0.3)",
-                borderTopColor: "#fff",
+                width: 14,
+                height: 14,
+                border: "2px solid rgba(0,0,0,0.3)",
+                borderTopColor: "#111",
                 borderRadius: "50%",
                 animation: "fb-spin 0.8s linear infinite",
               }}
@@ -519,7 +422,6 @@ function FeedbackForm() {
           "Send Feedback →"
         )}
       </button>
-
       <p
         style={{
           fontSize: 10,
@@ -559,9 +461,7 @@ export default function Feedback() {
   return (
     <>
       <style>{`
-        @keyframes fb-spin {
-          to { transform: rotate(360deg); }
-        }
+        @keyframes fb-spin { to { transform: rotate(360deg); } }
         @keyframes checkPulse {
           0% { transform: scale(0.8); opacity: 0; }
           50% { transform: scale(1.05); }
@@ -572,12 +472,55 @@ export default function Feedback() {
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        .testimonial-card {
-          transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        .testimonial-card { transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
+        .testimonial-card:hover {
+          border-color: rgba(6,182,212,0.2) !important;
+          transform: translateY(-2px) !important;
+        }
+
+        /* ── RESPONSIVE ── */
+        .fb-layout {
+          display: grid;
+          grid-template-columns: 1fr 420px;
+          gap: 48px;
+          align-items: start;
+        }
+        .fb-testimonial-grid {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          gap: 18px;
+        }
+        .fb-name-email-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+
+        @media (max-width: 1023px) {
+          .fb-layout {
+            grid-template-columns: 1fr !important;
+            gap: 40px !important;
+          }
+          .fb-form-sticky {
+            position: static !important;
+          }
+        }
+        @media (max-width: 639px) {
+          .fb-testimonial-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .fb-name-email-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .fb-section-inner {
+            padding: 0 16px !important;
+          }
+          .fb-section-outer {
+            padding: 64px 0 72px !important;
+          }
         }
       `}</style>
 
       <section
+        className="fb-section-outer"
         style={{
           background: "radial-gradient(ellipse at 30% 40%, #111314, #080909)",
           padding: "110px 0 100px",
@@ -585,7 +528,7 @@ export default function Feedback() {
           overflow: "hidden",
         }}
       >
-        {/* Animated gradient orbs */}
+        {/* Gradient orbs */}
         <div
           style={{
             position: "absolute",
@@ -615,8 +558,7 @@ export default function Feedback() {
             pointerEvents: "none",
           }}
         />
-
-        {/* Refined grid */}
+        {/* Grid */}
         <div
           style={{
             position: "absolute",
@@ -630,6 +572,7 @@ export default function Feedback() {
 
         <div
           ref={sectionRef}
+          className="fb-section-inner"
           style={{
             maxWidth: 1280,
             margin: "0 auto",
@@ -706,7 +649,6 @@ export default function Feedback() {
                 maxWidth: 480,
                 margin: "0 auto",
                 lineHeight: 1.7,
-                fontWeight: 400,
               }}
             >
               Every feature in Graphix started as someone's frustration. Here's
@@ -715,29 +657,17 @@ export default function Feedback() {
           </div>
 
           {/* Two-column layout */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 420px",
-              gap: 48,
-              alignItems: "start",
-            }}
-          >
+          <div className="fb-layout">
             {/* Testimonial grid */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(2, 1fr)",
-                gap: 18,
-              }}
-            >
+            <div className="fb-testimonial-grid">
               {TESTIMONIALS.map((t, i) => (
                 <TestimonialCard key={i} t={t} index={i} visible={vis} />
               ))}
             </div>
 
-            {/* Feedback form - glassmorphism style */}
+            {/* Feedback form */}
             <div
+              className="fb-form-sticky"
               style={{
                 opacity: vis ? 1 : 0,
                 transform: vis ? "translateY(0)" : "translateY(30px)",
@@ -796,7 +726,7 @@ export default function Feedback() {
                 </div>
               </div>
 
-              {/* Mini why-it-matters - enhanced */}
+              {/* Why it matters */}
               <div
                 style={{
                   marginTop: 20,
@@ -821,57 +751,37 @@ export default function Feedback() {
                     title: "Features ship from feedback",
                     desc: "Every chart type you see today started as someone's request.",
                   },
-                ].map((item, idx) => (
+                ].map((item) => (
                   <div
                     key={item.title}
                     style={{
                       display: "flex",
-                      gap: 14,
+                      gap: 12,
                       padding: "12px 16px",
-                      background: "rgba(20, 21, 21, 0.6)",
-                      backdropFilter: "blur(8px)",
-                      borderRadius: 14,
-                      border: "1px solid rgba(255,255,255,0.04)",
-                      transition: "all 0.2s",
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = "rgba(6,182,212,0.2)";
-                      e.currentTarget.style.background =
-                        "rgba(25, 26, 27, 0.7)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor =
-                        "rgba(255,255,255,0.04)";
-                      e.currentTarget.style.background =
-                        "rgba(20, 21, 21, 0.6)";
+                      background: "rgba(255,255,255,0.02)",
+                      border: "1px solid rgba(255,255,255,0.05)",
+                      borderRadius: 12,
                     }}
                   >
-                    <span
-                      style={{
-                        fontSize: 20,
-                        flexShrink: 0,
-                        lineHeight: 1,
-                      }}
-                    >
+                    <span style={{ fontSize: 18, flexShrink: 0 }}>
                       {item.icon}
                     </span>
                     <div>
                       <div
                         style={{
-                          fontSize: 12,
+                          fontSize: 13,
                           fontWeight: 600,
-                          color: "rgba(255,255,255,0.85)",
-                          marginBottom: 4,
-                          letterSpacing: "-0.2px",
+                          color: "#fff",
+                          marginBottom: 3,
                         }}
                       >
                         {item.title}
                       </div>
                       <div
                         style={{
-                          fontSize: 11,
-                          color: "rgba(255,255,255,0.4)",
-                          lineHeight: 1.45,
+                          fontSize: 12,
+                          color: "rgba(255,255,255,0.35)",
+                          lineHeight: 1.5,
                         }}
                       >
                         {item.desc}

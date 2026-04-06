@@ -4,37 +4,6 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
-// ─── Colors ───────────────────────────────────────────────────────────────────
-const GREY_AXIS = new THREE.Color(0x888899);
-const GREY_GRID = new THREE.Color(0x444455);
-const GREY_CAGE = new THREE.Color(0xaaaabb);
-
-const PIE_C = [
-  new THREE.Color(0x4e79a7),
-  new THREE.Color(0xf28e2b),
-  new THREE.Color(0xe15759),
-  new THREE.Color(0x76b7b2),
-  new THREE.Color(0x59a14f),
-];
-const ERR_LINE = new THREE.Color(0x4e79a7);
-const ERR_BAND = new THREE.Color(0x4e79a7);
-const ERR_BARS = new THREE.Color(0xf28e2b);
-const ERR_DOTS = new THREE.Color(0xe15759);
-const CONT_STOPS: [number, THREE.Color][] = [
-  [0.0, new THREE.Color(0x440154)],
-  [0.25, new THREE.Color(0x3b528b)],
-  [0.5, new THREE.Color(0x21918c)],
-  [0.75, new THREE.Color(0x5ec962)],
-  [1.0, new THREE.Color(0xfde725)],
-];
-const ISO_COLORS = [
-  new THREE.Color(0x3b528b),
-  new THREE.Color(0x21918c),
-  new THREE.Color(0x5ec962),
-  new THREE.Color(0xfde725),
-  new THREE.Color(0xff7f0e),
-];
-
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
 
@@ -42,9 +11,7 @@ const HOLD_FRAMES = 220;
 const MORPH_FRAMES = 100;
 type ChartMode = "pie" | "errorline" | "contour";
 const CYCLE: ChartMode[] = ["pie", "errorline", "contour"];
-
 const PIE_VALS = [0.32, 0.22, 0.18, 0.15, 0.13];
-
 const LINE_N = 20;
 const LINE_X = Array.from({ length: LINE_N }, (_, i) => i / (LINE_N - 1));
 const LINE_Y = LINE_X.map(
@@ -52,7 +19,6 @@ const LINE_Y = LINE_X.map(
 );
 const ERROR_HI = LINE_Y.map((y, i) => y + 0.08 + Math.sin(i * 0.9) * 0.05);
 const ERROR_LO = LINE_Y.map((y, i) => y - 0.08 - Math.sin(i * 0.9) * 0.05);
-
 const CONT_W = 12,
   CONT_H = 10;
 function contourZ(cx: number, cy: number) {
@@ -65,20 +31,51 @@ function contourZ(cx: number, cy: number) {
   );
 }
 
-// ─── Three.js cube ────────────────────────────────────────────────────────────
+const PIE_COLORS = [
+  new THREE.Color(0x06b6d4),
+  new THREE.Color(0xa855f7),
+  new THREE.Color(0x10b981),
+  new THREE.Color(0xf59e0b),
+  new THREE.Color(0xef4444),
+];
+const ERR_LINE = new THREE.Color(0x06b6d4);
+const ERR_BAND = new THREE.Color(0x06b6d4);
+const ERR_DOTS = new THREE.Color(0xa855f7);
+const CONT_STOPS: [number, THREE.Color][] = [
+  [0, new THREE.Color(0x1e3a5f)],
+  [0.25, new THREE.Color(0x06b6d4)],
+  [0.5, new THREE.Color(0x10b981)],
+  [0.75, new THREE.Color(0xf59e0b)],
+  [1, new THREE.Color(0xef4444)],
+];
+const ISO_COLORS = [
+  new THREE.Color(0x38bdf8),
+  new THREE.Color(0x34d399),
+  new THREE.Color(0xfbbf24),
+  new THREE.Color(0xf87171),
+  new THREE.Color(0xe879f9),
+];
+
+function setOp(group: THREE.Group, op: number) {
+  group.visible = op > 0.001;
+  group.traverse((o) => {
+    if ((o as THREE.Mesh).material) {
+      const mat = (o as THREE.Mesh).material as THREE.MeshBasicMaterial;
+      mat.opacity = op * (mat.userData.baseOp ?? 1);
+    }
+  });
+}
+
 function ThreeCubeFooter() {
   const mountRef = useRef<HTMLDivElement>(null);
-
   useEffect((): (() => void) => {
     const el = mountRef.current;
     if (!el) return () => {};
-
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(el.clientWidth, el.clientHeight);
     renderer.setClearColor(0x000000, 0);
     el.appendChild(renderer.domElement);
-
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       34,
@@ -88,11 +85,10 @@ function ThreeCubeFooter() {
     );
     camera.position.set(0, 0, 20);
     camera.lookAt(0, 0, 0);
-
     let isOrbit = false,
       ox = 0,
-      oy = 0;
-    let rotY = 0.3,
+      oy = 0,
+      rotY = 0.3,
       rotX = 0.15,
       velY = 0,
       velX = 0,
@@ -125,258 +121,129 @@ function ThreeCubeFooter() {
 
     const root = new THREE.Group();
     scene.add(root);
-
-    const CAGE = 3.2,
-      DIVS = 10;
-    const cageMat = new THREE.LineBasicMaterial({
-      color: GREY_CAGE,
-      transparent: true,
-      opacity: 0.22,
-    });
-    const cageGroup = new THREE.Group();
-    root.add(cageGroup);
-    const addLine = (
-      x1: number,
-      y1: number,
-      z1: number,
-      x2: number,
-      y2: number,
-      z2: number,
-    ) =>
-      cageGroup.add(
-        new THREE.Line(
-          new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(x1, y1, z1),
-            new THREE.Vector3(x2, y2, z2),
-          ]),
-          cageMat,
-        ),
-      );
-    for (let i = 0; i <= DIVS; i++) {
-      const t = -CAGE + ((CAGE * 2) / DIVS) * i;
-      addLine(-CAGE, t, CAGE, CAGE, t, CAGE);
-      addLine(t, -CAGE, CAGE, t, CAGE, CAGE);
-      addLine(-CAGE, t, -CAGE, CAGE, t, -CAGE);
-      addLine(t, -CAGE, -CAGE, t, CAGE, -CAGE);
-      addLine(-CAGE, t, -CAGE, -CAGE, t, CAGE);
-      addLine(-CAGE, -CAGE, t, -CAGE, CAGE, t);
-      addLine(CAGE, t, -CAGE, CAGE, t, CAGE);
-      addLine(CAGE, -CAGE, t, CAGE, CAGE, t);
-      addLine(-CAGE, CAGE, t, CAGE, CAGE, t);
-      addLine(t, CAGE, -CAGE, t, CAGE, CAGE);
-      addLine(-CAGE, -CAGE, t, CAGE, -CAGE, t);
-      addLine(t, -CAGE, -CAGE, t, -CAGE, CAGE);
-    }
-
     const chartGroup = new THREE.Group();
     root.add(chartGroup);
-    const CW = CAGE * 1.6,
-      CH = CAGE * 1.5;
-    const CX = 0,
-      CY = 0;
+    const CW = 7,
+      CH = 5;
 
-    const setOp = (obj: THREE.Object3D, op: number) => {
-      obj.visible = op > 0.001;
-      obj.traverse((child) => {
-        const m = (child as THREE.Mesh).material as THREE.Material;
-        if (m && "opacity" in m) (m as any).opacity = op;
-      });
-    };
-
-    // PIE
-    const pieGroup = new THREE.Group();
-    chartGroup.add(pieGroup);
-    const PIE_R = CAGE * 1.0,
-      PIE_THICK = 0.18;
-    let cumAngle = 0;
-    PIE_VALS.forEach((val, i) => {
-      const startA = cumAngle - Math.PI / 2;
-      const endA = cumAngle + val * Math.PI * 2 - Math.PI / 2;
-      cumAngle += val * Math.PI * 2;
-      const shape = new THREE.Shape();
-      shape.moveTo(0, 0);
-      const segs = Math.max(16, Math.round(val * 64));
-      for (let s = 0; s <= segs; s++) {
-        const a = startA + (s / segs) * (endA - startA);
-        shape.lineTo(Math.cos(a) * PIE_R, Math.sin(a) * PIE_R);
-      }
-      shape.closePath();
-      const geo = new THREE.ExtrudeGeometry(shape, {
-        depth: PIE_THICK,
-        bevelEnabled: false,
-      });
-      const mat = new THREE.MeshBasicMaterial({
-        color: PIE_C[i],
-        transparent: true,
-        opacity: 0.88,
-      });
-      const mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(CX, CY, -PIE_THICK / 2);
-      const midA = (startA + endA) / 2;
-      mesh.position.x += Math.cos(midA) * 0.08;
-      mesh.position.y += Math.sin(midA) * 0.08;
-      pieGroup.add(mesh);
-      pieGroup.add(
-        new THREE.LineSegments(
-          new THREE.EdgesGeometry(geo),
-          new THREE.LineBasicMaterial({
-            color: new THREE.Color(0x111111),
-            transparent: true,
-            opacity: 0.3,
-          }),
-        ),
-      );
-    });
-    cumAngle = 0;
-    PIE_VALS.forEach((val) => {
-      const midA = cumAngle + val * Math.PI - Math.PI / 2;
-      cumAngle += val * Math.PI * 2;
-      pieGroup.add(
+    // Cage
+    const cageEdges = [
+      [
+        [-CW / 2, -CH / 2, 0],
+        [CW / 2, -CH / 2, 0],
+      ],
+      [
+        [-CW / 2, CH / 2, 0],
+        [CW / 2, CH / 2, 0],
+      ],
+      [
+        [-CW / 2, -CH / 2, 0],
+        [-CW / 2, CH / 2, 0],
+      ],
+      [
+        [CW / 2, -CH / 2, 0],
+        [CW / 2, CH / 2, 0],
+      ],
+    ];
+    cageEdges.forEach(([a, b]) => {
+      chartGroup.add(
         new THREE.Line(
           new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(
-              Math.cos(midA) * PIE_R * 0.85,
-              Math.sin(midA) * PIE_R * 0.85,
-              PIE_THICK,
-            ),
-            new THREE.Vector3(
-              Math.cos(midA) * (PIE_R + 0.35),
-              Math.sin(midA) * (PIE_R + 0.35),
-              PIE_THICK,
-            ),
+            new THREE.Vector3(...(a as [number, number, number])),
+            new THREE.Vector3(...(b as [number, number, number])),
           ]),
           new THREE.LineBasicMaterial({
-            color: GREY_AXIS,
+            color: 0x333344,
             transparent: true,
-            opacity: 0.6,
+            opacity: 0.5,
           }),
         ),
       );
     });
 
-    // ERROR LINE
+    const mapX = (x: number) => (x - 0.5) * CW;
+    const mapY = (y: number) => (y - 0.5) * CH;
+
+    // PIE group
+    const pieGroup = new THREE.Group();
+    chartGroup.add(pieGroup);
+    let startAngle = 0;
+    PIE_VALS.forEach((v, i) => {
+      const endAngle = startAngle + v * Math.PI * 2;
+      const shape = new THREE.Shape();
+      shape.moveTo(0, 0);
+      shape.absarc(0, 0, 2.2, startAngle, endAngle, false);
+      shape.lineTo(0, 0);
+      const geo = new THREE.ShapeGeometry(shape, 32);
+      const mat = new THREE.MeshBasicMaterial({
+        color: PIE_COLORS[i],
+        transparent: true,
+        opacity: 0.88,
+        side: THREE.DoubleSide,
+      });
+      mat.userData.baseOp = 0.88;
+      pieGroup.add(new THREE.Mesh(geo, mat));
+      startAngle = endAngle;
+    });
+
+    // ERROR LINE group
     const errGroup = new THREE.Group();
     chartGroup.add(errGroup);
     errGroup.visible = false;
-    const mapX = (x: number) => (x - 0.5) * CW;
-    const mapY = (y: number) => (y - 0.5) * CH;
-    const axisMat = new THREE.LineBasicMaterial({
-      color: GREY_AXIS,
+    const bandPts: THREE.Vector3[] = [
+      ...LINE_X.map((x, i) => new THREE.Vector3(mapX(x), mapY(ERROR_HI[i]), 0)),
+      ...[...LINE_X]
+        .reverse()
+        .map(
+          (x, i) =>
+            new THREE.Vector3(mapX(x), mapY(ERROR_LO[LINE_N - 1 - i]), 0),
+        ),
+    ];
+    const bandShape = new THREE.Shape(
+      bandPts.map((p) => new THREE.Vector2(p.x, p.y)),
+    );
+    const bandMat = new THREE.MeshBasicMaterial({
+      color: ERR_BAND,
       transparent: true,
-      opacity: 0.75,
+      opacity: 0.15,
+      side: THREE.DoubleSide,
     });
-    errGroup.add(
-      new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(mapX(0), mapY(0), 0),
-          new THREE.Vector3(mapX(1.05), mapY(0), 0),
-        ]),
-        axisMat,
-      ),
-    );
-    errGroup.add(
-      new THREE.Line(
-        new THREE.BufferGeometry().setFromPoints([
-          new THREE.Vector3(mapX(0), mapY(0), 0),
-          new THREE.Vector3(mapX(0), mapY(1.1), 0),
-        ]),
-        axisMat,
-      ),
-    );
-    const gridMat = new THREE.LineBasicMaterial({
-      color: GREY_GRID,
-      transparent: true,
-      opacity: 0.4,
-    });
-    for (let g = 1; g <= 4; g++)
-      errGroup.add(
-        new THREE.Line(
-          new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(mapX(0), mapY(g / 4), 0),
-            new THREE.Vector3(mapX(1), mapY(g / 4), 0),
-          ]),
-          gridMat.clone(),
-        ),
-      );
-    const bandShape = new THREE.Shape();
-    bandShape.moveTo(mapX(LINE_X[0]), mapY(ERROR_HI[0]));
-    LINE_X.forEach((x, i) => bandShape.lineTo(mapX(x), mapY(ERROR_HI[i])));
-    [...LINE_X].reverse().forEach((x, i) => {
-      const ri = LINE_X.length - 1 - i;
-      bandShape.lineTo(mapX(x), mapY(ERROR_LO[ri]));
-    });
-    bandShape.closePath();
-    errGroup.add(
-      new THREE.Mesh(
-        new THREE.ShapeGeometry(bandShape),
-        new THREE.MeshBasicMaterial({
-          color: ERR_BAND,
-          transparent: true,
-          opacity: 0.15,
-          side: THREE.DoubleSide,
-        }),
-      ),
-    );
-    LINE_X.forEach((x, i) => {
-      const errMat = new THREE.LineBasicMaterial({
-        color: ERR_BARS,
-        transparent: true,
-        opacity: 0.75,
-      });
-      errGroup.add(
-        new THREE.Line(
-          new THREE.BufferGeometry().setFromPoints([
-            new THREE.Vector3(mapX(x), mapY(ERROR_LO[i]), 0),
-            new THREE.Vector3(mapX(x), mapY(ERROR_HI[i]), 0),
-          ]),
-          errMat,
-        ),
-      );
-      const capW = 0.06;
-      [ERROR_HI[i], ERROR_LO[i]].forEach((y) =>
-        errGroup.add(
-          new THREE.Line(
-            new THREE.BufferGeometry().setFromPoints([
-              new THREE.Vector3(mapX(x) - capW, mapY(y), 0),
-              new THREE.Vector3(mapX(x) + capW, mapY(y), 0),
-            ]),
-            errMat.clone(),
-          ),
-        ),
-      );
-    });
+    bandMat.userData.baseOp = 0.15;
+    errGroup.add(new THREE.Mesh(new THREE.ShapeGeometry(bandShape), bandMat));
     const lineCurve = new THREE.CatmullRomCurve3(
       LINE_X.map((x, i) => new THREE.Vector3(mapX(x), mapY(LINE_Y[i]), 0)),
     );
+    const lineMat = new THREE.MeshBasicMaterial({
+      color: ERR_LINE,
+      transparent: true,
+      opacity: 0.95,
+    });
+    lineMat.userData.baseOp = 0.95;
     errGroup.add(
       new THREE.Mesh(
         new THREE.TubeGeometry(lineCurve, 80, 0.055, 8, false),
-        new THREE.MeshBasicMaterial({
-          color: ERR_LINE,
-          transparent: true,
-          opacity: 0.95,
-        }),
+        lineMat,
       ),
     );
     LINE_X.forEach((x, i) => {
+      const dotMat = new THREE.MeshBasicMaterial({
+        color: ERR_DOTS,
+        transparent: true,
+        opacity: 0.92,
+      });
+      dotMat.userData.baseOp = 0.92;
       const dot = new THREE.Mesh(
         new THREE.SphereGeometry(0.075, 10, 10),
-        new THREE.MeshBasicMaterial({
-          color: ERR_DOTS,
-          transparent: true,
-          opacity: 0.92,
-        }),
+        dotMat,
       );
       dot.position.set(mapX(x), mapY(LINE_Y[i]), 0.05);
       errGroup.add(dot);
     });
 
-    // CONTOUR
+    // CONTOUR group
     const contGroup = new THREE.Group();
     chartGroup.add(contGroup);
     contGroup.visible = false;
-    const mapCX = (cx: number) => (cx / (CONT_W - 1) - 0.5) * CW;
-    const mapCY = (cy: number) => (cy / (CONT_H - 1) - 0.5) * CH;
     for (let cy = 0; cy < CONT_H - 1; cy++) {
       for (let cx = 0; cx < CONT_W - 1; cx++) {
         const zAvg =
@@ -397,64 +264,25 @@ function ThreeCubeFooter() {
         );
         const cellW = CW / (CONT_W - 1),
           cellH = CH / (CONT_H - 1);
+        const cellMat = new THREE.MeshBasicMaterial({
+          color: col,
+          transparent: true,
+          opacity: 0.82,
+          side: THREE.DoubleSide,
+        });
+        cellMat.userData.baseOp = 0.82;
         const cell = new THREE.Mesh(
           new THREE.PlaneGeometry(cellW * 0.92, cellH * 0.92),
-          new THREE.MeshBasicMaterial({
-            color: col,
-            transparent: true,
-            opacity: 0.82,
-            side: THREE.DoubleSide,
-          }),
+          cellMat,
         );
-        cell.position.set(mapCX(cx) + cellW / 2, mapCY(cy) + cellH / 2, 0);
+        cell.position.set(
+          (cx / (CONT_W - 1) - 0.5) * CW + cellW / 2,
+          (cy / (CONT_H - 1) - 0.5) * CH + cellH / 2,
+          0,
+        );
         contGroup.add(cell);
       }
     }
-    [0.25, 0.4, 0.55, 0.7, 0.85].forEach((level, li) => {
-      const points: THREE.Vector3[] = [];
-      for (let cy = 0; cy < CONT_H - 1; cy++) {
-        for (let cx = 0; cx < CONT_W - 1; cx++) {
-          const corners = [
-            { x: cx, y: cy, z: contourZ(cx, cy) },
-            { x: cx + 1, y: cy, z: contourZ(cx + 1, cy) },
-            { x: cx + 1, y: cy + 1, z: contourZ(cx + 1, cy + 1) },
-            { x: cx, y: cy + 1, z: contourZ(cx, cy + 1) },
-          ];
-          const crossings: THREE.Vector3[] = [];
-          [
-            [0, 1],
-            [1, 2],
-            [2, 3],
-            [3, 0],
-          ].forEach(([a, b]) => {
-            const ca = corners[a],
-              cb = corners[b];
-            if ((ca.z - level) * (cb.z - level) < 0) {
-              const t = (level - ca.z) / (cb.z - ca.z);
-              crossings.push(
-                new THREE.Vector3(
-                  mapCX(ca.x + t * (cb.x - ca.x)),
-                  mapCY(ca.y + t * (cb.y - ca.y)),
-                  0.05,
-                ),
-              );
-            }
-          });
-          if (crossings.length >= 2) points.push(crossings[0], crossings[1]);
-        }
-      }
-      if (points.length > 0)
-        contGroup.add(
-          new THREE.LineSegments(
-            new THREE.BufferGeometry().setFromPoints(points),
-            new THREE.LineBasicMaterial({
-              color: ISO_COLORS[li],
-              transparent: true,
-              opacity: 0.9,
-            }),
-          ),
-        );
-    });
 
     const showPie = (op: number) => setOp(pieGroup, op);
     const showErr = (op: number) => setOp(errGroup, op);
@@ -466,7 +294,6 @@ function ThreeCubeFooter() {
     showPie(1);
     showErr(0);
     showContour(0);
-
     let modeIdx = 0,
       phase: "hold" | "morph" = "hold",
       timer = 0,
@@ -484,55 +311,44 @@ function ThreeCubeFooter() {
         velY *= DAMPING;
         velX *= DAMPING;
         rotY += velY;
-        rotX += velX;
-        rotX = Math.max(-1.1, Math.min(1.1, rotX));
+        rotX = Math.max(-1.1, Math.min(1.1, rotX + velX));
         if (Math.abs(velY) + Math.abs(velX) < 0.0005) autoSpin += 0.003;
-      } else {
-        autoSpin = 0;
-      }
-      root.rotation.y = rotY + autoSpin;
+      } else autoSpin = rotY;
+      root.rotation.y = isOrbit ? rotY : autoSpin;
       root.rotation.x = rotX;
-      const cur = CYCLE[modeIdx],
-        nxt = CYCLE[(modeIdx + 1) % CYCLE.length];
-      if (phase === "hold") {
-        if (timer >= HOLD_FRAMES) {
-          phase = "morph";
-          timer = 0;
-        }
-      } else {
-        const t = easeInOut(timer / MORPH_FRAMES),
-          tIn = easeOut(t),
-          tOut = easeOut(1 - t);
-        if (cur === "pie") showPie(tOut);
-        if (cur === "errorline") showErr(tOut);
-        if (cur === "contour") showContour(tOut);
-        if (nxt === "pie") showPie(tIn);
-        if (nxt === "errorline") showErr(tIn);
-        if (nxt === "contour") showContour(tIn);
-        if (timer >= MORPH_FRAMES) {
-          modeIdx = (modeIdx + 1) % CYCLE.length;
+      if (phase === "hold" && timer >= HOLD_FRAMES) {
+        phase = "morph";
+        timer = 0;
+      }
+      if (phase === "morph") {
+        const t = Math.min(timer / MORPH_FRAMES, 1),
+          e = easeInOut(t);
+        const cur = CYCLE[modeIdx % 3],
+          nxt = CYCLE[(modeIdx + 1) % 3];
+        const fade = (m: ChartMode, op: number) => {
+          if (m === "pie") showPie(op);
+          else if (m === "errorline") showErr(op);
+          else showContour(op);
+        };
+        fade(cur, 1 - e);
+        fade(nxt, e);
+        if (t >= 1) {
           phase = "hold";
           timer = 0;
-          showPie(0);
-          showErr(0);
-          showContour(0);
-          if (CYCLE[modeIdx] === "pie") showPie(1);
-          if (CYCLE[modeIdx] === "errorline") showErr(1);
-          if (CYCLE[modeIdx] === "contour") showContour(1);
+          modeIdx++;
         }
       }
       renderer.render(scene, camera);
       rafId = requestAnimationFrame(animate);
     };
     rafId = requestAnimationFrame(animate);
-
     const onResize = () => {
+      if (!el) return;
       renderer.setSize(el.clientWidth, el.clientHeight);
       camera.aspect = el.clientWidth / el.clientHeight;
       camera.updateProjectionMatrix();
     };
     window.addEventListener("resize", onResize);
-
     return () => {
       cancelAnimationFrame(rafId);
       renderer.domElement.removeEventListener("mousedown", onMD);
@@ -543,12 +359,11 @@ function ThreeCubeFooter() {
       if (el.contains(renderer.domElement)) el.removeChild(renderer.domElement);
     };
   }, []);
-
   return <div ref={mountRef} className="w-full h-full" />;
 }
 
-// ─── Count-up stat ────────────────────────────────────────────────────────────
-function CountUp({ target, suffix = "" }: { target: number; suffix?: string }) {
+// ─── CountUp ──────────────────────────────────────────────────────────────────
+function CountUp({ target, suffix }: { target: number; suffix: string }) {
   const [val, setVal] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
@@ -580,7 +395,6 @@ function CountUp({ target, suffix = "" }: { target: number; suffix?: string }) {
   );
 }
 
-// ─── Closing headline words ───────────────────────────────────────────────────
 const CLOSING_WORDS = "The last chart tool you'll ever need.".split(" ");
 
 // ─── CtaSection ──────────────────────────────────────────────────────────────
@@ -617,46 +431,42 @@ export default function CTA() {
         .cta-stat-val { font-size:2.2rem; font-weight:800; letter-spacing:-0.04em; line-height:1; }
         .cta-stat-label { font-size:10px; letter-spacing:0.18em; color:#888899; margin-top:4px; }
         .cta-grid-bg { position:absolute; inset:0; pointer-events:none; background-image:linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px); background-size:40px 40px; }
+
+        /* ── RESPONSIVE ── */
+        .cta-flex-row { display: flex; flex-wrap: wrap; }
+        .cta-cube-col { flex: 0 0 52%; height: min(560px, 65vh); overflow: visible; min-width: 280px; }
+        .cta-copy-col { flex: 1; min-width: 280px; position: relative; padding: 48px 44px 48px 32px; display: flex; flex-direction: column; justify-content: center; }
+        .cta-stats-row { display: flex; gap: 28px; margin-bottom: 36px; flex-wrap: wrap; }
+
+        @media (max-width: 767px) {
+          .cta-cube-col { display: none !important; }
+          .cta-copy-col { flex: none !important; width: 100% !important; padding: 40px 20px 48px !important; min-width: unset !important; }
+          .cta-stats-row { gap: 20px !important; }
+          .cta-stat-val { font-size: 1.8rem !important; }
+          .cta-btn, .cta-ghost { width: 100%; text-align: center; justify-content: center; }
+          [data-anim="cta"] { display: flex !important; flex-direction: column !important; gap: 10px !important; }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .cta-cube-col { flex: 0 0 44% !important; height: min(420px, 55vh) !important; }
+          .cta-copy-col { padding: 40px 28px 40px 24px !important; }
+        }
       `}</style>
 
       <div
         className={`cta-root${ready ? " cta-ready" : ""}`}
         style={{ background: "white", color: "black", fontFamily: "monospace" }}
       >
-        <div style={{ display: "flex", flexWrap: "wrap" }}>
+        <div className="cta-flex-row">
           {/* LEFT: 3D cube */}
-          <div
-            data-anim="cube"
-            style={{
-              flex: "0 0 52%",
-              height: "min(560px, 65vh)",
-              overflow: "visible",
-              minWidth: 280,
-            }}
-          >
+          <div data-anim="cube" className="cta-cube-col">
             <ThreeCubeFooter />
           </div>
 
           {/* RIGHT: CTA copy */}
-          <div
-            style={{
-              flex: 1,
-              minWidth: 280,
-              position: "relative",
-              padding: "48px 44px 48px 32px",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-            }}
-          >
+          <div className="cta-copy-col">
             <div className="cta-grid-bg" />
             <div style={{ position: "relative", zIndex: 1 }}>
-              <div
-                data-anim="bar"
-                style={{
-                  background: "white",
-                }}
-              />
+              <div data-anim="bar" style={{ background: "white" }} />
 
               <h2
                 style={{
@@ -698,15 +508,7 @@ export default function CTA() {
                 beta, no card required, cancel whenever you want (you won't).
               </p>
 
-              <div
-                data-anim="stats"
-                style={{
-                  display: "flex",
-                  gap: 28,
-                  marginBottom: 36,
-                  flexWrap: "wrap",
-                }}
-              >
+              <div data-anim="stats" className="cta-stats-row">
                 {[
                   {
                     val: 70,
@@ -749,13 +551,13 @@ export default function CTA() {
                 }}
               >
                 <Link
-                  className="bg-cyan-600 text-2 text-white rounded-lg font-bold px-3 py-2 hover:bg-cyan-700 hover:cursor-pointer"
+                  className="bg-cyan-600 text-white font-bold px-6 py-3 hover:bg-cyan-700 cursor-pointer text-sm tracking-widest uppercase"
                   href="/dashboard"
                 >
                   Try Now
                 </Link>
                 <Link
-                  className="text-2 font-bold px-3 py-2 border border-white hover:bg-white hover:cursor-pointer hover:text-gray-900 transition-colors"
+                  className="font-bold px-6 py-3 border border-black hover:bg-black hover:text-white transition-colors text-sm tracking-widest uppercase"
                   href="/about"
                 >
                   About Us

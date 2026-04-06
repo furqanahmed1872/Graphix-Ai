@@ -1,22 +1,29 @@
-import type { Metadata } from "next";
 import "./globals.css";
 import AppBootstrapper from "@/components/AppBootstrapper";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Graphix — AI Data Visualization",
   description: "Turn your data into beautiful charts with AI",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body className="bg-[#111212]">
-        {/*
-          AppBootstrapper wraps everything.
-          - If user is authenticated, it calls /bootstrap once and shows a
-            splash screen until all data is loaded into Zustand.
-          - Then children (pages) render with full data available.
-        */}
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </head>
+      <body
+        style={{
+          margin: 0,
+          padding: 0,
+          background: "#111212",
+          overflowX: "hidden",
+        }}
+      >
         <AppBootstrapper>{children}</AppBootstrapper>
       </body>
     </html>
