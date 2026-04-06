@@ -95,6 +95,54 @@ function buildDashboardStats(charts, subscription) {
   ];
 }
 
+// ── PATCH /api/user/profile ───────────────────────────────────
+// Add this route to Backend/routes/user.js (inside the router, before export)
+// Updates the logged-in user's firstName, lastName, and/or email.
+
+router.patch("/profile", requireAuth, async (req, res) => {
+  const { userId } = req.user;
+  const { firstName, lastName, email } = req.body;
+
+  // At least one field must be provided
+  if (!firstName && !lastName && !email) {
+    return res.status(400).json({ error: "No fields to update." });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `UPDATE users
+         SET first_name = COALESCE($2, first_name),
+             last_name  = COALESCE($3, last_name),
+             email      = COALESCE($4, email)
+         WHERE id = $1
+         RETURNING id, email, first_name, last_name, avatar, created_at`,
+      [
+        userId,
+        firstName ?? null,
+        lastName  ?? null,
+        email     ?? null,
+      ],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    const u = rows[0];
+    return res.json({
+      id:        u.id,
+      email:     u.email,
+      firstName: u.first_name,
+      lastName:  u.last_name,
+      avatar:    u.avatar,
+      createdAt: u.created_at,
+    });
+  } catch (err) {
+    console.error("Update profile error:", err);
+    return res.status(500).json({ error: "Failed to update profile." });
+  }
+});
+
 // ── GET /api/user/bootstrap ───────────────────────────────────
 router.get("/bootstrap", requireAuth, async (req, res) => {
   const { userId } = req.user;

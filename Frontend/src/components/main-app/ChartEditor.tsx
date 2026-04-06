@@ -3581,6 +3581,7 @@ export default function ChartEditor({
 }: ChartEditorProps) {
   const plotRef = useRef<PlotlyHTMLElement>(null);
   const userHasEdited = useRef(false);
+  const paletteChangedRef = useRef(false);
   const [mounted, setMounted] = useState(false);
   const [tab, setTab] = useState<
     "graph" | "style" | "axes" | "annotate" | "export"
@@ -3653,11 +3654,14 @@ export default function ChartEditor({
 
   useEffect(() => {
     const { data: liveData, layout: liveLayout } = getLiveData();
-    setTitle(
-      typeof liveLayout.title === "string"
-        ? liveLayout.title
-        : liveLayout.title?.text || "",
-    );
+    // Always prefer message.content.layout for title — divRef may be
+    // empty or have a stripped layout on first mount
+    const msgLayout = message?.content?.layout ?? {};
+    const extractTitle = (l: any) =>
+      typeof l?.title === "string" ? l.title : (l?.title?.text ?? "");
+    const resolvedTitle =
+      extractTitle(liveLayout) || extractTitle(msgLayout) || "";
+    setTitle(resolvedTitle);
     setSubtitle(liveLayout._subtitle || "");
     setAnnotations(
       Array.isArray(liveLayout._annotations) ? liveLayout._annotations : [],
@@ -3673,6 +3677,7 @@ export default function ChartEditor({
     setShowZero(liveLayout.xaxis?.zeroline !== false);
     userHasEdited.current = false;
     setMounted(true);
+    paletteChangedRef.current = false;
   }, [getLiveData]);
 
   useEffect(() => {
@@ -3769,7 +3774,29 @@ export default function ChartEditor({
     const Plotly = window.Plotly;
     const { data: liveData, layout: liveLayout } = getLiveData();
     const ct = CHART_TYPES.find((c) => c.id === chartTypeId) || CHART_TYPES[0];
-    const pal = PALETTES[paletteIdx].colors;
+    let pal: string[];
+    if (paletteChangedRef.current) {
+      pal = PALETTES[paletteIdx].colors;
+    } else {
+      pal = liveData.map((t: any, i: number): string => {
+        if (Array.isArray(t.marker?.colors) && t.marker.colors[0])
+          return String(t.marker.colors[0]);
+        if (typeof t.marker?.color === "string" && t.marker.color)
+          return t.marker.color;
+        if (typeof t.line?.color === "string" && t.line.color)
+          return t.line.color;
+        if (typeof t.fillcolor === "string" && t.fillcolor)
+          return t.fillcolor.replace(/(.{7}).+/, "$1"); // strip alpha
+        return PALETTES[paletteIdx].colors[
+          i % PALETTES[paletteIdx].colors.length
+        ];
+      });
+      // If we only got palette defaults, just use the palette
+      const defaultPal = PALETTES[paletteIdx].colors;
+      if (pal.every((c, i) => c === defaultPal[i % defaultPal.length])) {
+        pal = defaultPal;
+      }
+    }
     const isCardLight = !isLightBg;
     const cardBgColor = isCardLight ? "#ffffff" : "#1e293b";
     const textClr = isCardLight ? "#111827" : "rgba(255,255,255,0.85)";
@@ -4459,10 +4486,42 @@ export default function ChartEditor({
         rangeslider: { visible: true },
       };
 
-    Plotly.react(plotRef.current, data, layout, {
-      responsive: true,
-      displayModeBar: false,
-    });
+    // Guard: some type conversions may produce empty data
+    if (!Array.isArray(data) || data.length === 0) {
+      console.warn("[ChartEditor] applyChart: no data for type", ct.id);
+      return;
+    }
+
+    // Deep-clone to prevent Plotly from mutating our state references,
+    // which causes stale-data crashes on subsequent type switches.
+    let safeData: any[];
+    let safeLayout: any;
+    try {
+      safeData = JSON.parse(JSON.stringify(data));
+      safeLayout = JSON.parse(JSON.stringify(layout));
+    } catch {
+      safeData = data;
+      safeLayout = layout;
+    }
+
+    try {
+      Plotly.react(plotRef.current, safeData, safeLayout, {
+        responsive: true,
+        displayModeBar: false,
+      });
+    } catch (err) {
+      console.error("[ChartEditor] Plotly.react error:", err);
+      // Fallback: purge and re-plot cleanly
+      try {
+        Plotly.purge(plotRef.current);
+        Plotly.newPlot(plotRef.current, safeData, safeLayout, {
+          responsive: true,
+          displayModeBar: false,
+        });
+      } catch (e2) {
+        console.error("[ChartEditor] Plotly.newPlot fallback failed:", e2);
+      }
+    }
   }, [
     chartTypeId,
     paletteIdx,
@@ -4498,6 +4557,24 @@ export default function ChartEditor({
     isLightBg,
   ]);
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   useEffect(() => {
     if (!mounted || !plotRef.current || !window.Plotly) return;
     if (userHasEdited.current) {
@@ -4523,53 +4600,68 @@ export default function ChartEditor({
     });
   };
 
-  const handleSaveToDatabase = async () => {
-    if (
-      !token ||
-      !isAuthenticated ||
-      dbSaveStatus === "saving" ||
-      dbSaveStatus === "saved"
-    )
-      return;
-    setDbSaveStatus("saving");
-    try {
-      const live = getLiveData();
-      const chartJson = {
-        data: plotRef.current?.data ?? live.data,
-        layout: {
-          ...(plotRef.current?.layout ?? live.layout),
-          _subtitle: subtitle,
-          _annotations: annotations,
-        },
-      };
-      const chartTitle =
-        title ||
-        (typeof message?.content?.layout?.title === "string"
-          ? message.content.layout.title
-          : message?.content?.layout?.title?.text) ||
-        "Untitled Chart";
-      if (existingChartId) {
-        const updated = await apiUpdateChart(token, existingChartId, {
-          title: chartTitle,
-          chartConfig: chartJson,
-        });
-        updateSavedChart(updated);
-      } else {
-        const saved = await apiSaveChart(token, {
-          title: chartTitle,
-          prompt: chartTitle,
-          chartConfig: chartJson,
-        });
-        addSavedChart(saved);
-      }
-      setDbSaveStatus("saved");
-      setTimeout(() => setDbSaveStatus("idle"), 3000);
-    } catch (err) {
-      console.error("Save error:", err);
-      setDbSaveStatus("error");
-      setTimeout(() => setDbSaveStatus("idle"), 3000);
-    }
-  };
+ const handleSaveToDatabase = async () => {
+   if (
+     !token ||
+     !isAuthenticated ||
+     dbSaveStatus === "saving" ||
+     dbSaveStatus === "saved"
+   )
+     return;
+   setDbSaveStatus("saving");
+   try {
+     const live = getLiveData();
+
+     // Normalises both "My Chart" (string) and {text:"My Chart"} (Plotly object)
+     const rawExtract = (t: any): string => {
+       if (typeof t === "string") return t.trim();
+       if (typeof t?.text === "string") return t.text.trim();
+       return "";
+     };
+
+     const finalTitle =
+       title.trim() ||
+       rawExtract(plotRef.current?.layout?.title) ||
+       rawExtract(live.layout?.title) ||
+       rawExtract(message?.content?.layout?.title) ||
+       "Untitled Chart";
+
+     const plotData = plotRef.current?.data ?? live.data;
+     const plotLayout = plotRef.current?.layout ?? live.layout;
+
+     const chartJson = {
+       data: plotData,
+       layout: {
+         ...plotLayout,
+         title: { text: finalTitle }, // always clean {text} form, never raw Plotly object
+         _subtitle: subtitle,
+         _annotations: annotations,
+       },
+     };
+
+     if (existingChartId) {
+       const updated = await apiUpdateChart(token, existingChartId, {
+         title: finalTitle,
+         chartConfig: chartJson,
+       });
+       updateSavedChart(updated);
+     } else {
+       const saved = await apiSaveChart(token, {
+         title: finalTitle,
+         prompt: finalTitle,
+         chartConfig: chartJson,
+       });
+       addSavedChart(saved);
+     }
+
+     setDbSaveStatus("saved");
+     setTimeout(() => setDbSaveStatus("idle"), 3000);
+   } catch (err) {
+     console.error("Save error:", err);
+     setDbSaveStatus("error");
+     setTimeout(() => setDbSaveStatus("idle"), 3000);
+   }
+ };
 
   if (!mounted || typeof document === "undefined") return null;
 
@@ -4943,6 +5035,7 @@ export default function ChartEditor({
                       key={p.id}
                       onClick={() => {
                         markEdited();
+                        paletteChangedRef.current = true;
                         setPaletteIdx(i);
                       }}
                       className="w-full flex items-center gap-2.5 px-2 py-[7px] rounded-lg cursor-pointer mb-0.5 transition-all"

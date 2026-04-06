@@ -208,7 +208,7 @@ export default function FeedbackFormPage() {
       <section
         ref={heroRef}
         className="pt-24 pb-20 px-6 text-center border-b border-[#1e2227]"
-        style={{ background: "#090b0e" }}
+        
       >
         <div
           className="inline-block text-[0.7rem] uppercase tracking-[0.18em] text-[#00d4c8] border border-[#00d4c8]/30 px-4 py-1.5 mb-8"
@@ -261,7 +261,7 @@ export default function FeedbackFormPage() {
           ].map((s) => (
             <div
               key={s.label}
-              className="bg-[#090b0e] px-10 py-6 flex flex-col items-center gap-1.5 min-w-[140px]"
+              className="bg-[#090b0e] invert px-10 py-6 flex flex-col items-center gap-1.5 min-w-[140px]"
             >
               <span className="font-syne font-extrabold text-[1.9rem] text-white leading-none">
                 <Counter target={s.num} suffix={s.suffix} />

@@ -1655,20 +1655,32 @@ export default function SingleChartArea({
   }, [aiMsg?.id, aiMsg?.status, aiMsg?.content, showTooltip, hideTooltip]);
 
   useEffect(() => {
-    const onResize = () => {
-      if (divRef.current && window.Plotly && aiMsg?.content?.layout)
-        window.Plotly.relayout(
-          divRef.current,
-          buildLayout(
-            aiMsg.content.layout,
-            detectType(aiMsg.content.data || []),
-            aiMsg.content.data || [],
-          ),
-        );
+    // Use ResizeObserver on the card container instead of window.resize.
+    // This fires whenever the chart panel itself changes size — including when
+    // the sidebar or right panel expands/collapses — not just when the
+    // browser window resizes.
+    const container = cardRef.current;
+    if (!container) return;
+
+    let animFrameId: number | null = null;
+
+    const observer = new ResizeObserver(() => {
+      // Debounce with rAF to avoid thrashing during CSS transitions
+      if (animFrameId) cancelAnimationFrame(animFrameId);
+      animFrameId = requestAnimationFrame(() => {
+        if (divRef.current && window.Plotly) {
+          window.Plotly.Plots.resize(divRef.current);
+        }
+      });
+    });
+
+    observer.observe(container);
+
+    return () => {
+      observer.disconnect();
+      if (animFrameId) cancelAnimationFrame(animFrameId);
     };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, [aiMsg?.content]);
+  }, [aiMsg?.id]); // re-attach only when the chart message changes
 
   const resetData = () => {
     if (!divRef.current || !window.Plotly || !originalDataRef.current) return;

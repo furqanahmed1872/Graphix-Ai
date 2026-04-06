@@ -1,5 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { useAppStore } from "@/store/appStore";
 import Plotly from "plotly.js-dist-min";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -28,20 +30,26 @@ interface ConditionalRule {
 // ─── Constants ────────────────────────────────────────────────────────────────
 const CHART_TYPES: ChartType[] = [
   { id: "bar", name: "Bar", icon: "▐▌" },
+  { id: "hbar", name: "H-Bar", icon: "▬" },
+  { id: "stacked", name: "Stacked", icon: "▪▪" },
   { id: "line", name: "Line", icon: "╱╲" },
+  { id: "area", name: "Area", icon: "▲" },
   { id: "scatter", name: "Scatter", icon: "∴∵" },
+  { id: "bubble", name: "Bubble", icon: "⊙" },
   { id: "pie", name: "Pie", icon: "◑" },
   { id: "donut", name: "Donut", icon: "◎" },
-  { id: "area", name: "Area", icon: "▲" },
-  { id: "stacked", name: "Stacked", icon: "▪▪" },
   { id: "histogram", name: "Histogram", icon: "⊟" },
-  { id: "box", name: "Box", icon: "⬜" },
+  { id: "box", name: "Box Plot", icon: "⬜" },
+  { id: "violin", name: "Violin", icon: "♪" },
   { id: "heatmap", name: "Heatmap", icon: "▥" },
-  { id: "bubble", name: "Bubble", icon: "⊙" },
   { id: "radar", name: "Radar", icon: "⬡" },
   { id: "funnel", name: "Funnel", icon: "⊳" },
   { id: "waterfall", name: "Waterfall", icon: "↕" },
-  { id: "violin", name: "Violin", icon: "𝄞" },
+  { id: "treemap", name: "Treemap", icon: "▦" },
+  { id: "sunburst", name: "Sunburst", icon: "☀" },
+  { id: "scatter3d", name: "3D Scatter", icon: "⬡" },
+  { id: "surface3d", name: "3D Surface", icon: "⊞" },
+  { id: "candlestick", name: "Candlestick", icon: "⊕" },
 ];
 
 const PALETTES: Record<string, string[]> = {
@@ -153,8 +161,14 @@ const FORMULA_FUNCTIONS: Record<string, (nums: number[]) => number> = {
   COUNT: (ns) => ns.length,
 };
 
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
 // ─── Component ────────────────────────────────────────────────────────────────
 const DataChartEditor: React.FC = () => {
+  const router = useRouter();
+  const { token, isAuthenticated, addSavedChart, updateSavedChart } =
+    useAppStore();
+
   const [data, setData] = useState<string[][]>([
     ["Month", "Sales", "Revenue", "Profit"],
     ["Jan", "120", "15000", "3000"],
@@ -211,6 +225,11 @@ const DataChartEditor: React.FC = () => {
   const [flashCell, setFlashCell] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [exportMenu, setExportMenu] = useState(false);
+  // Save state
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
+  const [existingChartId, setExistingChartId] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -220,6 +239,66 @@ const DataChartEditor: React.FC = () => {
   useEffect(() => {
     setHistory([{ data, timestamp: Date.now() }]);
     setHistoryIndex(0);
+  }, []);
+
+  // ── Import chart from dashboard (sessionStorage) ──────────────────────────
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("graphix_panel_chart");
+      if (!raw) return;
+      sessionStorage.removeItem("graphix_panel_chart");
+      const { chartConfig, title: t, chartId } = JSON.parse(raw);
+      if (t) setChartTitle(t);
+      if (chartId) setExistingChartId(chartId);
+      if (!chartConfig?.data?.length) return;
+
+      const traces = chartConfig.data;
+      const firstTrace = traces[0] || {};
+
+      // Reconstruct data table from Plotly traces
+      const xVals: any[] =
+        firstTrace.x ||
+        firstTrace.labels ||
+        firstTrace.theta ||
+        firstTrace.y ||
+        [];
+      const headers = [
+        "Category",
+        ...traces.map((tr: any, i: number) => tr.name || `Series ${i + 1}`),
+      ];
+      const rows: string[][] = xVals.map((x: any, i: number) => [
+        String(x),
+        ...traces.map((tr: any) => {
+          const vals = tr.y || tr.values || tr.r || tr.x || [];
+          return String(vals[i] ?? "");
+        }),
+      ]);
+      const newData = [headers, ...rows];
+      setData(newData);
+      setHistory([{ data: newData, timestamp: Date.now() }]);
+      setHistoryIndex(0);
+
+      // Detect chart type
+      const type = (firstTrace.type || "bar").toLowerCase();
+      const mode = (firstTrace.mode || "").toLowerCase();
+      if (type === "scatter" && mode.includes("lines") && firstTrace.fill)
+        setChartType("area");
+      else if (type === "scatter" && mode.includes("lines"))
+        setChartType("line");
+      else if (type === "scatter" && mode.includes("markers"))
+        setChartType("scatter");
+      else if (type === "scatterpolar") setChartType("radar");
+      else if (type === "pie" && firstTrace.hole > 0) setChartType("donut");
+      else if (type === "pie") setChartType("pie");
+      else if (type === "bar" && firstTrace.orientation === "h")
+        setChartType("hbar");
+      else if (type === "surface") setChartType("surface3d");
+      else if (type === "scatter3d") setChartType("scatter3d");
+      else if (CHART_TYPES.find((c) => c.id === type)) setChartType(type);
+      else setChartType("bar");
+    } catch (e) {
+      console.error("Panel import error:", e);
+    }
   }, []);
 
   // ── Render chart ──────────────────────────────────────────────────────────
@@ -259,7 +338,7 @@ const DataChartEditor: React.FC = () => {
         handleRedo();
       } else if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
-        handleSave();
+        handleSaveChart();
       } else if ((e.ctrlKey || e.metaKey) && e.key === "f") {
         e.preventDefault();
         document.getElementById("search-input")?.focus();
@@ -275,7 +354,7 @@ const DataChartEditor: React.FC = () => {
       if (!isDragging || !containerRef.current) return;
       const r = containerRef.current.getBoundingClientRect();
       const pct = ((e.clientX - r.left) / r.width) * 100;
-      if (pct > 25 && pct < 75) setLeftWidth(pct);
+      if (pct > 20 && pct < 80) setLeftWidth(pct);
     };
     const mu = () => setIsDragging(false);
     if (isDragging) {
@@ -315,8 +394,8 @@ const DataChartEditor: React.FC = () => {
   };
 
   const colLabel = (i: number) => {
-    let l = "";
-    let n = i;
+    let l = "",
+      n = i;
     while (n >= 0) {
       l = String.fromCharCode(65 + (n % 26)) + l;
       n = Math.floor(n / 26) - 1;
@@ -341,8 +420,8 @@ const DataChartEditor: React.FC = () => {
     const [, fn, c1, r1, c2, r2] = match;
     if (!FORMULA_FUNCTIONS[fn]) return "#ERR";
     const sc = c1.charCodeAt(0) - 65,
-      ec = c2.charCodeAt(0) - 65;
-    const sr = parseInt(r1) - 1,
+      ec = c2.charCodeAt(0) - 65,
+      sr = parseInt(r1) - 1,
       er = parseInt(r2) - 1;
     const nums: number[] = [];
     for (let ri = sr; ri <= er; ri++)
@@ -422,22 +501,69 @@ const DataChartEditor: React.FC = () => {
     });
   };
 
-  const handleSave = () => {
-    const blob = new Blob(
-      [JSON.stringify({ data, chartType, chartTitle, palette }, null, 2)],
-      { type: "application/json" },
-    );
-    const a = Object.assign(document.createElement("a"), {
-      href: URL.createObjectURL(blob),
-      download: `chart-${Date.now()}.json`,
-    });
-    a.click();
-    showToast("Saved as JSON ✓");
+  // ── Save to database ──────────────────────────────────────────────────────
+  const handleSaveChart = async () => {
+    if (!token || !isAuthenticated || saveStatus === "saving") return;
+    setSaveStatus("saving");
+    try {
+      const chartEl = document.getElementById("chart-container") as any;
+      const chartConfig = {
+        data: chartEl?.data ?? [],
+        layout: chartEl?.layout
+          ? { ...chartEl.layout, title: { text: chartTitle } }
+          : { title: { text: chartTitle } },
+      };
+      const body = {
+        title: chartTitle,
+        prompt: "Created in Data Editor",
+        chartConfig,
+        tag: (chartType || "BAR").toUpperCase(),
+        category: "General",
+        sparkline: [],
+        trend: "+0%",
+        trendUp: true,
+      };
+      const hdrs = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      };
+
+      if (existingChartId) {
+        const res = await fetch(`${API}/api/charts/${existingChartId}`, {
+          method: "PATCH",
+          headers: hdrs,
+          body: JSON.stringify({ title: chartTitle, chartConfig }),
+        });
+        if (!res.ok) throw new Error();
+        const updated = await res.json();
+        updateSavedChart(updated);
+        showToast("Chart updated ✓");
+      } else {
+        const res = await fetch(`${API}/api/charts`, {
+          method: "POST",
+          headers: hdrs,
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) throw new Error();
+        const created = await res.json();
+        addSavedChart(created);
+        setExistingChartId(created.id);
+        showToast("Chart saved to dashboard ✓");
+      }
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("error");
+      showToast("Save failed — try again");
+    } finally {
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    }
   };
+
+  // ── Export helpers ────────────────────────────────────────────────────────
   const handleExportPNG = () => {
     const el = document.getElementById("chart-container");
     if (el)
-      Plotly.downloadImage(el, {
+      Plotly.downloadImage(el as any, {
         format: "png",
         width: 1920,
         height: 1080,
@@ -447,7 +573,7 @@ const DataChartEditor: React.FC = () => {
   const handleExportSVG = () => {
     const el = document.getElementById("chart-container");
     if (el)
-      Plotly.downloadImage(el, {
+      Plotly.downloadImage(el as any, {
         format: "svg",
         width: 1920,
         height: 1080,
@@ -486,38 +612,33 @@ const DataChartEditor: React.FC = () => {
     addToHistory(s.data);
     showToast(`Loaded: ${s.title}`);
   };
-
   const transposeData = () => {
-    const t: string[][] = data[0].map((_, ci) => data.map((r) => r[ci]));
+    const t = data[0].map((_, ci) => data.map((r) => r[ci]));
     setData(t);
     addToHistory(t);
     showToast("Data transposed ✓");
   };
-
   const sortDataBy = (col: number) => {
-    const header = data[0];
-    const rows = data
-      .slice(1)
-      .sort((a, b) => parseFloat(a[col] || "0") - parseFloat(b[col] || "0"));
+    const header = data[0],
+      rows = data
+        .slice(1)
+        .sort((a, b) => parseFloat(a[col] || "0") - parseFloat(b[col] || "0"));
     const d = [header, ...rows];
     setData(d);
     addToHistory(d);
     showToast(`Sorted by ${header[col]}`);
   };
-
   const searchHighlight = (ri: number, ci: number) => {
     if (!searchCell) return false;
     return data[ri][ci].toLowerCase().includes(searchCell.toLowerCase());
   };
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Render chart ──────────────────────────────────────────────────────────
   const renderChart = () => {
     const chartEl = document.getElementById("chart-container");
     if (!chartEl) return;
-
     const headers = data[0].filter((h) => h.trim());
     const rawRows = data.slice(1).filter((r) => r.some((c) => c.trim()));
-
     let rows = rawRows;
     if (filterZero)
       rows = rows.filter((r) => r.slice(1).some((v) => parseFloat(v) !== 0));
@@ -529,17 +650,21 @@ const DataChartEditor: React.FC = () => {
       rows = [...rows].sort(
         (a, b) => parseFloat(b[1] || "0") - parseFloat(a[1] || "0"),
       );
-
     if (!rows.length || !headers.length) {
-      Plotly.purge(chartEl);
+      Plotly.purge(chartEl as any);
       return;
     }
 
     const colors = PALETTES[palette] || PALETTES.neon;
-    const bg = "#111111";
-    const gridC = "#222222";
-    const textC = "#888888";
+    const bg = "#111111",
+      gridC = "#222222",
+      textC = "#888888";
     const xVals = rows.map((r) => r[0]);
+    const numericSeries = (seriesIdx: number) =>
+      rows.map((r) => {
+        const v = parseFloat(r[seriesIdx + 1] || "0");
+        return isNaN(v) ? 0 : v;
+      });
 
     const layout: Partial<Plotly.Layout> = {
       title: chartTitle
@@ -564,120 +689,145 @@ const DataChartEditor: React.FC = () => {
       },
       autosize: true,
       xaxis: {
-       title: xAxisLabel ? { text: xAxisLabel } : undefined,
-
+        title: xAxisLabel ? { text: xAxisLabel } : undefined,
         gridcolor: gridLines ? gridC : "transparent",
-        zerolinecolor: gridC,
-        linecolor: "#252525",
         tickfont: { color: textC },
-        type: "category",
-        showgrid: gridLines,
-        tickcolor: "#252525",
+        zeroline: false,
+        type: logScale ? "log" : undefined,
       },
       yaxis: {
         title: yAxisLabel ? { text: yAxisLabel } : undefined,
         gridcolor: gridLines ? gridC : "transparent",
-        zerolinecolor: gridC,
-        linecolor: "#252525",
         tickfont: { color: textC },
-        showgrid: gridLines,
-        type: logScale ? "log" : "linear",
-        tickcolor: "#252525",
+        zeroline: false,
+        type: logScale ? "log" : undefined,
       },
       showlegend: showLegend,
       legend: {
-        font: { color: textC, size: 10 },
-        bgcolor: "rgba(0,0,0,0.3)",
-        bordercolor: "#252525",
-        borderwidth: 1,
-        orientation: "h",
-        y: -0.22,
-        x: 0.5,
-        xanchor: "center",
+        font: { color: textC },
+        bgcolor: "rgba(0,0,0,0.5)",
+        bordercolor: "#333",
       },
-      hoverlabel: {
-        bgcolor: "#0d0d1f",
-        bordercolor: colors[0],
-        font: { color: "#fff", size: 11 },
-      },
-      annotations: annotations.map((a) => ({
-        x: a.x,
-        y: a.y,
-        text: a.text,
-        showarrow: true,
-        arrowhead: 2,
-        arrowcolor: colors[0],
-        font: { color: "#fff", size: 10 },
-        bgcolor: "rgba(0,0,0,0.7)",
-        bordercolor: colors[0],
-        borderwidth: 1,
-      })),
-    };
+    } as any;
 
-    let traces: Partial<Plotly.PlotData>[] = [];
-
-    const numericSeries = (idx: number) =>
-      rows.map((r) => {
-        const v = parseFloat(r[idx + 1]);
-        return isNaN(v) ? 0 : v;
-      });
+    let traces: any[] = [];
 
     switch (chartType) {
       case "bar":
-        traces = headers.slice(1).map((h, i) => ({
-          x: xVals,
-          y: numericSeries(i),
-          type: "bar",
-          name: h,
-          marker: { color: colors[i % colors.length], opacity },
-          barmode: chartSubtype,
-        }));
+        traces = headers
+          .slice(1)
+          .map((h, i) => ({
+            x: xVals,
+            y: numericSeries(i),
+            type: "bar",
+            name: h,
+            marker: { color: colors[i % colors.length], opacity },
+          }));
         (layout as any).barmode =
           chartSubtype === "stacked" ? "stack" : "group";
         break;
 
+      case "hbar":
+        traces = headers
+          .slice(1)
+          .map((h, i) => ({
+            y: xVals,
+            x: numericSeries(i),
+            type: "bar",
+            orientation: "h",
+            name: h,
+            marker: { color: colors[i % colors.length], opacity },
+          }));
+        (layout as any).barmode = "group";
+        break;
+
       case "stacked":
-        traces = headers.slice(1).map((h, i) => ({
-          x: xVals,
-          y: numericSeries(i),
-          type: "bar",
-          name: h,
-          marker: { color: colors[i % colors.length], opacity },
-        }));
+        traces = headers
+          .slice(1)
+          .map((h, i) => ({
+            x: xVals,
+            y: numericSeries(i),
+            type: "bar",
+            name: h,
+            marker: { color: colors[i % colors.length], opacity },
+          }));
         (layout as any).barmode = "stack";
         break;
 
       case "line":
-        traces = headers.slice(1).map((h, i) => ({
-          x: xVals,
-          y: numericSeries(i),
-          type: "scatter",
-          mode: "lines+markers",
-          name: h,
-          line: {
-            color: colors[i % colors.length],
-            width: 2.5,
-            shape: smoothLines ? "spline" : "linear",
-            smoothing: 1.3,
-          },
-          marker: { size: markerSize, color: colors[i % colors.length] },
-        }));
+        traces = headers
+          .slice(1)
+          .map((h, i) => ({
+            x: xVals,
+            y: numericSeries(i),
+            type: "scatter",
+            mode: "lines+markers",
+            name: h,
+            line: {
+              color: colors[i % colors.length],
+              width: 2.5,
+              shape: smoothLines ? "spline" : "linear",
+            },
+            marker: { size: markerSize, color: colors[i % colors.length] },
+          }));
+        break;
+
+      case "area":
+        traces = headers
+          .slice(1)
+          .map((h, i) => ({
+            x: xVals,
+            y: numericSeries(i),
+            type: "scatter",
+            mode: "lines",
+            fill: i === 0 ? "tozeroy" : "tonexty",
+            name: h,
+            line: {
+              color: colors[i % colors.length],
+              width: 2,
+              shape: smoothLines ? "spline" : "linear",
+            },
+            fillcolor: colors[i % colors.length] + "44",
+          }));
         break;
 
       case "scatter":
-        traces = headers.slice(1).map((h, i) => ({
-          x: xVals,
-          y: numericSeries(i),
-          type: "scatter",
-          mode: "markers",
-          name: h,
-          marker: {
-            color: colors[i % colors.length],
-            size: markerSize + 4,
-            opacity,
-            symbol: "circle",
-          },
-        }));
+        traces = headers
+          .slice(1)
+          .map((h, i) => ({
+            x: xVals,
+            y: numericSeries(i),
+            type: "scatter",
+            mode: "markers",
+            name: h,
+            marker: {
+              color: colors[i % colors.length],
+              size: markerSize + 4,
+              opacity,
+              symbol: "circle",
+            },
+          }));
+        break;
+
+      case "bubble":
+        traces = headers
+          .slice(1)
+          .map((h, i) => ({
+            x: xVals,
+            y: numericSeries(i),
+            type: "scatter",
+            mode: "markers",
+            name: h,
+            marker: {
+              color: colors[i % colors.length],
+              size: numericSeries(i).map((v) =>
+                Math.max(8, Math.min(60, Math.abs(v) / 10)),
+              ),
+              sizemode: "diameter",
+              opacity,
+              line: { color: colors[i % colors.length], width: 1 },
+            },
+          }));
         break;
 
       case "pie":
@@ -708,72 +858,63 @@ const DataChartEditor: React.FC = () => {
         ];
         break;
 
-      case "area":
-        traces = headers.slice(1).map((h, i) => ({
-          x: xVals,
-          y: numericSeries(i),
-          type: "scatter",
-          mode: "lines",
-          fill: i === 0 ? "tozeroy" : "tonexty",
-          name: h,
-          line: {
-            color: colors[i % colors.length],
-            width: 2,
-            shape: smoothLines ? "spline" : "linear",
-          },
-          fillcolor: colors[i % colors.length] + "44",
-        }));
-        break;
-
       case "histogram":
-        traces = headers.slice(1).map((h, i) => ({
-          x: numericSeries(i),
-          type: "histogram",
-          name: h,
-          marker: { color: colors[i % colors.length], opacity },
-          opacity: 0.8,
-        }));
-        layout.barmode = "overlay" as any;
+        traces = headers
+          .slice(1)
+          .map((h, i) => ({
+            x: numericSeries(i),
+            type: "histogram",
+            name: h,
+            marker: { color: colors[i % colors.length], opacity },
+            opacity: 0.75,
+          }));
+        (layout as any).barmode = "overlay";
         break;
 
       case "box":
-        traces = headers.slice(1).map((h, i) => ({
-          y: numericSeries(i),
-          type: "box",
-          name: h,
-          marker: { color: colors[i % colors.length] },
-          line: { color: colors[i % colors.length], width: 1.5 },
-          fillcolor: colors[i % colors.length] + "44",
-          boxpoints: "outliers",
-        }));
+        traces = headers
+          .slice(1)
+          .map((h, i) => ({
+            y: numericSeries(i),
+            type: "box",
+            name: h,
+            marker: { color: colors[i % colors.length] },
+            boxmean: true,
+            fillcolor: colors[i % colors.length] + "44",
+            line: { color: colors[i % colors.length] },
+          }));
         break;
 
       case "violin":
-        traces = headers.slice(1).map((h, i) => ({
-          y: numericSeries(i),
-          type: "violin",
-          name: h,
-          fillcolor: colors[i % colors.length] + "55",
-          line: { color: colors[i % colors.length], width: 1.5 },
-          meanline: { visible: true, color: "#fff" },
-        }));
+        traces = headers
+          .slice(1)
+          .map((h, i) => ({
+            y: numericSeries(i),
+            type: "violin",
+            name: h,
+            fillcolor: colors[i % colors.length] + "55",
+            line: { color: colors[i % colors.length] },
+            box: { visible: true },
+            meanline: { visible: true },
+          }));
         break;
 
-      case "heatmap":
+      case "heatmap": {
+        const zData = headers.slice(1).map((_, i) =>
+          rows.map((r) => {
+            const v = parseFloat(r[i + 1] || "0");
+            return isNaN(v) ? 0 : v;
+          }),
+        );
         traces = [
           {
-            z: rows.map((r) =>
-              r.slice(1).map((c) => {
-                const v = parseFloat(c);
-                return isNaN(v) ? 0 : v;
-              }),
-            ),
+            z: zData,
             x: headers.slice(1),
             y: xVals,
             type: "heatmap",
             colorscale: [
               [0, bg],
-              [0.25, "#222222"],
+              [0.25, "#222"],
               [0.5, colors[0]],
               [0.75, colors[1]],
               [1, colors[2]],
@@ -781,37 +922,31 @@ const DataChartEditor: React.FC = () => {
             colorbar: { tickfont: { color: textC } },
           },
         ];
+        (layout as any).xaxis = {
+          tickfont: { color: textC },
+          gridcolor: gridC,
+        };
+        (layout as any).yaxis = {
+          tickfont: { color: textC },
+          gridcolor: gridC,
+        };
         break;
-
-      case "bubble":
-        traces = headers.slice(1).map((h, i) => ({
-          x: xVals,
-          y: numericSeries(i),
-          mode: "markers",
-          name: h,
-          type: "scatter",
-          marker: {
-            size: numericSeries(i).map((v) => Math.max(8, Math.abs(v) / 8)),
-            color: colors[i % colors.length],
-            opacity: opacity * 0.8,
-            line: { color: colors[i % colors.length], width: 1 },
-            sizemode: "area",
-          },
-        }));
-        break;
+      }
 
       case "radar":
-        traces = headers.slice(1).map((h, i) => ({
-          type: "scatterpolar",
-          r: numericSeries(i),
-          theta: xVals,
-          fill: "toself",
-          name: h,
-          line: { color: colors[i % colors.length], width: 2 },
-          fillcolor: colors[i % colors.length] + "30",
-          marker: { color: colors[i % colors.length], size: 5 },
-        }));
-        layout.polar = {
+        traces = headers
+          .slice(1)
+          .map((h, i) => ({
+            type: "scatterpolar",
+            r: numericSeries(i),
+            theta: xVals,
+            fill: "toself",
+            name: h,
+            line: { color: colors[i % colors.length], width: 2 },
+            fillcolor: colors[i % colors.length] + "30",
+            marker: { color: colors[i % colors.length], size: 5 },
+          }));
+        (layout as any).polar = {
           bgcolor: bg,
           radialaxis: {
             gridcolor: gridC,
@@ -824,6 +959,8 @@ const DataChartEditor: React.FC = () => {
             tickfont: { color: textC },
           },
         };
+        delete (layout as any).xaxis;
+        delete (layout as any).yaxis;
         break;
 
       case "funnel":
@@ -845,7 +982,7 @@ const DataChartEditor: React.FC = () => {
             x: xVals,
             y: numericSeries(0),
             name: headers[1] || "Value",
-            connector: { line: { color: "#333333" } },
+            connector: { line: { color: "#333" } },
             increasing: { marker: { color: colors[3] } },
             decreasing: { marker: { color: colors[4] } },
             totals: { marker: { color: colors[0] } },
@@ -853,17 +990,130 @@ const DataChartEditor: React.FC = () => {
           } as any,
         ];
         break;
+
+      case "treemap":
+        traces = [
+          {
+            type: "treemap",
+            labels: xVals,
+            parents: xVals.map(() => ""),
+            values: numericSeries(0),
+            marker: { colors: colors.slice(0, xVals.length) },
+            textfont: { color: "#fff" },
+          },
+        ];
+        delete (layout as any).xaxis;
+        delete (layout as any).yaxis;
+        break;
+
+      case "sunburst":
+        traces = [
+          {
+            type: "sunburst",
+            labels: xVals,
+            parents: xVals.map(() => ""),
+            values: numericSeries(0),
+            marker: { colors: colors.slice(0, xVals.length) },
+            textfont: { color: "#fff" },
+          },
+        ];
+        delete (layout as any).xaxis;
+        delete (layout as any).yaxis;
+        break;
+
+      case "scatter3d":
+        traces = [
+          {
+            type: "scatter3d",
+            x: xVals,
+            y: numericSeries(0),
+            z: numericSeries(1).length
+              ? numericSeries(1)
+              : numericSeries(0).map((_, i) => i),
+            mode: "markers",
+            name: headers[1] || "Data",
+            marker: { color: colors[0], size: 5, opacity },
+          },
+        ];
+        (layout as any).scene = {
+          bgcolor: bg,
+          xaxis: { gridcolor: gridC, tickfont: { color: textC } },
+          yaxis: { gridcolor: gridC, tickfont: { color: textC } },
+          zaxis: { gridcolor: gridC, tickfont: { color: textC } },
+        };
+        break;
+
+      case "surface3d": {
+        const gridSize = Math.ceil(Math.sqrt(xVals.length));
+        const zGrid: number[][] = [];
+        for (let r = 0; r < gridSize; r++) {
+          const row: number[] = [];
+          for (let c = 0; c < gridSize; c++) {
+            row.push(numericSeries(0)[r * gridSize + c] ?? 0);
+          }
+          zGrid.push(row);
+        }
+        traces = [{ type: "surface", z: zGrid, colorscale: "Viridis" }];
+        (layout as any).scene = { bgcolor: bg };
+        break;
+      }
+
+      case "candlestick": {
+        const base = numericSeries(0);
+        traces = [
+          {
+            type: "candlestick",
+            x: xVals,
+            open: base.map((v) => v * 0.95),
+            high: base.map((v) => v * 1.05),
+            low: base.map((v) => v * 0.9),
+            close: base,
+            name: headers[1] || "Price",
+          } as any,
+        ];
+        break;
+      }
+
+      default:
+        traces = headers
+          .slice(1)
+          .map((h, i) => ({
+            x: xVals,
+            y: numericSeries(i),
+            type: "bar",
+            name: h,
+            marker: { color: colors[i % colors.length], opacity },
+          }));
     }
 
-    Plotly.react(chartEl, traces, layout, {
-      responsive: true,
-      displayModeBar: false,
-    });
+    // Add annotations
+    if (annotations.length > 0) {
+      (layout as any).annotations = annotations.map((a) => ({
+        x: a.x,
+        y: a.y,
+        text: a.text,
+        showarrow: true,
+        arrowhead: 2,
+        arrowcolor: colors[0],
+        font: { color: textC, size: 11 },
+      }));
+    }
+
+    try {
+      Plotly.react(chartEl as any, traces, layout as any, {
+        responsive: true,
+        displayModeBar: false,
+      });
+    } catch (e) {
+      console.error("Render error:", e);
+    }
   };
 
   const stats = computeStats();
 
-  // ── JSX ───────────────────────────────────────────────────────────────────
+  // ─────────────────────────────────────────────────────────────────────────
+  // JSX
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div
       style={{
@@ -877,245 +1127,434 @@ const DataChartEditor: React.FC = () => {
         position: "relative",
       }}
     >
-      {/* Google Font */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap');
-        * { box-sizing: border-box; }
-        .left-panel ::-webkit-scrollbar { width:5px; height:5px; }
-        .left-panel ::-webkit-scrollbar-track { background:#f4f4f4; }
-        .left-panel ::-webkit-scrollbar-thumb { background:#d4d4d4; border-radius:3px; }
-        .left-panel ::-webkit-scrollbar-thumb:hover { background:#b8b8b8; }
-        .right-panel ::-webkit-scrollbar { width:5px; height:5px; }
-        .chart-type-bar::-webkit-scrollbar { display:none; }
-        .chart-type-bar { scrollbar-width:none; -ms-overflow-style:none; }
-        .right-panel ::-webkit-scrollbar-track { background:#181818; }
-        .right-panel ::-webkit-scrollbar-thumb { background:#2e2e2e; border-radius:3px; }
-        .right-panel ::-webkit-scrollbar-thumb:hover { background:#404040; }
-        .cell-input { transition: background 0.12s; }
-        .cell-input:focus { outline:none; }
-        .chart-btn { transition: all 0.13s cubic-bezier(.4,0,.2,1); }
-        .chart-btn:hover { background:#2a2a2a !important; color:#fff !important; }
-        .chart-btn.active { box-shadow: inset 0 0 0 1px #ffffff30; }
-        .tab-btn { transition: all 0.13s; border-bottom: 2px solid transparent; }
-        .tab-btn.active { border-bottom-color: #1a1a1a; color:#1a1a1a !important; }
-        .lbtn:hover { background:#ebebeb !important; }
-        @keyframes fadeSlideIn { from { opacity:0; transform:translateY(-5px); } to { opacity:1; transform:none; } }
-        .toast { animation: fadeSlideIn 0.18s ease; }
-        @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-        .flash { animation: pulse 0.4s ease 2; }
-        input[type=range] { accent-color: #333; }
-        input[type=checkbox] { accent-color: #333; }
+        * { box-sizing:border-box }
+        .left-panel ::-webkit-scrollbar { width:5px; height:5px }
+        .left-panel ::-webkit-scrollbar-track { background:#f4f4f4 }
+        .left-panel ::-webkit-scrollbar-thumb { background:#d4d4d4; border-radius:3px }
+        .left-panel ::-webkit-scrollbar-thumb:hover { background:#b8b8b8 }
+        .right-panel ::-webkit-scrollbar { width:5px; height:5px }
+        .chart-type-bar::-webkit-scrollbar { display:none }
+        .chart-type-bar { scrollbar-width:none; -ms-overflow-style:none }
+        .right-panel ::-webkit-scrollbar-track { background:#181818 }
+        .right-panel ::-webkit-scrollbar-thumb { background:#2e2e2e; border-radius:3px }
+        .right-panel ::-webkit-scrollbar-thumb:hover { background:#404040 }
+        .cell-input { transition:background 0.12s }
+        .cell-input:focus { outline:none }
+        .chart-btn { transition:all 0.13s cubic-bezier(.4,0,.2,1) }
+        .chart-btn:hover { background:#2a2a2a !important; color:#fff !important }
+        .tab-btn { transition:all 0.13s; border-bottom:2px solid transparent; padding:0 10px; height:100%; background:transparent; border-top:none; border-left:none; border-right:none; cursor:pointer; font-family:inherit; font-size:10px; color:#888; letter-spacing:0.05em; text-transform:uppercase }
+        .tab-btn.active { border-bottom-color:#1a1a1a; color:#1a1a1a }
+        .lbtn:hover { background:#ebebeb !important }
+        @keyframes fadeSlideIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:none} }
+        .toast { animation:fadeSlideIn 0.18s ease }
+        input[type=range] { accent-color:#333 }
+        input[type=checkbox] { accent-color:#333 }
       `}</style>
 
-      {/* ── Top Bar (light) ── */}
+      {/* ── Top Bar ── */}
       <div
         style={{
           background: "#ffffff",
           borderBottom: "1px solid #e2e2e2",
-          padding: "0 16px",
-          height: 48,
+          padding: "0 12px",
           display: "flex",
           alignItems: "center",
-          justifyContent: "space-between",
+          gap: 8,
+          height: 46,
           flexShrink: 0,
+          userSelect: "none",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {/* Back button */}
+        <button
+          onClick={() => router.push("/dashboard")}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 5,
+            padding: "4px 10px",
+            borderRadius: 6,
+            border: "1px solid #e0e0e0",
+            background: "#fafafa",
+            color: "#555",
+            fontFamily: "inherit",
+            fontSize: 11,
+            cursor: "pointer",
+            fontWeight: 500,
+            flexShrink: 0,
+            transition: "background 0.12s",
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f0f0")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "#fafafa")}
+        >
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+          >
+            <path d="M19 12H5M12 5l-7 7 7 7" />
+          </svg>
+          Dashboard
+        </button>
+
+        <div
+          style={{ width: 1, height: 20, background: "#e0e0e0", flexShrink: 0 }}
+        />
+
+        {/* App identity */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              width: 22,
+              height: 22,
+              borderRadius: 5,
+              background: "linear-gradient(135deg,#1a1a1a,#333)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#fff"
+              strokeWidth={2}
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18M9 21V9" />
+            </svg>
+          </div>
           <span
             style={{
-              fontSize: 11,
-              letterSpacing: "0.18em",
-              textTransform: "uppercase",
+              fontSize: 13,
+              fontWeight: 700,
               color: "#1a1a1a",
-              fontWeight: 500,
+              letterSpacing: "-0.02em",
             }}
           >
-            ◈ CHARTLAB
+            Graphix Data Editor
           </span>
-          <div style={{ width: 1, height: 20, background: "#e0e0e0" }} />
-          <input
-            value={chartTitle}
-            onChange={(e) => setChartTitle(e.target.value)}
-            placeholder="Untitled Chart"
-            style={{
-              background: "transparent",
-              border: "none",
-              outline: "none",
-              color: "#1a1a1a",
-              fontSize: 13,
-              fontFamily: "inherit",
-              width: 220,
-              fontWeight: 500,
-            }}
-          />
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          {[
-            ["↶", "Undo", handleUndo, historyIndex <= 0],
-            ["↷", "Redo", handleRedo, historyIndex >= history.length - 1],
-          ].map(([ic, tt, fn, dis]) => (
-            <button
-              key={tt as string}
-              onClick={fn as () => void}
-              disabled={dis as boolean}
-              title={tt as string}
-              className="lbtn"
+        <div
+          style={{ width: 1, height: 20, background: "#e0e0e0", flexShrink: 0 }}
+        />
+
+        {/* Editable chart title */}
+        <input
+          value={chartTitle}
+          onChange={(e) => setChartTitle(e.target.value)}
+          style={{
+            flex: 1,
+            border: "1px solid #e0e0e0",
+            borderRadius: 5,
+            padding: "3px 8px",
+            fontSize: 11,
+            fontFamily: "inherit",
+            color: "#333",
+            outline: "none",
+            background: "#fafafa",
+            minWidth: 0,
+          }}
+          placeholder="Chart title…"
+        />
+
+        {/* Undo / Redo */}
+        {[
+          { label: "↩", fn: handleUndo, dis: historyIndex <= 0 },
+          {
+            label: "↪",
+            fn: handleRedo,
+            dis: historyIndex >= history.length - 1,
+          },
+        ].map(({ label, fn, dis }) => (
+          <button
+            key={label}
+            onClick={fn}
+            disabled={dis}
+            style={{
+              padding: "3px 8px",
+              border: "1px solid #ddd",
+              borderRadius: 5,
+              background: "#fafafa",
+              color: dis ? "#ccc" : "#555",
+              fontFamily: "inherit",
+              fontSize: 12,
+              cursor: dis ? "not-allowed" : "pointer",
+            }}
+          >
+            {label}
+          </button>
+        ))}
+
+        {/* Sample data loader */}
+        <div style={{ position: "relative" }}>
+          <button
+            onClick={() => setShowHelp((h) => !h)}
+            style={{
+              padding: "3px 10px",
+              border: "1px solid #ddd",
+              borderRadius: 5,
+              background: "#fafafa",
+              color: "#555",
+              fontFamily: "inherit",
+              fontSize: 11,
+              cursor: "pointer",
+            }}
+          >
+            Samples ▾
+          </button>
+          {showHelp && (
+            <div
               style={{
-                background: "#f5f5f5",
-                border: "1px solid #ddd",
-                color: dis ? "#ccc" : "#555",
-                borderRadius: 6,
-                padding: "4px 10px",
-                cursor: dis ? "not-allowed" : "pointer",
-                fontFamily: "inherit",
-                fontSize: 14,
+                position: "absolute",
+                top: "100%",
+                right: 0,
+                zIndex: 200,
+                background: "#fff",
+                border: "1px solid #e0e0e0",
+                borderRadius: 7,
+                boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                padding: 6,
+                minWidth: 160,
+                marginTop: 4,
               }}
             >
-              {ic as string}
-            </button>
-          ))}
-          <div style={{ width: 1, height: 20, background: "#e0e0e0" }} />
-          <select
-            onChange={(e) => {
-              if (e.target.value) loadSample(e.target.value);
-              e.target.value = "";
-            }}
-            defaultValue=""
-            style={{
-              background: "#f5f5f5",
-              border: "1px solid #ddd",
-              color: "#555",
-              borderRadius: 6,
-              padding: "4px 10px",
-              fontFamily: "inherit",
-              fontSize: 11,
-              cursor: "pointer",
-              outline: "none",
-            }}
-          >
-            <option value="" disabled>
-              Load Sample ▾
-            </option>
-            {Object.entries(SAMPLE_DATASETS).map(([k, v]) => (
-              <option key={k} value={k}>
-                {v.title}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            className="lbtn"
-            style={{
-              background: "#f5f5f5",
-              border: "1px solid #ddd",
-              color: "#555",
-              borderRadius: 6,
-              padding: "4px 10px",
-              cursor: "pointer",
-              fontFamily: "inherit",
-              fontSize: 11,
-            }}
-          >
-            Import CSV
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".csv"
-            onChange={handleImportCSV}
-            style={{ display: "none" }}
-          />
-          <div style={{ position: "relative" }}>
-            <button
-              onClick={() => setExportMenu((v) => !v)}
-              className="lbtn"
-              style={{
-                background: "#f5f5f5",
-                border: "1px solid #ddd",
-                color: "#555",
-                borderRadius: 6,
-                padding: "4px 10px",
-                cursor: "pointer",
-                fontFamily: "inherit",
-                fontSize: 11,
-              }}
-            >
-              Export ▾
-            </button>
-            {exportMenu && (
-              <div
-                style={{
-                  position: "absolute",
-                  right: 0,
-                  top: 32,
-                  background: "#fff",
-                  border: "1px solid #e0e0e0",
-                  borderRadius: 8,
-                  zIndex: 100,
-                  minWidth: 130,
-                  padding: 4,
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.1)",
-                }}
-              >
-                {[
-                  ["PNG", handleExportPNG],
-                  ["SVG", handleExportSVG],
-                  ["CSV", handleExportCSV],
-                  ["JSON", handleSave],
-                ].map(([l, fn]) => (
-                  <button
-                    key={l as string}
-                    onClick={() => {
-                      (fn as () => void)();
-                      setExportMenu(false);
-                    }}
-                    style={{
-                      display: "block",
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "7px 14px",
-                      background: "transparent",
-                      border: "none",
-                      color: "#444",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      fontSize: 11,
-                      borderRadius: 5,
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.background = "#f5f5f5")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.background = "transparent")
-                    }
-                  >
-                    ↓ {l as string}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          <button
-            onClick={handleSave}
-            style={{
-              background: "#1a1a1a",
-              border: "1px solid #1a1a1a",
-              color: "#fff",
-              borderRadius: 6,
-              padding: "4px 16px",
-              cursor: "pointer",
-              fontFamily: "inherit",
-              fontSize: 11,
-              fontWeight: 500,
-            }}
-          >
-            ⊕ Save
-          </button>
+              {Object.entries(SAMPLE_DATASETS).map(([key, s]) => (
+                <button
+                  key={key}
+                  onClick={() => {
+                    loadSample(key);
+                    setShowHelp(false);
+                  }}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "6px 10px",
+                    border: "none",
+                    background: "transparent",
+                    color: "#444",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                    fontSize: 11,
+                    borderRadius: 5,
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "#f5f5f5")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "transparent")
+                  }
+                >
+                  {s.title}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
+
+        {/* Save / Update */}
+        {isAuthenticated && token && (
+          <button
+            onClick={handleSaveChart}
+            disabled={saveStatus === "saving"}
+            style={{
+              padding: "5px 16px",
+              borderRadius: 6,
+              border: "none",
+              background:
+                saveStatus === "saved"
+                  ? "#10b981"
+                  : saveStatus === "error"
+                    ? "#ef4444"
+                    : "#1a1a1a",
+              color: "#fff",
+              fontFamily: "inherit",
+              fontSize: 11,
+              fontWeight: 600,
+              cursor: saveStatus === "saving" ? "not-allowed" : "pointer",
+              transition: "background 0.2s",
+              flexShrink: 0,
+              whiteSpace: "nowrap",
+            }}
+          >
+            {saveStatus === "saving"
+              ? "Saving…"
+              : saveStatus === "saved"
+                ? "✓ Saved"
+                : saveStatus === "error"
+                  ? "✗ Failed"
+                  : existingChartId
+                    ? "Update Chart"
+                    : "Save to Dashboard"}
+          </button>
+        )}
+
+        {/* Export */}
+        <div style={{ position: "relative", flexShrink: 0 }}>
+          <button
+            onClick={() => setExportMenu((m) => !m)}
+            style={{
+              padding: "4px 10px",
+              border: "1px solid #ddd",
+              borderRadius: 5,
+              background: "#fafafa",
+              color: "#555",
+              fontFamily: "inherit",
+              fontSize: 11,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+            }}
+          >
+            Export ▾
+          </button>
+          {exportMenu && (
+            <div
+              style={{
+                position: "absolute",
+                top: "100%",
+                right: 0,
+                zIndex: 200,
+                background: "#fff",
+                border: "1px solid #e0e0e0",
+                borderRadius: 7,
+                boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+                padding: 6,
+                minWidth: 130,
+                marginTop: 4,
+              }}
+            >
+              {[
+                ["PNG", "handleExportPNG"],
+                ["SVG", "handleExportSVG"],
+                ["CSV", "handleExportCSV"],
+              ].map(([lbl]) => (
+                <button
+                  key={lbl}
+                  onClick={() => {
+                    setExportMenu(false);
+                    lbl === "PNG"
+                      ? handleExportPNG()
+                      : lbl === "SVG"
+                        ? handleExportSVG()
+                        : handleExportCSV();
+                  }}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "6px 10px",
+                    border: "none",
+                    background: "transparent",
+                    color: "#444",
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                    fontSize: 11,
+                    borderRadius: 5,
+                  }}
+                  onMouseEnter={(e) =>
+                    (e.currentTarget.style.background = "#f5f5f5")
+                  }
+                  onMouseLeave={(e) =>
+                    (e.currentTarget.style.background = "transparent")
+                  }
+                >
+                  ↓ {lbl}
+                </button>
+              ))}
+              <hr
+                style={{
+                  margin: "4px 0",
+                  border: "none",
+                  borderTop: "1px solid #eee",
+                }}
+              />
+              <button
+                onClick={() => {
+                  setExportMenu(false);
+                  fileInputRef.current?.click();
+                }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "6px 10px",
+                  border: "none",
+                  background: "transparent",
+                  color: "#444",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  fontSize: 11,
+                  borderRadius: 5,
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "#f5f5f5")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "transparent")
+                }
+              >
+                ↑ Import CSV
+              </button>
+              <button
+                onClick={() => {
+                  setExportMenu(false);
+                  transposeData();
+                }}
+                style={{
+                  display: "block",
+                  width: "100%",
+                  textAlign: "left",
+                  padding: "6px 10px",
+                  border: "none",
+                  background: "transparent",
+                  color: "#444",
+                  cursor: "pointer",
+                  fontFamily: "inherit",
+                  fontSize: 11,
+                  borderRadius: 5,
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "#f5f5f5")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "transparent")
+                }
+              >
+                ⇄ Transpose
+              </button>
+            </div>
+          )}
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv"
+          style={{ display: "none" }}
+          onChange={handleImportCSV}
+        />
       </div>
 
-      {/* ── Formula Bar (light) ── */}
+      {/* ── Formula Bar ── */}
       <div
         style={{
           background: "#fafafa",
@@ -1197,12 +1636,12 @@ const DataChartEditor: React.FC = () => {
         />
       </div>
 
-      {/* ── Main ── */}
+      {/* ── Main split ── */}
       <div
         ref={containerRef}
         style={{ display: "flex", flex: 1, overflow: "hidden" }}
       >
-        {/* ── Left: Spreadsheet (LIGHT) ── */}
+        {/* ── LEFT: Spreadsheet ── */}
         <div
           className="left-panel"
           style={{
@@ -1232,326 +1671,269 @@ const DataChartEditor: React.FC = () => {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`tab-btn ${activeTab === tab ? "active" : ""}`}
-                style={{
-                  background: "transparent",
-                  border: "none",
-                  color: activeTab === tab ? "#1a1a1a" : "#999",
-                  padding: "0 12px",
-                  height: "100%",
-                  cursor: "pointer",
-                  fontFamily: "inherit",
-                  fontSize: 11,
-                  textTransform: "capitalize",
-                }}
               >
                 {tab}
               </button>
             ))}
             <div style={{ flex: 1 }} />
-            <span style={{ color: "#bbb", fontSize: 10 }}>
-              {data.length - 1}r × {data[0].length}c
-            </span>
+            <button
+              onClick={addRow}
+              className="lbtn"
+              style={{
+                padding: "2px 8px",
+                border: "1px solid #e0e0e0",
+                borderRadius: 4,
+                background: "#fafafa",
+                color: "#555",
+                fontFamily: "inherit",
+                fontSize: 10,
+                cursor: "pointer",
+              }}
+            >
+              + Row
+            </button>
+            <button
+              onClick={addColumn}
+              className="lbtn"
+              style={{
+                padding: "2px 8px",
+                border: "1px solid #e0e0e0",
+                borderRadius: 4,
+                background: "#fafafa",
+                color: "#555",
+                fontFamily: "inherit",
+                fontSize: 10,
+                cursor: "pointer",
+                marginLeft: 4,
+              }}
+            >
+              + Col
+            </button>
           </div>
 
-          {/* ── DATA TAB ── */}
+          {/* DATA TAB */}
           {activeTab === "data" && (
-            <>
-              <div
+            <div style={{ flex: 1, overflow: "auto" }}>
+              <table
                 style={{
-                  background: "#fafafa",
-                  borderBottom: "1px solid #ebebeb",
-                  padding: "5px 12px",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  flexShrink: 0,
+                  borderCollapse: "collapse",
+                  width: "100%",
+                  tableLayout: "fixed",
                 }}
               >
-                {[
-                  ["+ Row", addRow],
-                  ["+ Col", addColumn],
-                  ["⇄ Transpose", transposeData],
-                ].map(([l, fn]) => (
-                  <button
-                    key={l as string}
-                    onClick={fn as () => void}
-                    className="lbtn"
+                <thead>
+                  <tr
                     style={{
-                      background: "#fff",
-                      border: "1px solid #ddd",
-                      color: "#555",
-                      borderRadius: 5,
-                      padding: "3px 10px",
-                      cursor: "pointer",
-                      fontFamily: "inherit",
-                      fontSize: 10,
+                      background: "#f5f5f5",
+                      position: "sticky",
+                      top: 0,
+                      zIndex: 10,
                     }}
                   >
-                    {l as string}
-                  </button>
-                ))}
-                <div style={{ flex: 1 }} />
-                <span style={{ color: "#bbb", fontSize: 10 }}>Sort:</span>
-                <select
-                  value={sortData}
-                  onChange={(e) => setSortData(e.target.value as any)}
-                  style={{
-                    background: "#fff",
-                    border: "1px solid #ddd",
-                    color: "#555",
-                    borderRadius: 5,
-                    padding: "3px 8px",
-                    fontFamily: "inherit",
-                    fontSize: 10,
-                    outline: "none",
-                  }}
-                >
-                  <option value="none">None</option>
-                  <option value="asc">Asc</option>
-                  <option value="desc">Desc</option>
-                </select>
-                <label
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 4,
-                    color: "#888",
-                    fontSize: 10,
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={filterZero}
-                    onChange={(e) => setFilterZero(e.target.checked)}
-                  />{" "}
-                  Hide zeros
-                </label>
-              </div>
-
-              <div style={{ flex: 1, overflow: "auto" }}>
-                <table style={{ borderCollapse: "collapse", minWidth: "100%" }}>
-                  <thead>
-                    <tr>
+                    <th
+                      style={{
+                        width: 32,
+                        padding: "6px 0",
+                        textAlign: "center",
+                        color: "#bbb",
+                        fontSize: 9,
+                        borderBottom: "1px solid #e8e8e8",
+                        borderRight: "1px solid #e8e8e8",
+                      }}
+                    >
+                      #
+                    </th>
+                    {data[0].map((h, ci) => (
                       <th
+                        key={ci}
                         style={{
-                          position: "sticky",
-                          top: 0,
-                          left: 0,
-                          zIndex: 20,
-                          width: 40,
-                          height: 24,
-                          background: "#f4f4f4",
-                          borderRight: "1px solid #e4e4e4",
-                          borderBottom: "1px solid #e4e4e4",
+                          padding: "4px 6px",
+                          textAlign: "left",
+                          fontSize: 10,
+                          fontWeight: 600,
+                          color: "#777",
+                          borderBottom: "1px solid #e8e8e8",
+                          borderRight: "1px solid #ececec",
+                          minWidth: 100,
+                          position: "relative",
                         }}
-                      />
-                      {data[0].map((_, ci) => (
-                        <th
-                          key={ci}
+                      >
+                        <div
                           style={{
-                            position: "sticky",
-                            top: 0,
-                            zIndex: 10,
-                            minWidth: 110,
-                            background: "#f4f4f4",
-                            borderRight: "1px solid #e4e4e4",
-                            borderBottom: "1px solid #e4e4e4",
-                            color: "#aaa",
-                            fontWeight: 500,
-                            padding: "0 8px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
                           }}
                         >
-                          <div
+                          <span>{colLabel(ci)}</span>
+                          <button
+                            onClick={() => sortDataBy(ci)}
                             style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
+                              border: "none",
+                              background: "transparent",
+                              cursor: "pointer",
+                              color: "#ccc",
+                              fontSize: 9,
+                              padding: 0,
                             }}
                           >
-                            <span style={{ fontSize: 10 }}>{colLabel(ci)}</span>
-                            <div style={{ display: "flex", gap: 2 }}>
-                              <button
-                                onClick={() => sortDataBy(ci)}
-                                title="Sort"
-                                style={{
-                                  background: "none",
-                                  border: "none",
-                                  color: "#ccc",
-                                  cursor: "pointer",
-                                  fontSize: 9,
-                                  padding: "0 1px",
-                                }}
-                              >
-                                ↕
-                              </button>
-                              <button
-                                onClick={() => deleteColumn(ci)}
-                                style={{
-                                  background: "none",
-                                  border: "none",
-                                  color: "#ccc",
-                                  cursor: "pointer",
-                                  fontSize: 9,
-                                  padding: "0 1px",
-                                }}
-                              >
-                                ✕
-                              </button>
-                            </div>
-                          </div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.map((row, ri) => (
-                      <tr key={ri}>
-                        <td
-                          style={{
-                            position: "sticky",
-                            left: 0,
-                            zIndex: 5,
-                            width: 40,
-                            height: 27,
-                            background: "#f7f7f7",
-                            borderRight: "1px solid #e8e8e8",
-                            borderBottom: "1px solid #f0f0f0",
-                            textAlign: "center",
-                            color: "#bbb",
-                            fontSize: 10,
-                            fontWeight: 500,
-                          }}
-                        >
-                          <div
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "space-between",
-                              paddingRight: 2,
-                              paddingLeft: 4,
-                            }}
-                          >
-                            <span>{ri + 1}</span>
+                            ⇅
+                          </button>
+                          {ci > 0 && (
                             <button
-                              onClick={() => deleteRow(ri)}
+                              onClick={() => deleteColumn(ci)}
                               style={{
-                                background: "none",
                                 border: "none",
-                                color: "#ddd",
+                                background: "transparent",
                                 cursor: "pointer",
+                                color: "#ccc",
                                 fontSize: 9,
                                 padding: 0,
-                                lineHeight: 1,
                               }}
                             >
                               ✕
                             </button>
-                          </div>
-                        </td>
-                        {row.map((cell, ci) => {
-                          const isSelected =
-                            selectedCell?.row === ri &&
-                            selectedCell?.col === ci;
-                          const isHighlighted = searchHighlight(ri, ci);
-                          const cellBg = getCellBg(ri, ci);
-                          return (
-                            <td
-                              key={ci}
-                              style={{
-                                borderRight: "1px solid #efefef",
-                                borderBottom: "1px solid #f4f4f4",
-                                padding: 0,
-                                background: isHighlighted ? "#fff3cd" : cellBg,
-                                outline: isSelected
-                                  ? "2px solid #1a1a1a"
-                                  : "none",
-                                outlineOffset: "-2px",
-                              }}
-                            >
-                              <input
-                                type="text"
-                                value={cell}
-                                onChange={(e) =>
-                                  handleCellChange(ri, ci, e.target.value)
-                                }
-                                onFocus={() => {
-                                  setSelectedCell({ row: ri, col: ci });
-                                  setFormulaBar(cell);
-                                }}
-                                onBlur={() => setSelectedCell(null)}
-                                className="cell-input"
-                                placeholder={
-                                  ri === 0
-                                    ? ci === 0
-                                      ? "Category"
-                                      : `Header ${ci}`
-                                    : ci === 0
-                                      ? "Label"
-                                      : "Value"
-                                }
-                                style={{
-                                  width: "100%",
-                                  minWidth: 110,
-                                  height: 27,
-                                  padding: "0 8px",
-                                  background: "transparent",
-                                  border: "none",
-                                  outline: "none",
-                                  color: ri === 0 ? "#1a1a1a" : "#444",
-                                  fontFamily: "inherit",
-                                  fontSize: 11,
-                                  fontWeight: ri === 0 ? 600 : 400,
-                                }}
-                              />
-                            </td>
-                          );
-                        })}
-                      </tr>
+                          )}
+                        </div>
+                      </th>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.map((row, ri) => (
+                    <tr
+                      key={ri}
+                      style={{ background: ri % 2 === 0 ? "#fff" : "#fafafa" }}
+                    >
+                      <td
+                        style={{
+                          textAlign: "center",
+                          color: "#ccc",
+                          fontSize: 9,
+                          padding: "0 4px",
+                          borderRight: "1px solid #e8e8e8",
+                          borderBottom: "1px solid #f0f0f0",
+                          verticalAlign: "middle",
+                        }}
+                      >
+                        {ri > 0 && (
+                          <button
+                            onClick={() => deleteRow(ri)}
+                            style={{
+                              border: "none",
+                              background: "transparent",
+                              cursor: "pointer",
+                              color: "#ddd",
+                              fontSize: 8,
+                              padding: 0,
+                              display: "block",
+                              margin: "0 auto",
+                            }}
+                          >
+                            ✕
+                          </button>
+                        )}
+                        {ri === 0 ? "H" : ri}
+                      </td>
+                      {row.map((cell, ci) => {
+                        const isSelected =
+                          selectedCell?.row === ri && selectedCell?.col === ci;
+                        const cellBg = getCellBg(ri, ci);
+                        const isFlash = flashCell === `${ri}-${ci}`;
+                        const isSearch = searchHighlight(ri, ci);
+                        return (
+                          <td
+                            key={ci}
+                            style={{
+                              padding: 0,
+                              borderRight: "1px solid #ececec",
+                              borderBottom: "1px solid #f0f0f0",
+                              background: isSearch ? "#fff3cd" : cellBg,
+                              outline: isSelected
+                                ? "2px solid #1a1a1a"
+                                : "none",
+                              outlineOffset: "-2px",
+                            }}
+                          >
+                            <input
+                              type="text"
+                              value={cell}
+                              onChange={(e) =>
+                                handleCellChange(ri, ci, e.target.value)
+                              }
+                              onFocus={() => {
+                                setSelectedCell({ row: ri, col: ci });
+                                setFormulaBar(cell);
+                              }}
+                              onBlur={() => setSelectedCell(null)}
+                              className="cell-input"
+                              placeholder={
+                                ri === 0
+                                  ? ci === 0
+                                    ? "Category"
+                                    : `Header ${ci}`
+                                  : ci === 0
+                                    ? "Label"
+                                    : "Value"
+                              }
+                              style={{
+                                width: "100%",
+                                minWidth: 100,
+                                height: 27,
+                                padding: "0 8px",
+                                background: "transparent",
+                                border: "none",
+                                outline: "none",
+                                color: ri === 0 ? "#1a1a1a" : "#444",
+                                fontFamily: "inherit",
+                                fontSize: 11,
+                                fontWeight: ri === 0 ? 600 : 400,
+                              }}
+                            />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
 
-          {/* ── STYLE TAB ── */}
+          {/* STYLE TAB */}
           {activeTab === "style" && (
             <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
               <LSection title="Color Palette">
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                  {Object.entries(PALETTES).map(([key, colors]) => (
+                  {Object.entries(PALETTES).map(([key, cols]) => (
                     <button
                       key={key}
                       onClick={() => setPalette(key)}
                       style={{
                         background: palette === key ? "#f0f0f0" : "#fff",
                         border: `1px solid ${palette === key ? "#1a1a1a" : "#ddd"}`,
-                        borderRadius: 8,
-                        padding: "6px 10px",
+                        borderRadius: 6,
+                        padding: "5px 8px",
                         cursor: "pointer",
                         display: "flex",
+                        gap: 3,
                         alignItems: "center",
-                        gap: 6,
                       }}
                     >
-                      <div style={{ display: "flex", gap: 2 }}>
-                        {colors.slice(0, 5).map((c, i) => (
-                          <div
-                            key={i}
-                            style={{
-                              width: 10,
-                              height: 10,
-                              borderRadius: 2,
-                              background: c,
-                            }}
-                          />
-                        ))}
-                      </div>
+                      {cols.slice(0, 5).map((c, i) => (
+                        <span
+                          key={i}
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: 2,
+                            background: c,
+                            display: "block",
+                          }}
+                        />
+                      ))}
                       <span
-                        style={{
-                          color: palette === key ? "#1a1a1a" : "#888",
-                          fontSize: 10,
-                        }}
+                        style={{ fontSize: 10, color: "#555", marginLeft: 4 }}
                       >
                         {key}
                       </span>
@@ -1559,258 +1941,180 @@ const DataChartEditor: React.FC = () => {
                   ))}
                 </div>
               </LSection>
-
               <LSection title="Chart Options">
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 10,
-                  }}
-                >
-                  <LToggle
-                    label="Grid Lines"
-                    value={gridLines}
-                    onChange={setGridLines}
-                  />
-                  <LToggle
-                    label="Legend"
-                    value={showLegend}
-                    onChange={setShowLegend}
-                  />
-                  <LToggle
-                    label="Smooth Lines"
-                    value={smoothLines}
-                    onChange={setSmoothLines}
-                  />
-                  <LToggle
-                    label="Log Scale"
-                    value={logScale}
-                    onChange={setLogScale}
-                  />
-                </div>
-              </LSection>
-
-              <LSection title="Bar Subtype">
-                <div style={{ display: "flex", gap: 8 }}>
-                  {["grouped", "stacked"].map((st) => (
-                    <button
-                      key={st}
-                      onClick={() => setChartSubtype(st as any)}
-                      style={{
-                        background: chartSubtype === st ? "#1a1a1a" : "#fff",
-                        border: `1px solid ${chartSubtype === st ? "#1a1a1a" : "#ddd"}`,
-                        color: chartSubtype === st ? "#fff" : "#666",
-                        borderRadius: 6,
-                        padding: "4px 14px",
-                        cursor: "pointer",
-                        fontFamily: "inherit",
-                        fontSize: 11,
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {st}
-                    </button>
-                  ))}
-                </div>
-              </LSection>
-
-              <LSection title="Marker Size">
-                <LSlider
-                  label=""
-                  value={markerSize}
-                  min={4}
-                  max={20}
-                  onChange={setMarkerSize}
+                <LToggle
+                  label="Grid Lines"
+                  value={gridLines}
+                  onChange={setGridLines}
+                />
+                <LToggle
+                  label="Show Legend"
+                  value={showLegend}
+                  onChange={setShowLegend}
+                />
+                <LToggle
+                  label="Smooth Lines"
+                  value={smoothLines}
+                  onChange={setSmoothLines}
+                />
+                <LToggle
+                  label="Log Scale"
+                  value={logScale}
+                  onChange={setLogScale}
+                />
+                <LToggle
+                  label="Filter Zero Values"
+                  value={filterZero}
+                  onChange={setFilterZero}
                 />
               </LSection>
-
+              <LSection title="Marker Size">
+                <input
+                  type="range"
+                  min={3}
+                  max={20}
+                  value={markerSize}
+                  onChange={(e) => setMarkerSize(+e.target.value)}
+                  style={{ width: "100%" }}
+                />
+                <span style={{ fontSize: 10, color: "#888" }}>
+                  {markerSize}px
+                </span>
+              </LSection>
               <LSection title="Opacity">
-                <LSlider
-                  label=""
-                  value={opacity}
+                <input
+                  type="range"
                   min={0.1}
                   max={1}
                   step={0.05}
-                  onChange={setOpacity}
+                  value={opacity}
+                  onChange={(e) => setOpacity(+e.target.value)}
+                  style={{ width: "100%" }}
                 />
+                <span style={{ fontSize: 10, color: "#888" }}>
+                  {Math.round(opacity * 100)}%
+                </span>
               </LSection>
-
-              <LSection title="Axis Labels">
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
-                >
-                  <LInput
-                    label="X Axis"
-                    value={xAxisLabel}
-                    onChange={setXAxisLabel}
-                  />
-                  <LInput
-                    label="Y Axis"
-                    value={yAxisLabel}
-                    onChange={setYAxisLabel}
-                  />
-                </div>
-              </LSection>
-
-              <LSection title="Conditional Formatting">
-                <div
-                  style={{
-                    display: "flex",
-                    gap: 6,
-                    marginBottom: 8,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <select
-                    value={newRule.column}
-                    onChange={(e) =>
-                      setNewRule((r) => ({
-                        ...r,
-                        column: parseInt(e.target.value),
-                      }))
-                    }
-                    style={lSelectStyle}
-                  >
-                    {data[0].slice(1).map((h, i) => (
-                      <option key={i} value={i + 1}>
-                        {h || `Col ${i + 2}`}
-                      </option>
-                    ))}
-                  </select>
-                  <select
-                    value={newRule.operator}
-                    onChange={(e) =>
-                      setNewRule((r) => ({ ...r, operator: e.target.value }))
-                    }
-                    style={lSelectStyle}
-                  >
-                    {[">", "<", "="].map((o) => (
-                      <option key={o} value={o}>
-                        {o}
-                      </option>
-                    ))}
-                  </select>
-                  <input
-                    type="number"
-                    value={newRule.value}
-                    onChange={(e) =>
-                      setNewRule((r) => ({
-                        ...r,
-                        value: parseFloat(e.target.value),
-                      }))
-                    }
-                    style={{ ...lInputStyle, width: 70 }}
-                  />
-                  <input
-                    type="color"
-                    value={newRule.color}
-                    onChange={(e) =>
-                      setNewRule((r) => ({ ...r, color: e.target.value }))
-                    }
-                    style={{
-                      width: 32,
-                      height: 28,
-                      border: "1px solid #ddd",
-                      borderRadius: 5,
-                      background: "#fff",
-                      cursor: "pointer",
-                    }}
-                  />
-                  <button
-                    onClick={() => {
-                      setConditionalRules((rs) => [
-                        ...rs,
-                        { ...newRule, id: Date.now().toString() },
-                      ]);
-                      showToast("Rule added ✓");
-                    }}
-                    style={{
-                      ...lBtnStyle,
-                      background: "#1a1a1a",
-                      borderColor: "#1a1a1a",
-                      color: "#fff",
-                    }}
-                  >
-                    + Add
-                  </button>
-                </div>
-                {conditionalRules.map((rule, i) => (
-                  <div
-                    key={i}
+              <LSection title="Sort Data">
+                {(["none", "asc", "desc"] as const).map((v) => (
+                  <label
+                    key={v}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: 6,
-                      marginBottom: 4,
-                      padding: "4px 8px",
-                      background: "#fafafa",
-                      borderRadius: 5,
-                      border: "1px solid #ebebeb",
+                      marginBottom: 5,
+                      cursor: "pointer",
+                      fontSize: 11,
                     }}
                   >
-                    <div
-                      style={{
-                        width: 10,
-                        height: 10,
-                        borderRadius: 2,
-                        background: rule.color,
-                      }}
-                    />
-                    <span style={{ flex: 1, fontSize: 10, color: "#666" }}>
-                      Col {rule.column} {rule.operator} {rule.value}
-                    </span>
-                    <button
-                      onClick={() =>
-                        setConditionalRules((rs) =>
-                          rs.filter((_, ri) => ri !== i),
-                        )
-                      }
-                      style={{
-                        background: "none",
-                        border: "none",
-                        color: "#e53e3e",
-                        cursor: "pointer",
-                        fontSize: 11,
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
+                    <input
+                      type="radio"
+                      name="sortData"
+                      value={v}
+                      checked={sortData === v}
+                      onChange={() => setSortData(v)}
+                    />{" "}
+                    {v === "none"
+                      ? "None"
+                      : v === "asc"
+                        ? "Ascending"
+                        : "Descending"}
+                  </label>
                 ))}
+              </LSection>
+              <LSection title="Axis Labels">
+                <input
+                  value={xAxisLabel}
+                  onChange={(e) => setXAxisLabel(e.target.value)}
+                  placeholder="X-Axis label"
+                  style={{
+                    width: "100%",
+                    padding: "4px 8px",
+                    border: "1px solid #ddd",
+                    borderRadius: 4,
+                    fontFamily: "inherit",
+                    fontSize: 11,
+                    marginBottom: 6,
+                    outline: "none",
+                  }}
+                />
+                <input
+                  value={yAxisLabel}
+                  onChange={(e) => setYAxisLabel(e.target.value)}
+                  placeholder="Y-Axis label"
+                  style={{
+                    width: "100%",
+                    padding: "4px 8px",
+                    border: "1px solid #ddd",
+                    borderRadius: 4,
+                    fontFamily: "inherit",
+                    fontSize: 11,
+                    outline: "none",
+                  }}
+                />
               </LSection>
             </div>
           )}
 
-          {/* ── ANNOTATIONS TAB ── */}
+          {/* ANNOTATIONS TAB */}
           {activeTab === "annotations" && (
             <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
               <LSection title="Add Annotation">
                 <div
-                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
                 >
-                  <LInput
-                    label="X (category)"
+                  <input
                     value={newAnnotation.x}
-                    onChange={(v) => setNewAnnotation((a) => ({ ...a, x: v }))}
-                  />
-                  <LInput
-                    label="Y (value)"
-                    value={newAnnotation.y}
-                    onChange={(v) => setNewAnnotation((a) => ({ ...a, y: v }))}
-                  />
-                  <LInput
-                    label="Label text"
-                    value={newAnnotation.text}
-                    onChange={(v) =>
-                      setNewAnnotation((a) => ({ ...a, text: v }))
+                    onChange={(e) =>
+                      setNewAnnotation((a) => ({ ...a, x: e.target.value }))
                     }
+                    placeholder="X value (e.g. Jan)"
+                    style={{
+                      padding: "4px 8px",
+                      border: "1px solid #ddd",
+                      borderRadius: 4,
+                      fontFamily: "inherit",
+                      fontSize: 11,
+                      outline: "none",
+                    }}
+                  />
+                  <input
+                    value={newAnnotation.y}
+                    onChange={(e) =>
+                      setNewAnnotation((a) => ({ ...a, y: e.target.value }))
+                    }
+                    placeholder="Y value (number)"
+                    type="number"
+                    style={{
+                      padding: "4px 8px",
+                      border: "1px solid #ddd",
+                      borderRadius: 4,
+                      fontFamily: "inherit",
+                      fontSize: 11,
+                      outline: "none",
+                    }}
+                  />
+                  <input
+                    value={newAnnotation.text}
+                    onChange={(e) =>
+                      setNewAnnotation((a) => ({ ...a, text: e.target.value }))
+                    }
+                    placeholder="Annotation text"
+                    style={{
+                      padding: "4px 8px",
+                      border: "1px solid #ddd",
+                      borderRadius: 4,
+                      fontFamily: "inherit",
+                      fontSize: 11,
+                      outline: "none",
+                    }}
                   />
                   <button
                     onClick={() => {
-                      if (!newAnnotation.x || !newAnnotation.text) return;
-                      setAnnotations((as) => [
-                        ...as,
+                      if (!newAnnotation.text || !newAnnotation.x) return;
+                      setAnnotations((a) => [
+                        ...a,
                         {
                           ...newAnnotation,
                           y: parseFloat(newAnnotation.y) || 0,
@@ -1818,228 +2122,289 @@ const DataChartEditor: React.FC = () => {
                         },
                       ]);
                       setNewAnnotation({ x: "", y: "", text: "" });
-                      showToast("Annotation added ✓");
+                      showToast("Annotation added");
                     }}
                     style={{
-                      ...lBtnStyle,
+                      padding: "5px",
+                      border: "1px solid #1a1a1a",
+                      borderRadius: 5,
                       background: "#1a1a1a",
-                      borderColor: "#1a1a1a",
                       color: "#fff",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      fontSize: 11,
                     }}
                   >
-                    + Add Annotation
+                    + Add
                   </button>
                 </div>
               </LSection>
-              <LSection title="Active Annotations">
-                {annotations.length === 0 && (
-                  <p style={{ color: "#bbb", fontSize: 11 }}>
-                    No annotations yet.
-                  </p>
-                )}
-                {annotations.map((a) => (
-                  <div
-                    key={a.id}
+              {annotations.length > 0 && (
+                <LSection title="Annotations">
+                  {annotations.map((a) => (
+                    <div
+                      key={a.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "5px 8px",
+                        background: "#f5f5f5",
+                        borderRadius: 5,
+                        marginBottom: 5,
+                      }}
+                    >
+                      <span style={{ fontSize: 11, color: "#444" }}>
+                        {a.x} → {a.text}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setAnnotations((an) =>
+                            an.filter((x) => x.id !== a.id),
+                          )
+                        }
+                        style={{
+                          border: "none",
+                          background: "transparent",
+                          color: "#ccc",
+                          cursor: "pointer",
+                          fontSize: 12,
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                </LSection>
+              )}
+              <LSection title="Conditional Formatting">
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                >
+                  <select
+                    value={newRule.column}
+                    onChange={(e) =>
+                      setNewRule((r) => ({ ...r, column: +e.target.value }))
+                    }
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 8,
-                      marginBottom: 6,
-                      padding: "6px 10px",
-                      background: "#fafafa",
-                      borderRadius: 6,
-                      border: "1px solid #ebebeb",
+                      padding: "3px 6px",
+                      border: "1px solid #ddd",
+                      borderRadius: 4,
+                      fontFamily: "inherit",
+                      fontSize: 11,
                     }}
                   >
-                    <span style={{ flex: 1, fontSize: 10, color: "#555" }}>
-                      "{a.text}" @ {a.x}, {a.y}
-                    </span>
-                    <button
-                      onClick={() =>
-                        setAnnotations((as) => as.filter((x) => x.id !== a.id))
+                    {data[0].slice(1).map((h, i) => (
+                      <option key={i} value={i + 1}>
+                        {h}
+                      </option>
+                    ))}
+                  </select>
+                  <div style={{ display: "flex", gap: 5 }}>
+                    <select
+                      value={newRule.operator}
+                      onChange={(e) =>
+                        setNewRule((r) => ({ ...r, operator: e.target.value }))
                       }
                       style={{
-                        background: "none",
-                        border: "none",
-                        color: "#e53e3e",
-                        cursor: "pointer",
+                        flex: 1,
+                        padding: "3px 6px",
+                        border: "1px solid #ddd",
+                        borderRadius: 4,
+                        fontFamily: "inherit",
                         fontSize: 11,
                       }}
                     >
-                      ✕
-                    </button>
+                      {[">", "<", "="].map((op) => (
+                        <option key={op} value={op}>
+                          {op}
+                        </option>
+                      ))}
+                    </select>
+                    <input
+                      type="number"
+                      value={newRule.value}
+                      onChange={(e) =>
+                        setNewRule((r) => ({ ...r, value: +e.target.value }))
+                      }
+                      style={{
+                        flex: 2,
+                        padding: "3px 6px",
+                        border: "1px solid #ddd",
+                        borderRadius: 4,
+                        fontFamily: "inherit",
+                        fontSize: 11,
+                      }}
+                    />
+                    <input
+                      type="color"
+                      value={newRule.color}
+                      onChange={(e) =>
+                        setNewRule((r) => ({ ...r, color: e.target.value }))
+                      }
+                      style={{
+                        width: 32,
+                        height: 28,
+                        border: "1px solid #ddd",
+                        borderRadius: 4,
+                        cursor: "pointer",
+                      }}
+                    />
+                  </div>
+                  <button
+                    onClick={() => {
+                      setConditionalRules((r) => [...r, newRule]);
+                      showToast("Rule added ✓");
+                    }}
+                    style={{
+                      padding: "4px",
+                      border: "1px solid #1a1a1a",
+                      borderRadius: 5,
+                      background: "#1a1a1a",
+                      color: "#fff",
+                      cursor: "pointer",
+                      fontFamily: "inherit",
+                      fontSize: 11,
+                    }}
+                  >
+                    + Add Rule
+                  </button>
+                </div>
+                {conditionalRules.length > 0 && (
+                  <button
+                    onClick={() => setConditionalRules([])}
+                    style={{
+                      marginTop: 8,
+                      padding: "3px 8px",
+                      border: "1px solid #ddd",
+                      borderRadius: 4,
+                      background: "transparent",
+                      color: "#888",
+                      cursor: "pointer",
+                      fontSize: 10,
+                    }}
+                  >
+                    Clear all rules
+                  </button>
+                )}
+              </LSection>
+            </div>
+          )}
+
+          {/* STATS TAB */}
+          {activeTab === "stats" && (
+            <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
+              <LSection title="Column Statistics">
+                {stats.map((s) => (
+                  <div
+                    key={s.name}
+                    style={{
+                      marginBottom: 14,
+                      padding: "10px 12px",
+                      background: "#f8f8f8",
+                      borderRadius: 7,
+                      border: "1px solid #eee",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        color: "#1a1a1a",
+                        marginBottom: 8,
+                      }}
+                    >
+                      {s.name}
+                    </div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "4px 16px",
+                      }}
+                    >
+                      {[
+                        ["Sum", s.sum.toFixed(1)],
+                        ["Avg", s.avg.toFixed(2)],
+                        ["Min", s.min],
+                        ["Max", s.max],
+                        ["Count", s.count],
+                      ].map(([l, v]) => (
+                        <div
+                          key={l as string}
+                          style={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                          }}
+                        >
+                          <span style={{ fontSize: 10, color: "#888" }}>
+                            {l}
+                          </span>
+                          <span
+                            style={{
+                              fontSize: 10,
+                              fontWeight: 600,
+                              color: "#333",
+                            }}
+                          >
+                            {v}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 ))}
               </LSection>
             </div>
           )}
-
-          {/* ── STATS TAB ── */}
-          {activeTab === "stats" && (
-            <div style={{ flex: 1, overflow: "auto", padding: 16 }}>
-              <LSection title="Column Statistics">
-                <div style={{ overflowX: "auto" }}>
-                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead>
-                      <tr>
-                        {["Column", "Sum", "Avg", "Min", "Max", "Count"].map(
-                          (h) => (
-                            <th
-                              key={h}
-                              style={{
-                                padding: "4px 10px",
-                                borderBottom: "1px solid #ebebeb",
-                                color: "#aaa",
-                                fontSize: 10,
-                                textAlign: "right",
-                                fontWeight: 500,
-                              }}
-                            >
-                              {h}
-                            </th>
-                          ),
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {stats.map((s, i) => (
-                        <tr key={i}>
-                          {[
-                            s.name,
-                            s.sum.toLocaleString(undefined, {
-                              maximumFractionDigits: 1,
-                            }),
-                            s.avg.toFixed(1),
-                            s.min,
-                            s.max,
-                            s.count,
-                          ].map((v, vi) => (
-                            <td
-                              key={vi}
-                              style={{
-                                padding: "5px 10px",
-                                borderBottom: "1px solid #f5f5f5",
-                                color: vi === 0 ? "#1a1a1a" : "#666",
-                                fontSize: 11,
-                                textAlign: "right",
-                                fontWeight: vi === 0 ? 600 : 400,
-                              }}
-                            >
-                              {v}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </LSection>
-
-              <LSection title="Quick Insights">
-                {stats.map((s, i) => {
-                  const pct = (((s.max - s.min) / (s.avg || 1)) * 100).toFixed(
-                    0,
-                  );
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        marginBottom: 8,
-                        padding: "8px 12px",
-                        background: "#fafafa",
-                        borderRadius: 6,
-                        border: "1px solid #ebebeb",
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          marginBottom: 4,
-                        }}
-                      >
-                        <span
-                          style={{
-                            color: "#1a1a1a",
-                            fontSize: 11,
-                            fontWeight: 500,
-                          }}
-                        >
-                          {s.name}
-                        </span>
-                        <span style={{ color: "#bbb", fontSize: 10 }}>
-                          range ±{pct}%
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          height: 4,
-                          background: "#ebebeb",
-                          borderRadius: 2,
-                          overflow: "hidden",
-                        }}
-                      >
-                        <div
-                          style={{
-                            height: "100%",
-                            width: `${Math.min(100, (s.avg / s.max) * 100)}%`,
-                            background: PALETTES[palette][i % 8],
-                            borderRadius: 2,
-                            transition: "width 0.5s",
-                          }}
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </LSection>
-            </div>
-          )}
         </div>
 
-        {/* ── Divider ── */}
+        {/* ── Drag handle ── */}
         <div
           onMouseDown={() => setIsDragging(true)}
           style={{
             width: 4,
-            background: isDragging ? "#555" : "#e0e0e0",
             cursor: "col-resize",
+            background: "#e0e0e0",
             flexShrink: 0,
             transition: "background 0.15s",
           }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#ccc")}
+          onMouseLeave={(e) => {
+            if (!isDragging) e.currentTarget.style.background = "#e0e0e0";
+          }}
         />
 
-        {/* ── Right: Chart Panel (DARK NEUTRAL) ── */}
+        {/* ── RIGHT: Chart panel ── */}
         <div
           className="right-panel"
           style={{
+            flex: 1,
             display: "flex",
             flexDirection: "column",
-            flex: 1,
-            overflow: "hidden",
             background: "#111111",
+            overflow: "hidden",
           }}
         >
-          {/* Chart type selector */}
+          {/* Chart type bar */}
           <div
+            className="chart-type-bar"
             style={{
-              background: "#171717",
-              borderBottom: "1px solid #222",
-              padding: "6px 12px",
               display: "flex",
               alignItems: "center",
               gap: 4,
+              padding: "6px 10px",
+              background: "#1a1a1a",
+              borderBottom: "1px solid #2a2a2a",
               overflowX: "auto",
               flexShrink: 0,
-              height: 46,
             }}
-            className="chart-type-bar"
           >
             {CHART_TYPES.map((ct) => (
               <button
                 key={ct.id}
-                onClick={() => setChartType(ct.id)}
                 className={`chart-btn ${chartType === ct.id ? "active" : ""}`}
+                onClick={() => setChartType(ct.id)}
                 style={{
                   background: chartType === ct.id ? "#2a2a2a" : "transparent",
                   border: `1px solid ${chartType === ct.id ? "#404040" : "#222"}`,
@@ -2096,10 +2461,15 @@ const DataChartEditor: React.FC = () => {
         </div>
       )}
 
-      {/* Click-away for export menu */}
       {exportMenu && (
         <div
           onClick={() => setExportMenu(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 99 }}
+        />
+      )}
+      {showHelp && (
+        <div
+          onClick={() => setShowHelp(false)}
           style={{ position: "fixed", inset: 0, zIndex: 99 }}
         />
       )}
@@ -2107,7 +2477,7 @@ const DataChartEditor: React.FC = () => {
   );
 };
 
-// ── Sub-components (light theme) ──────────────────────────────────────────────
+// ── Sub-components ────────────────────────────────────────────────────────────
 const LSection: React.FC<{ title: string; children: React.ReactNode }> = ({
   title,
   children,
@@ -2135,7 +2505,13 @@ const LToggle: React.FC<{
   onChange: (v: boolean) => void;
 }> = ({ label, value, onChange }) => (
   <label
-    style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}
+    style={{
+      display: "flex",
+      alignItems: "center",
+      gap: 8,
+      cursor: "pointer",
+      marginBottom: 8,
+    }}
   >
     <div
       onClick={() => onChange(!value)}
@@ -2144,112 +2520,29 @@ const LToggle: React.FC<{
         height: 17,
         borderRadius: 9,
         background: value ? "#1a1a1a" : "#e8e8e8",
-        border: `1px solid ${value ? "#1a1a1a" : "#ddd"}`,
+        border: `1px solid ${value ? "#1a1a1a" : "#d0d0d0"}`,
         position: "relative",
-        transition: "all 0.2s",
         cursor: "pointer",
+        flexShrink: 0,
+        transition: "background 0.2s",
       }}
     >
       <div
         style={{
-          width: 11,
-          height: 11,
-          borderRadius: "50%",
-          background: value ? "#fff" : "#bbb",
           position: "absolute",
           top: 2,
-          left: value ? 17 : 2,
-          transition: "all 0.2s",
+          left: value ? 16 : 2,
+          width: 12,
+          height: 12,
+          borderRadius: "50%",
+          background: value ? "#fff" : "#aaa",
+          transition: "left 0.2s",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
         }}
       />
     </div>
-    <span style={{ color: "#555", fontSize: 11 }}>{label}</span>
+    <span style={{ fontSize: 11, color: "#555" }}>{label}</span>
   </label>
 );
-
-const LSlider: React.FC<{
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step?: number;
-  onChange: (v: number) => void;
-}> = ({ label, value, min, max, step = 1, onChange }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-    {label && (
-      <span style={{ color: "#888", fontSize: 10, minWidth: 60 }}>{label}</span>
-    )}
-    <input
-      type="range"
-      min={min}
-      max={max}
-      step={step}
-      value={value}
-      onChange={(e) => onChange(parseFloat(e.target.value))}
-      style={{ flex: 1 }}
-    />
-    <span
-      style={{ color: "#555", fontSize: 10, minWidth: 28, textAlign: "right" }}
-    >
-      {typeof value === "number" && value < 1 ? value.toFixed(2) : value}
-    </span>
-  </div>
-);
-
-const LInput: React.FC<{
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}> = ({ label, value, onChange }) => (
-  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-    <span style={{ color: "#888", fontSize: 10, minWidth: 70 }}>{label}</span>
-    <input
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      style={{
-        flex: 1,
-        background: "#fff",
-        border: "1px solid #ddd",
-        borderRadius: 5,
-        padding: "4px 8px",
-        color: "#333",
-        fontFamily: "'DM Mono', monospace",
-        fontSize: 11,
-        outline: "none",
-      }}
-    />
-  </div>
-);
-
-const lSelectStyle: React.CSSProperties = {
-  background: "#fff",
-  border: "1px solid #ddd",
-  color: "#555",
-  borderRadius: 5,
-  padding: "4px 8px",
-  fontFamily: "'DM Mono', monospace",
-  fontSize: 11,
-  outline: "none",
-};
-const lInputStyle: React.CSSProperties = {
-  background: "#fff",
-  border: "1px solid #ddd",
-  color: "#555",
-  borderRadius: 5,
-  padding: "4px 8px",
-  fontFamily: "'DM Mono', monospace",
-  fontSize: 11,
-  outline: "none",
-};
-const lBtnStyle: React.CSSProperties = {
-  background: "#f5f5f5",
-  border: "1px solid #ddd",
-  color: "#555",
-  borderRadius: 5,
-  padding: "4px 12px",
-  cursor: "pointer",
-  fontFamily: "'DM Mono', monospace",
-  fontSize: 11,
-};
 
 export default DataChartEditor;
