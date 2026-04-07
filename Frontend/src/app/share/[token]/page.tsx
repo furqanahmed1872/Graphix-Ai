@@ -48,11 +48,12 @@ export default function SharePage() {
   }, [token]);
 
   // Render chart
+  // Render chart useEffect
   useEffect(() => {
     if (!plotlyReady || !chart || !plotRef.current) return;
     const { data, layout } = chart.chartConfig;
-
     const traces = data || [];
+
     const is3D = traces.some((t: any) =>
       [
         "scatter3d",
@@ -67,66 +68,92 @@ export default function SharePage() {
     const isHeat = traces.some((t: any) =>
       ["heatmap", "contour", "histogram2d"].includes(t.type),
     );
+    const isSankey = traces.some((t: any) => t.type === "sankey");
+    const isNoAxes =
+      isSankey ||
+      traces.some((t: any) =>
+        [
+          "icicle",
+          "sunburst",
+          "treemap",
+          "pie",
+          "funnel",
+          "funnelarea",
+        ].includes(t.type),
+      );
+
+    // Sanitize traces
+    const cleanTraces = traces.map((t: any) => {
+      if (t.type === "sankey") {
+        return {
+          ...t,
+          node: {
+            pad: 15,
+            thickness: 20,
+            ...(t.node || {}),
+            label: t.node?.label || [],
+          },
+          link: t.link || { source: [], target: [], value: [] },
+        };
+      }
+      if (["icicle", "sunburst", "treemap"].includes(t.type)) {
+        return { ...t, textinfo: t.textinfo || "label+value" };
+      }
+      return t;
+    });
+
+    const layoutOverride: any = {
+      ...layout,
+      autosize: true,
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: isHeat ? "#0f0f0f" : "rgba(0,0,0,0)",
+      font: { color: "#cbd5e1", family: "DM Mono, monospace", size: 12 },
+      margin: is3D
+        ? { l: 0, r: 0, t: 20, b: 0 }
+        : { l: 40, r: 20, t: 20, b: 40 },
+      legend: {
+        bgcolor: "rgba(0,0,0,0)",
+        font: { color: "#94a3b8", size: 11 },
+      },
+      title: undefined,
+    };
+
+    if (!isNoAxes && !is3D) {
+      layoutOverride.xaxis = layout?.xaxis
+        ? {
+            ...layout.xaxis,
+            gridcolor: "rgba(255,255,255,0.06)",
+            linecolor: "rgba(255,255,255,0.1)",
+            tickfont: { color: "#64748b", size: 11 },
+            title: layout.xaxis.title
+              ? { ...layout.xaxis.title, font: { color: "#94a3b8", size: 12 } }
+              : undefined,
+          }
+        : undefined;
+      layoutOverride.yaxis = layout?.yaxis
+        ? {
+            ...layout.yaxis,
+            gridcolor: "rgba(255,255,255,0.06)",
+            linecolor: "rgba(255,255,255,0.1)",
+            tickfont: { color: "#64748b", size: 11 },
+            title: layout.yaxis.title
+              ? { ...layout.yaxis.title, font: { color: "#94a3b8", size: 12 } }
+              : undefined,
+          }
+        : undefined;
+    }
 
     try {
-      window.Plotly.react(
-        plotRef.current,
-        data,
-        {
-          ...layout,
-          autosize: true,
-          paper_bgcolor: "rgba(0,0,0,0)",
-          plot_bgcolor: isHeat ? "#0f0f0f" : "rgba(0,0,0,0)",
-          font: { color: "#cbd5e1", family: "DM Mono, monospace", size: 12 },
-          margin: is3D
-            ? { l: 0, r: 0, t: 20, b: 0 }
-            : { l: 40, r: 20, t: 20, b: 40 },
-          xaxis: layout?.xaxis
-            ? {
-                ...layout.xaxis,
-                gridcolor: "rgba(255,255,255,0.06)",
-                linecolor: "rgba(255,255,255,0.1)",
-                tickfont: { color: "#64748b", size: 11 },
-                title: layout.xaxis.title
-                  ? {
-                      ...layout.xaxis.title,
-                      font: { color: "#94a3b8", size: 12 },
-                    }
-                  : undefined,
-              }
-            : undefined,
-          yaxis: layout?.yaxis
-            ? {
-                ...layout.yaxis,
-                gridcolor: "rgba(255,255,255,0.06)",
-                linecolor: "rgba(255,255,255,0.1)",
-                tickfont: { color: "#64748b", size: 11 },
-                title: layout.yaxis.title
-                  ? {
-                      ...layout.yaxis.title,
-                      font: { color: "#94a3b8", size: 12 },
-                    }
-                  : undefined,
-              }
-            : undefined,
-          legend: {
-            bgcolor: "rgba(0,0,0,0)",
-            font: { color: "#94a3b8", size: 11 },
-          },
-          title: undefined,
-        },
-        {
-          responsive: true,
-          displayModeBar: true,
-          displaylogo: false,
-          modeBarButtonsToRemove: ["toImage"],
-        },
-      );
+      window.Plotly.react(plotRef.current, cleanTraces, layoutOverride, {
+        responsive: true,
+        displayModeBar: true,
+        displaylogo: false,
+        modeBarButtonsToRemove: ["toImage"],
+      });
     } catch (e) {
       console.error("Plotly render error", e);
     }
   }, [plotlyReady, chart]);
-
   const titleText =
     chart?.chartConfig?.layout?.title?.text ||
     (typeof chart?.chartConfig?.layout?.title === "string"

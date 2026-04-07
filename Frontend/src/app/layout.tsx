@@ -4,6 +4,7 @@ import AppBootstrapper from "@/components/AppBootstrapper";
 export const metadata = {
   title: "Graphix — AI Data Visualization",
   description: "Turn your data into beautiful charts with AI",
+  icon:"/logo.png",
 };
 
 export default function RootLayout({

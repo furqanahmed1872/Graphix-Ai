@@ -1227,17 +1227,7 @@ const DataChartEditor: React.FC = () => {
               justifyContent: "center",
             }}
           >
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="#fff"
-              strokeWidth={2}
-            >
-              <rect x="3" y="3" width="18" height="18" rx="2" />
-              <path d="M3 9h18M9 21V9" />
-            </svg>
+        <img src="/logo.png" alt="Graphix AI Logo" className="w-4 invert" />
           </div>
           <span
             style={{
