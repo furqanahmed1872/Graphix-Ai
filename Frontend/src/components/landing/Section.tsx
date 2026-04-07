@@ -720,9 +720,9 @@ export default function LiveDemoSection() {
               ))}
             </div>
             <Link
-              href="/dashboard"
+              href="/app"
               // Instead of "hidden sm:flex", use:
-              className="sm:block hidden items-center gap-1.5 font-mono text-[11px] font-bold tracking-wide text-cyan-400 hover:text-cyan-300 transition-colors"
+              className=" items-center gap-1.5 font-mono text-[11px] font-bold tracking-wide text-cyan-400 hover:text-cyan-300 transition-colors"
             >
               Build yours free <span className="text-base leading-none">→</span>
             </Link>
