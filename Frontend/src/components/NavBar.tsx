@@ -148,8 +148,16 @@ export default function Navbar() {
         {/* Logo */}
         <Link href="/" style={{ textDecoration: "none", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            
-            <img src="/logo.png" alt="Graphix AI Logo" className="w-7 invert" />
+            <div
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: "#06b6d4",
+                boxShadow: "0 0 8px #06b6d4",
+                flexShrink: 0,
+              }}
+            />
             <span
               style={{
                 fontSize: 16,
@@ -158,7 +166,7 @@ export default function Navbar() {
                 letterSpacing: "-0.02em",
               }}
             >
-              Graphix AI
+              Graphix
             </span>
           </div>
         </Link>

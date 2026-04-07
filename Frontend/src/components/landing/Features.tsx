@@ -34,7 +34,7 @@ const FEATURES = [
     stat: { num: "< 3s", label: "avg. generation" },
   },
   {
-    tag: "140+ Charts",
+    tag: "80+ Charts",
     accent: "#a855f7",
     gradient: "from-purple-500/20 via-purple-500/5 to-transparent",
     icon: (
@@ -62,7 +62,7 @@ const FEATURES = [
       "Candlestick · Waterfall",
       "Ternary · Parallel",
     ],
-    stat: { num: "140+", label: "chart types" },
+    stat: { num: "80+", label: "chart types" },
     featured: true,
   },
   {
@@ -469,7 +469,7 @@ export default function FeaturesSection() {
             }`}
           >
             {[
-              ["140+", "Chart types", "#a855f7"],
+              ["80+", "Chart types", "#a855f7"],
               ["12", "Color palettes", "#10b981"],
               ["15", "Font options", "#f59e0b"],
               ["4", "Export formats", "#f97316"],

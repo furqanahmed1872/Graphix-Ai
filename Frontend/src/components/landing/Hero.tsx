@@ -594,8 +594,8 @@ function ThreeCube() {
 
 /* ─── Static data ──────────────────────────────────────────── */
 const TRUST = [
-  { num: "140+", label: "Chart types" },
-  { num: "5s", label: "Avg generation" },
+  { num: "80+", label: "Chart types" },
+  { num: "3s", label: "Avg generation" },
   { num: "Free", label: "During beta" },
   { num: "No code", label: "Required" },
 ];

@@ -156,7 +156,7 @@ const handleDelete = (id: string) => {
                       letterSpacing: "-0.04em",
                     }}
                   >
-                    Graphix AI
+                    Graphix
                   </p>
                   <span
                     className="text-[9px] uppercase tracking-[0.1em] text-white/22 block"

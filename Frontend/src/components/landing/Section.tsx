@@ -754,7 +754,7 @@ export default function LiveDemoSection() {
           }}
         >
           {[
-            { val: "100+", label: "Chart types" },
+            { val: "40+", label: "Chart types" },
             { val: "<2s", label: "Render time" },
             { val: "∞", label: "Customization" },
           ].map(({ val, label }) => (

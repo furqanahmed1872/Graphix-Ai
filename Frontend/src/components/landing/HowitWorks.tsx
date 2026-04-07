@@ -675,7 +675,7 @@ const STEPS = [
     tag: "Output",
     color: "#f59e0b",
     headline: "Interact, edit, and export",
-    body: "Zoom, hover, rotate 3D charts. Open the visual editor to tweak colors, fonts,chart types, and layout Or just ask AI to do so. Export as PNG, SVG, or CSV in one click.",
+    body: "Zoom, hover, rotate 3D charts. Open the visual editor to tweak colors, fonts, and layout. Export as PNG, SVG, or CSV in one click.",
     extras: [
       "Full chart editor",
       "Export PNG · SVG · CSV",
