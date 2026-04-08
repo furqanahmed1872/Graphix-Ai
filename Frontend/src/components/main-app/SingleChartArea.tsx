@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import ChartEditor from "./ChartEditor";
 import { useAppStore } from "@/store/appStore";
 import { apiSaveChart } from "@/lib/api";
+import { is } from "zod/locales";
 
 declare global {
   interface Window {
@@ -814,7 +815,7 @@ function InlineToolbar({
   const [saving, setSaving] = useState<"idle" | "saving" | "saved" | "error">(
     "idle",
   );
-
+ const [isMobile, setIsMobile] = useState(false);
   const syncPerChartData = useCallback(() => {
     if (!divRef.current || !messageId) return;
     if (!window.__graphixChartData) window.__graphixChartData = {};
@@ -826,10 +827,26 @@ function InlineToolbar({
     (window as any).__graphixCurrentLayout = (divRef.current as any).layout;
   }, [divRef, messageId]);
 
+    useEffect(() => {
+      const checkMobile = () => {
+        const mobile = window.innerWidth < 640;
+        setIsMobile(mobile);
+     
+      };
+      checkMobile();
+      window.addEventListener("resize", checkMobile);
+      return () => window.removeEventListener("resize", checkMobile);
+    }, []);
+
   const openPopup = (which: "convert" | "palette") => {
     if (btnRef.current) {
       const r = btnRef.current.getBoundingClientRect();
-      setPopupPos({ top: r.top, left: r.left - 168 });
+      
+      if (isMobile) {
+        setPopupPos({ top: r.top -70 , left: r.left });
+      } else {
+       setPopupPos({ top: r.top -15 , left: r.right -215 });
+      }
     }
     if (which === "convert") {
       setShowConvert((v) => !v);
@@ -982,19 +999,13 @@ function InlineToolbar({
 
   return (
     <div
-      className="my-auto"
+      className=" flex md:flex-col md:flex-shrink-0  overflow-y-scroll items-center"
       style={{
-        width: 48,
+       
         background: "#09090b",
         borderLeft: "1px solid rgba(255,255,255,0.06)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "10px 6px",
+               padding: "10px 6px",
         gap: 4,
-        flexShrink: 0,
-        overflowY: "auto",
-        scrollbarWidth: "none",
       }}
     >
       <button
@@ -1885,12 +1896,12 @@ export default function SingleChartArea({
           onClose={() => setEditorOpen(false)}
         />
       )}
-      <div style={{ flex: 1, display: "flex", minHeight: 0, minWidth: 0 }}>
+      <div style={{  minHeight: 0, minWidth: 0 }} className="flex w-full h-full md:flex-row flex-col">
         <div
           ref={cardRef}
           style={{
             flex: 1,
-            display: "flex",
+            display: "flex", 
             flexDirection: "column",
             background: "rgba(255,255,255,0.02)",
             margin: 12,

@@ -625,6 +625,7 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
         </h3>
         <div
           className="grid gap-3"
+          
           style={{ gridTemplateColumns: "repeat(auto-fill,minmax(155px,1fr))" }}
         >
           <ActionCard
@@ -661,11 +662,12 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
 
       {/* ── Main bento: Recent + Activity ────────────────────── */}
       <div
-        className="grid gap-4"
-        style={{ gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))" }}
+        className="grid gird-cols-1 md:grid-cols-2 gap-32"
+      
       >
         {/* Recent Graphs */}
         <div
+          className=""
           style={{
             borderRadius: 14,
             overflow: "hidden",
@@ -1755,14 +1757,50 @@ export default function App() {
   const [tab, setTab] = useState("dashboard");
   const [sideOpen, setSide] = useState(true);
   const [collapsed, setCol] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const { user, savedCharts, bootstrap, isBootstrapped, isBootstrapping } =
     useAppStore();
+
   useEffect(() => {
     if (!isBootstrapped && !isBootstrapping) bootstrap();
+  }, []);
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth >= 768) {
+      setSide(true); // open on desktop
+    }
+    // on mobile: stays false (closed by default)
+  }, []);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        setSide(false); // starts closed on mobile
+        setCol(false); // full width when opened
+      } else {
+        setSide(true);
+        setCol(false);
+      }
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  useEffect(() => {
+    const mobile = window.innerWidth < 768;
+    setIsMobile(mobile);
+    if (!mobile) setSide(true);
   }, []);
 
   const starredCharts = savedCharts.filter((c) => c.starred);
   const sharedCharts = savedCharts.filter((c) => c.shared || !!c.shareToken);
+
+  const handleNavTab = (t: string) => {
+    setTab(t);
+    if (isMobile) setSide(false); // auto-close drawer on mobile after nav
+  };
 
   const pages: Record<string, React.ReactNode> = {
     dashboard: <DashboardHome setTab={setTab} />,
@@ -1815,14 +1853,60 @@ export default function App() {
         ::-webkit-scrollbar-thumb:hover { background:rgba(6,182,212,0.4) }
       `}</style>
 
-      <Sidebar
-        open={sideOpen}
-        collapsed={collapsed}
-        setCollapsed={setCol}
-        tab={tab}
-        onTab={setTab}
-      />
+      {/* Mobile backdrop — dims dashboard behind the open drawer */}
+      {isMobile && sideOpen && (
+        <div
+          onClick={() => setSide(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.6)",
+            backdropFilter: "blur(3px)",
+            zIndex: 40,
+          }}
+        />
+      )}
 
+      {/* Sidebar: fixed overlay on mobile, normal flex item on desktop */}
+      {/* Sidebar: fixed overlay on mobile, normal flex item on desktop */}
+      {/* Mobile backdrop */}
+      {isMobile && sideOpen && (
+        <div
+          onClick={() => setSide(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.7)",
+            backdropFilter: "blur(4px)",
+            zIndex: 40,
+          }}
+        />
+      )}
+
+      {/* Sidebar — fixed overlay on mobile, inline on desktop */}
+      {(!isMobile || sideOpen) && (
+        <div
+          style={
+            isMobile
+              ? {
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  height: "100vh",
+                  zIndex: 50,
+                }
+              : {}
+          }
+        >
+          <Sidebar
+            open={true}
+            collapsed={isMobile ? false : collapsed}
+            setCollapsed={setCol}
+            tab={tab}
+            onTab={handleNavTab}
+          />
+        </div>
+      )}
       <div
         style={{
           flex: 1,
