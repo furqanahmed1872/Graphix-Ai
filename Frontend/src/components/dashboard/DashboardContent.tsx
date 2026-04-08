@@ -12,6 +12,7 @@ import {
 } from "@/components/dashboard/UIKit";
 import GraphCard from "@/components/dashboard/GraphCard";
 import Sidebar from "@/components/dashboard/Sidebar";
+import { div } from "three/tsl";
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 const CYAN = "#06b6d4";
@@ -1066,216 +1067,231 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
 // ─────────────────────────────────────────────────────────────
 // TEMPLATES
 // ─────────────────────────────────────────────────────────────
-function TemplateCard({
-  tpl,
-  index,
-  onUse,
-}: {
-  tpl: any;
-  index: number;
-  onUse: () => void;
-}) {
-  const [hov, setHov] = useState(false);
-  const accents = ["#06b6d4", "#8b5cf6", "#10b981", "#f59e0b", "#ec4899"];
-  const accent = accents[index % accents.length];
-  return (
-    <div
-      onMouseEnter={() => setHov(true)}
-      onMouseLeave={() => setHov(false)}
-      onClick={onUse}
-      style={{
-        position: "relative",
-        background: hov ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.015)",
-        border: `1px solid ${hov ? accent + "44" : "rgba(255,255,255,0.07)"}`,
-        borderRadius: 14,
-        padding: "20px 22px",
-        cursor: "pointer",
-        transition: "all 0.2s",
-        overflow: "hidden",
-        opacity: 0,
-        animation: `tplIn 0.4s ease ${index * 0.07}s both`,
-        boxShadow: hov
-          ? `0 0 0 1px ${accent}22,0 8px 24px rgba(0,0,0,0.4)`
-          : "0 1px 3px rgba(0,0,0,0.3)",
-      }}
-    >
-      {/* Top stripe */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: 2,
-          background: hov
-            ? `linear-gradient(90deg,${accent},${accent}55,transparent)`
-            : "transparent",
-          transition: "background 0.2s",
-        }}
-      />
-      {/* Glow */}
-      <div
-        style={{
-          position: "absolute",
-          top: -40,
-          right: -20,
-          width: 120,
-          height: 120,
-          borderRadius: "50%",
-          background: `radial-gradient(circle,${accent}12 0%,transparent 70%)`,
-          pointerEvents: "none",
-          opacity: hov ? 1 : 0,
-          transition: "opacity 0.2s",
-        }}
-      />
+// function TemplateCard({
+//   tpl,
+//   index,
+//   onUse,
+// }: {
+//   tpl: any;
+//   index: number;
+//   onUse: () => void;
+// }) {
+//   const [hov, setHov] = useState(false);
+//   const accents = ["#06b6d4", "#8b5cf6", "#10b981", "#f59e0b", "#ec4899"];
+//   const accent = accents[index % accents.length];
+//   return (
+//     // <div
+//     //   onMouseEnter={() => setHov(true)}
+//     //   onMouseLeave={() => setHov(false)}
+//     //   onClick={onUse}
+//     //   style={{
+//     //     position: "relative",
+//     //     background: hov ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.015)",
+//     //     border: `1px solid ${hov ? accent + "44" : "rgba(255,255,255,0.07)"}`,
+//     //     borderRadius: 14,
+//     //     padding: "20px 22px",
+//     //     cursor: "pointer",
+//     //     transition: "all 0.2s",
+//     //     overflow: "hidden",
+//     //     opacity: 0,
+//     //     animation: `tplIn 0.4s ease ${index * 0.07}s both`,
+//     //     boxShadow: hov
+//     //       ? `0 0 0 1px ${accent}22,0 8px 24px rgba(0,0,0,0.4)`
+//     //       : "0 1px 3px rgba(0,0,0,0.3)",
+//     //   }}
+//     // >
+//     //   {/* Top stripe */}
+//     //   <div
+//     //     style={{
+//     //       position: "absolute",
+//     //       top: 0,
+//     //       left: 0,
+//     //       right: 0,
+//     //       height: 2,
+//     //       background: hov
+//     //         ? `linear-gradient(90deg,${accent},${accent}55,transparent)`
+//     //         : "transparent",
+//     //       transition: "background 0.2s",
+//     //     }}
+//     //   />
+//     //   {/* Glow */}
+//     //   <div
+//     //     style={{
+//     //       position: "absolute",
+//     //       top: -40,
+//     //       right: -20,
+//     //       width: 120,
+//     //       height: 120,
+//     //       borderRadius: "50%",
+//     //       background: `radial-gradient(circle,${accent}12 0%,transparent 70%)`,
+//     //       pointerEvents: "none",
+//     //       opacity: hov ? 1 : 0,
+//     //       transition: "opacity 0.2s",
+//     //     }}
+//     //   />
 
-      <div style={{ position: "relative", zIndex: 1 }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 12,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-            <span
-              style={{
-                fontSize: 14,
-                fontWeight: 800,
-                color: "#fff",
-                letterSpacing: "-0.02em",
-              }}
-            >
-              {tpl.title}
-            </span>
-            {tpl.isTrending && (
-              <span
-                style={{
-                  fontSize: 8,
-                  fontWeight: 700,
-                  padding: "2px 6px",
-                  borderRadius: 20,
-                  background: "rgba(245,158,11,0.15)",
-                  color: "#f59e0b",
-                  border: "1px solid rgba(245,158,11,0.3)",
-                  fontFamily: "'DM Mono',monospace",
-                  letterSpacing: "0.08em",
-                }}
-              >
-                HOT
-              </span>
-            )}
-          </div>
-          <span
-            style={{
-              fontSize: 10,
-              fontWeight: 700,
-              padding: "2px 8px",
-              borderRadius: 20,
-              background: `${accent}18`,
-              color: accent,
-              border: `1px solid ${accent}33`,
-              fontFamily: "'DM Mono',monospace",
-            }}
-          >
-            {tpl.tag ?? tpl.category}
-          </span>
-        </div>
-        <p
-          style={{
-            margin: "0 0 14px",
-            fontSize: 12,
-            color: "rgba(255,255,255,0.35)",
-            lineHeight: 1.6,
-          }}
-        >
-          {tpl.desc ?? tpl.description}
-        </p>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <span
-            style={{
-              fontSize: 10,
-              color: "rgba(255,255,255,0.2)",
-              fontFamily: "'DM Mono',monospace",
-            }}
-          >
-            {tpl.count} charts
-          </span>
-          {tpl.trend && (
-            <span style={{ fontSize: 11, fontWeight: 700, color: accent }}>
-              {tpl.trend}
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+//     //   <div style={{ position: "relative", zIndex: 1 }}>
+//     //     <div
+//     //       style={{
+//     //         display: "flex",
+//     //         alignItems: "center",
+//     //         justifyContent: "space-between",
+//     //         marginBottom: 12,
+//     //       }}
+//     //     >
+//     //       <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+//     //         <span
+//     //           style={{
+//     //             fontSize: 14,
+//     //             fontWeight: 800,
+//     //             color: "#fff",
+//     //             letterSpacing: "-0.02em",
+//     //           }}
+//     //         >
+//     //           {tpl.title}
+//     //         </span>
+//     //         {tpl.isTrending && (
+//     //           <span
+//     //             style={{
+//     //               fontSize: 8,
+//     //               fontWeight: 700,
+//     //               padding: "2px 6px",
+//     //               borderRadius: 20,
+//     //               background: "rgba(245,158,11,0.15)",
+//     //               color: "#f59e0b",
+//     //               border: "1px solid rgba(245,158,11,0.3)",
+//     //               fontFamily: "'DM Mono',monospace",
+//     //               letterSpacing: "0.08em",
+//     //             }}
+//     //           >
+//     //             HOT
+//     //           </span>
+//     //         )}
+//     //       </div>
+//     //       <span
+//     //         style={{
+//     //           fontSize: 10,
+//     //           fontWeight: 700,
+//     //           padding: "2px 8px",
+//     //           borderRadius: 20,
+//     //           background: `${accent}18`,
+//     //           color: accent,
+//     //           border: `1px solid ${accent}33`,
+//     //           fontFamily: "'DM Mono',monospace",
+//     //         }}
+//     //       >
+//     //         {tpl.tag ?? tpl.category}
+//     //       </span>
+//     //     </div>
+//     //     <p
+//     //       style={{
+//     //         margin: "0 0 14px",
+//     //         fontSize: 12,
+//     //         color: "rgba(255,255,255,0.35)",
+//     //         lineHeight: 1.6,
+//     //       }}
+//     //     >
+//     //       {tpl.desc ?? tpl.description}
+//     //     </p>
+//     //     <div
+//     //       style={{
+//     //         display: "flex",
+//     //         alignItems: "center",
+//     //         justifyContent: "space-between",
+//     //       }}
+//     //     >
+//     //       <span
+//     //         style={{
+//     //           fontSize: 10,
+//     //           color: "rgba(255,255,255,0.2)",
+//     //           fontFamily: "'DM Mono',monospace",
+//     //         }}
+//     //       >
+//     //         {tpl.count} charts
+//     //       </span>
+//     //       {tpl.trend && (
+//     //         <span style={{ fontSize: 11, fontWeight: 700, color: accent }}>
+//     //           {tpl.trend}
+//     //         </span>
+//     //       )}
+//     //     </div>
+//     //   </div>
+//     // </div>
+//     <div>
+//       Coming soon: templates to jumpstart your charts
+//     </div>
+//   );
+// }
 
 function TemplatesPage({ setTab }: { setTab: (t: string) => void }) {
-  const { graphTemplates, isBootstrapping, isBootstrapped } = useAppStore();
-  const router = useRouter();
-  const isLoading = isBootstrapping || !isBootstrapped;
+  // const { graphTemplates, isBootstrapping, isBootstrapped } = useAppStore();
+  // const router = useRouter();
+  // const isLoading = isBootstrapping || !isBootstrapped;
   return (
-    <div>
-      <div style={{ marginBottom: 28 }}>
-        <h2
-          style={{
-            margin: "0 0 6px",
-            fontSize: 22,
-            fontWeight: 800,
-            color: "#fff",
-            letterSpacing: "-0.03em",
-          }}
-        >
-          Templates
-        </h2>
-        <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.3)" }}>
-          Start faster with pre-built chart collections
-        </p>
+    // <div>
+    //   <div style={{ marginBottom: 28 }}>
+    //     <h2
+    //       style={{
+    //         margin: "0 0 6px",
+    //         fontSize: 22,
+    //         fontWeight: 800,
+    //         color: "#fff",
+    //         letterSpacing: "-0.03em",
+    //       }}
+    //     >
+    //       Templates
+    //     </h2>
+    //     <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.3)" }}>
+    //       Start faster with pre-built chart collections
+    //     </p>
+    //   </div>
+    //   {isLoading ? (
+    //     <div
+    //       className="grid gap-4"
+    //       style={{ gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))" }}
+    //     >
+    //       {[0, 1, 2, 3].map((i) => (
+    //         <Skeleton key={i} h={150} r={14} />
+    //       ))}
+    //     </div>
+    //   ) : graphTemplates.length === 0 ? (
+    //     <div
+    //       style={{
+    //         padding: "60px 0",
+    //         textAlign: "center",
+    //         color: "rgba(255,255,255,0.2)",
+    //         fontSize: 13,
+    //       }}
+    //     >
+    //       No templates available yet.
+    //     </div>
+    //   ) : (
+    //     <div
+    //       className="grid gap-4"
+    //       style={{ gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))" }}
+    //     >
+    //       {graphTemplates.map((t: any, i: number) => (
+    //         <TemplateCard
+    //           key={t.id}
+    //           tpl={t}
+    //           index={i}
+    //           onUse={() => router.push("/app")}
+    //         />
+    //       ))}
+    //     </div>
+    //   )}
+    // </div>
+
+    <div class=" my-auto flex items-center justify-center p-6">
+      <div class="text-center">
+        <div class="text-xs font-medium tracking-[0.3em] text-neutral-500 uppercase mb-4">
+          Under Construction
+        </div>
+        <h1 class="text-5xl md:text-6xl font-light text-white tracking-tight">
+          Coming Soon
+        </h1>
+        <div class="h-px w-16 bg-neutral-800 mx-auto mt-8"></div>
       </div>
-      {isLoading ? (
-        <div
-          className="grid gap-4"
-          style={{ gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))" }}
-        >
-          {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} h={150} r={14} />
-          ))}
-        </div>
-      ) : graphTemplates.length === 0 ? (
-        <div
-          style={{
-            padding: "60px 0",
-            textAlign: "center",
-            color: "rgba(255,255,255,0.2)",
-            fontSize: 13,
-          }}
-        >
-          No templates available yet.
-        </div>
-      ) : (
-        <div
-          className="grid gap-4"
-          style={{ gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))" }}
-        >
-          {graphTemplates.map((t: any, i: number) => (
-            <TemplateCard
-              key={t.id}
-              tpl={t}
-              index={i}
-              onUse={() => router.push("/app")}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }
