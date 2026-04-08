@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 
 // ── Chart groups for step 2 selector ──────────────────────────
 const CHART_CATS = [
@@ -214,7 +214,7 @@ function StepSelector({ active }: { active: boolean }) {
         <span
           style={{ fontFamily: "monospace", fontSize: 9, color: "#9ca3af" }}
         >
-          80+ types · 10 categories
+          140+ types · 16 categories
         </span>
       </div>
       <div
@@ -462,185 +462,1214 @@ function StepProcessing({ active }: { active: boolean }) {
   );
 }
 
-function StepResult({ active }: { active: boolean }) {
+
+
+
+// ─── Types ────────────────────────────────────────────────────
+type ChartType = "bar" | "line" | "scatter" | "area" | "pie" | "radar";
+type Tab = "type" | "style" | "axes" | "export";
+
+// ─── Palettes ─────────────────────────────────────────────────
+const PALETTES = [
+  {
+    id: "aurora",
+    name: "Aurora",
+    colors: ["#6366f1", "#8b5cf6", "#a78bfa", "#c4b5fd"],
+    accent: "#6366f1",
+  },
+  {
+    id: "ocean",
+    name: "Ocean",
+    colors: ["#06b6d4", "#0891b2", "#0e7490", "#155e75"],
+    accent: "#06b6d4",
+  },
+  {
+    id: "sunset",
+    name: "Sunset",
+    colors: ["#f43f5e", "#fb923c", "#fbbf24", "#a3e635"],
+    accent: "#f43f5e",
+  },
+  {
+    id: "forest",
+    name: "Forest",
+    colors: ["#10b981", "#34d399", "#6ee7b7", "#059669"],
+    accent: "#10b981",
+  },
+  {
+    id: "neon",
+    name: "Neon",
+    colors: ["#a855f7", "#ec4899", "#06b6d4", "#84cc16"],
+    accent: "#a855f7",
+  },
+  {
+    id: "fire",
+    name: "Fire",
+    colors: ["#ef4444", "#f97316", "#eab308", "#84cc16"],
+    accent: "#ef4444",
+  },
+];
+
+const CHART_TYPES: {
+  id: ChartType;
+  label: string;
+  icon: string;
+  desc: string;
+}[] = [
+  { id: "radar", label: "Radar", icon: "✦✦✦", desc: "Multi-dimension" },
+  { id: "bar", label: "Bar", icon: "▊▊▊", desc: "Compare categories" },
+  { id: "line", label: "Line", icon: "∿∿∿", desc: "Show trends over time" },
+  { id: "scatter", label: "Scatter", icon: "∴∴∴", desc: "Find correlations" },
+  { id: "area", label: "Area", icon: "▟▟▟", desc: "Cumulative totals" },
+  { id: "pie", label: "Pie", icon: "◔◑◕", desc: "Part-to-whole" },
+];
+
+const THEMES = [
+  { id: "dark", label: "Dark", bg: "#0d0d14", plot: "#0d0d14" },
+  { id: "midnight", label: "Midnight", bg: "#040818", plot: "#040818" },
+  { id: "slate", label: "Slate", bg: "#0f172a", plot: "#0f172a" },
+  { id: "light", label: "Light", bg: "#ffffff", plot: "#f8fafc" },
+];
+
+// ─── Raw data per chart type ───────────────────────────────────
+const REGIONS = ["North", "South", "East", "West", "Central"];
+const Q3 = [67, 44, 58, 51, 73];
+const Q4 = [82, 56, 71, 63, 91];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+const TREND_A = [30, 48, 35, 62, 55, 78];
+const TREND_B = [20, 32, 40, 28, 55, 45];
+
+function buildTraces(
+  chartType: ChartType,
+  palette: (typeof PALETTES)[0],
+  showGrid: boolean,
+  opacity: number,
+  barMode: "group" | "stack",
+  smooth: boolean,
+  markerSize: number,
+) {
+  const alpha = Math.round(opacity * 255)
+    .toString(16)
+    .padStart(2, "0");
+
+  if (chartType === "bar") {
+    return [
+      {
+        x: REGIONS,
+        y: Q3,
+        type: "bar" as const,
+        name: "Q3 2024",
+        marker: {
+          color: palette.colors[0] + alpha,
+          line: { color: palette.colors[0], width: 1.5 },
+        },
+      },
+      {
+        x: REGIONS,
+        y: Q4,
+        type: "bar" as const,
+        name: "Q4 2024",
+        marker: {
+          color: palette.colors[1] + alpha,
+          line: { color: palette.colors[1], width: 1.5 },
+        },
+      },
+    ];
+  }
+
+  if (chartType === "line") {
+    const shape = smooth ? ("spline" as const) : ("linear" as const);
+    return [
+      {
+        x: MONTHS,
+        y: TREND_A,
+        type: "scatter" as const,
+        mode: "lines+markers" as const,
+        name: "Product A",
+        line: { color: palette.colors[0], width: 2.5, shape },
+        marker: { color: palette.colors[0], size: markerSize },
+      },
+      {
+        x: MONTHS,
+        y: TREND_B,
+        type: "scatter" as const,
+        mode: "lines+markers" as const,
+        name: "Product B",
+        line: {
+          color: palette.colors[1],
+          width: 2.5,
+          shape,
+          dash: "dot" as const,
+        },
+        marker: { color: palette.colors[1], size: markerSize },
+      },
+    ];
+  }
+
+  if (chartType === "scatter") {
+    const xs = Array.from({ length: 30 }, () => Math.random() * 100);
+    const ys = xs.map((x) => x * 0.8 + Math.random() * 20);
+    const xs2 = Array.from({ length: 30 }, () => Math.random() * 100);
+    const ys2 = xs2.map((x) => 100 - x * 0.7 + Math.random() * 20);
+    return [
+      {
+        x: xs,
+        y: ys,
+        type: "scatter" as const,
+        mode: "markers" as const,
+        name: "Cluster A",
+        marker: {
+          color: palette.colors[0],
+          size: markerSize + 2,
+          opacity: 0.8,
+        },
+      },
+      {
+        x: xs2,
+        y: ys2,
+        type: "scatter" as const,
+        mode: "markers" as const,
+        name: "Cluster B",
+        marker: {
+          color: palette.colors[1],
+          size: markerSize + 2,
+          opacity: 0.8,
+        },
+      },
+    ];
+  }
+
+  if (chartType === "area") {
+    const shape = smooth ? ("spline" as const) : ("linear" as const);
+    return [
+      {
+        x: MONTHS,
+        y: TREND_A,
+        type: "scatter" as const,
+        mode: "lines" as const,
+        fill: "tozeroy" as const,
+        name: "Revenue",
+        line: { color: palette.colors[0], width: 2, shape },
+        fillcolor: palette.colors[0] + "40",
+      },
+      {
+        x: MONTHS,
+        y: TREND_B,
+        type: "scatter" as const,
+        mode: "lines" as const,
+        fill: "tozeroy" as const,
+        name: "Costs",
+        line: { color: palette.colors[1], width: 2, shape },
+        fillcolor: palette.colors[1] + "40",
+      },
+    ];
+  }
+
+  if (chartType === "pie") {
+    return [
+      {
+        labels: REGIONS,
+        values: Q4,
+        type: "pie" as const,
+        hole: 0.45,
+        marker: { colors: palette.colors.concat(["#94a3b8", "#475569"]) },
+        textfont: { color: "#fff", size: 11 },
+        hoverinfo: "label+percent" as const,
+      },
+    ];
+  }
+
+  if (chartType === "radar") {
+    const cats = ["Speed", "Scale", "Cost", "UX", "Support", "Reliability"];
+    return [
+      {
+        type: "scatterpolar" as const,
+        r: [85, 72, 60, 90, 78, 88],
+        theta: cats,
+        fill: "toself" as const,
+        name: "Product A",
+        fillcolor: palette.colors[0] + "30",
+        line: { color: palette.colors[0], width: 2 },
+        marker: { color: palette.colors[0], size: 6 },
+      },
+      {
+        type: "scatterpolar" as const,
+        r: [65, 88, 75, 70, 90, 65],
+        theta: cats,
+        fill: "toself" as const,
+        name: "Product B",
+        fillcolor: palette.colors[1] + "30",
+        line: { color: palette.colors[1], width: 2 },
+        marker: { color: palette.colors[1], size: 6 },
+      },
+    ];
+  }
+
+  return [];
+}
+
+function buildLayout(
+  chartType: ChartType,
+  theme: (typeof THEMES)[0],
+  palette: (typeof PALETTES)[0],
+  showGrid: boolean,
+  showLegend: boolean,
+  barMode: "group" | "stack",
+  xLabel: string,
+  yLabel: string,
+  title: string,
+) {
+  const gridColor =
+    theme.id === "light" ? "rgba(0,0,0,0.06)" : "rgba(255,255,255,0.07)";
+  const tickColor = theme.id === "light" ? "#64748b" : "rgba(255,255,255,0.35)";
+  const textColor = theme.id === "light" ? "#1e293b" : "rgba(255,255,255,0.8)";
+
+  const base: Record<string, unknown> = {
+    paper_bgcolor: theme.bg,
+    plot_bgcolor: theme.plot,
+    font: { family: "monospace", color: tickColor, size: 10 },
+    margin: { t: title ? 36 : 16, b: 44, l: 52, r: 16 },
+    showlegend: showLegend,
+    legend: {
+      font: { size: 10, color: textColor },
+      bgcolor:
+        theme.id === "light" ? "rgba(255,255,255,0.8)" : "rgba(0,0,0,0.4)",
+      bordercolor: palette.accent + "30",
+      borderwidth: 1,
+      x: 1,
+      xanchor: "right" as const,
+      y: 1,
+    },
+    title: title
+      ? {
+          text: title,
+          font: { size: 13, color: textColor, family: "monospace" },
+          x: 0.5,
+          y: 0.97,
+        }
+      : undefined,
+  };
+
+  if (chartType === "radar") {
+    base.polar = {
+      bgcolor: theme.plot,
+      angularaxis: {
+        color: tickColor,
+        gridcolor: gridColor,
+        linecolor: gridColor,
+      },
+      radialaxis: {
+        color: tickColor,
+        gridcolor: showGrid ? gridColor : "transparent",
+        linecolor: "transparent",
+        range: [0, 100],
+      },
+    };
+    return base;
+  }
+
+  if (chartType === "pie") {
+    return base;
+  }
+
+  base.barmode = barMode;
+  base.xaxis = {
+    title: xLabel
+      ? { text: xLabel, font: { size: 10, color: tickColor } }
+      : undefined,
+    gridcolor: showGrid ? gridColor : "transparent",
+    linecolor: gridColor,
+    tickfont: { size: 9, color: tickColor },
+    zeroline: false,
+  };
+  base.yaxis = {
+    title: yLabel
+      ? { text: yLabel, font: { size: 10, color: tickColor } }
+      : undefined,
+    gridcolor: showGrid ? gridColor : "transparent",
+    linecolor: "transparent",
+    tickfont: { size: 9, color: tickColor },
+    zeroline: false,
+  };
+
+  return base;
+}
+
+// ─── Main component ────────────────────────────────────────────
+ function StepChartEditor({ active }: { active: boolean }) {
   const plotRef = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>("type");
+  const [chartType, setChartType] = useState<ChartType>("radar");
+  const [selectedPalette, setSelectedPalette] = useState(1);
+  const [selectedTheme, setSelectedTheme] = useState(0);
+  const [showGrid, setShowGrid] = useState(false);
+  const [showLegend, setShowLegend] = useState(false);
+  const [barMode, setBarMode] = useState<"group" | "stack">("group");
+  const [opacity, setOpacity] = useState(0.92);
+  const [markerSize, setMarkerSize] = useState(7);
+  const [smooth, setSmooth] = useState(true);
+  const [xLabel, setXLabel] = useState("Region");
+  const [yLabel, setYLabel] = useState("Revenue ($K)");
+  const [chartTitle, setChartTitle] = useState("");
+
+  const renderChart = useCallback(async () => {
+    if (!plotRef.current) return;
+    try {
+      const { default: Plotly } = await import("plotly.js-dist-min");
+      const palette = PALETTES[selectedPalette];
+      const theme = THEMES[selectedTheme];
+      const traces = buildTraces(
+        chartType,
+        palette,
+        showGrid,
+        opacity,
+        barMode,
+        smooth,
+        markerSize,
+      );
+      const layout = buildLayout(
+        chartType,
+        theme,
+        palette,
+        showGrid,
+        showLegend,
+        barMode,
+        xLabel,
+        yLabel,
+        chartTitle,
+      );
+      await Plotly.react(plotRef.current, traces as never, layout as never, {
+        responsive: true,
+        displayModeBar: false,
+        staticPlot: false,
+      });
+      setReady(true);
+    } catch (err) {
+      console.error(err);
+    }
+  }, [
+    chartType,
+    selectedPalette,
+    selectedTheme,
+    showGrid,
+    showLegend,
+    barMode,
+    opacity,
+    markerSize,
+    smooth,
+    xLabel,
+    yLabel,
+    chartTitle,
+  ]);
 
   useEffect(() => {
-    if (!active || !plotRef.current) {
+    if (!active) {
       setReady(false);
       return;
     }
-    let cancelled = false;
-    const t = setTimeout(() => {
-      import("plotly.js-dist-min").then(({ default: Plotly }) => {
-        if (cancelled || !plotRef.current) return;
-        Plotly.react(
-          plotRef.current,
-          [
-            {
-              x: ["North", "South", "East", "West"],
-              y: [67, 44, 58, 51],
-              z: [82, 56, 71, 63],
-              type: "scatter3d",
-              mode: "markers",
-              name: "Q3",
-              marker: {
-                size: 12,
-                color: "#06b6d4",
-                opacity: 0.9,
-                line: { color: "#ffffff", width: 2 },
-              },
-            },
-            {
-              x: ["North", "South", "East", "West"],
-              y: [82, 56, 71, 63],
-              z: [94, 68, 85, 77],
-              type: "scatter3d",
-              mode: "markers",
-              name: "Q4",
-              marker: {
-                size: 12,
-                color: "#a855f7",
-                opacity: 0.9,
-                line: { color: "#ffffff", width: 2 },
-              },
-            },
-          ],
-          {
-            paper_bgcolor: "transparent",
-            plot_bgcolor: "transparent",
-            scene: {
-              bgcolor: "transparent",
-              xaxis: {
-                gridcolor: "rgba(0,0,0,0.08)",
-                tickfont: { size: 8 },
-                title: "",
-              },
-              yaxis: {
-                gridcolor: "rgba(0,0,0,0.08)",
-                tickfont: { size: 8 },
-                title: "",
-              },
-              zaxis: {
-                gridcolor: "rgba(0,0,0,0.08)",
-                tickfont: { size: 8 },
-                title: "",
-              },
-            },
-            margin: { t: 8, b: 8, l: 0, r: 0 },
-            height: 220,
-            legend: {
-              font: { size: 10 },
-              bgcolor: "rgba(255,255,255,0.8)",
-              bordercolor: "#e5e7eb",
-              borderwidth: 1,
-            },
-          },
-          { responsive: true, displayModeBar: false, staticPlot: false },
-        );
-        setReady(true);
-      });
-    }, 400);
-    return () => {
-      cancelled = true;
-      clearTimeout(t);
-    };
-  }, [active]);
+    const t = setTimeout(renderChart, 300);
+    return () => clearTimeout(t);
+  }, [active, renderChart]);
+
+  const palette = PALETTES[selectedPalette];
+  const theme = THEMES[selectedTheme];
+
+  const TABS: { id: Tab; label: string; icon: string }[] = [
+    { id: "type", label: "Type", icon: "◈" },
+    { id: "style", label: "Style", icon: "◐" },
+    { id: "axes", label: "Axes", icon: "⊞" },
+    { id: "export", label: "Export", icon: "↗" },
+  ];
 
   return (
-    <div
-      style={{
-        background: "#fff",
-        borderRadius: 10,
-        border: "1px solid #e5e7eb",
-        overflow: "hidden",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
-      }}
-    >
+    <>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        .chart-tab-btn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          font-family: monospace;
+          transition: all 0.18s;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          padding: 7px 10px;
+          border-radius: 7px;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.03em;
+          color: rgba(255,255,255,0.3);
+          width: 100%;
+          text-align: left;
+          white-space: nowrap;
+        }
+        .chart-tab-btn:hover { color: rgba(255,255,255,0.65); background: rgba(255,255,255,0.05); }
+        .chart-tab-btn.active { color: #fff; background: rgba(255,255,255,0.08); }
+        .chart-type-btn {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 10px;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.07);
+          background: transparent;
+          cursor: pointer;
+          transition: all 0.18s;
+          width: 100%;
+          text-align: left;
+        }
+        .chart-type-btn:hover { border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); }
+        .chart-type-btn.active { border-color: var(--p-accent); background: var(--p-bg); }
+        .palette-btn {
+          padding: 8px;
+          border-radius: 8px;
+          border: 1.5px solid transparent;
+          background: rgba(255,255,255,0.03);
+          cursor: pointer;
+          transition: all 0.18s;
+          width: 100%;
+        }
+        .palette-btn:hover { background: rgba(255,255,255,0.06); }
+        .palette-btn.active { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.08); }
+        .theme-btn {
+          flex: 1;
+          padding: 6px;
+          border-radius: 6px;
+          border: 1.5px solid transparent;
+          cursor: pointer;
+          transition: all 0.18s;
+          text-align: center;
+        }
+        .theme-btn.active { border-color: rgba(255,255,255,0.3); }
+        .ctrl-label {
+          font-size: 9px;
+          font-family: monospace;
+          color: rgba(255,255,255,0.3);
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          margin-bottom: 6px;
+          display: block;
+        }
+        .toggle-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 6px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .toggle-row:last-child { border-bottom: none; }
+        .toggle-label {
+          font-size: 11px;
+          color: rgba(255,255,255,0.55);
+          font-family: monospace;
+        }
+        .toggle-track {
+          width: 32px;
+          height: 17px;
+          border-radius: 999px;
+          cursor: pointer;
+          transition: background 0.2s;
+          position: relative;
+          flex-shrink: 0;
+        }
+        .toggle-thumb {
+          width: 13px;
+          height: 13px;
+          border-radius: 50%;
+          background: #fff;
+          position: absolute;
+          top: 2px;
+          transition: left 0.2s;
+        }
+        .axis-input {
+          width: 100%;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 6px;
+          color: rgba(255,255,255,0.8);
+          font-family: monospace;
+          font-size: 11px;
+          padding: 7px 10px;
+          outline: none;
+          transition: border-color 0.18s;
+          box-sizing: border-box;
+        }
+        .axis-input:focus { border-color: rgba(255,255,255,0.25); }
+        .range-slider {
+          width: 100%;
+          accent-color: var(--p-accent, #06b6d4);
+        }
+        .export-btn {
+          width: 100%;
+          padding: 9px 14px;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(255,255,255,0.04);
+          color: rgba(255,255,255,0.7);
+          font-family: monospace;
+          font-size: 11px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.18s;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          letter-spacing: 0.05em;
+        }
+        .export-btn:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); color: #fff; }
+        .export-btn.primary { background: var(--p-accent, #06b6d4); border-color: var(--p-accent, #06b6d4); color: #fff; }
+        .export-btn.primary:hover { opacity: 0.9; }
+        .section-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 10px 0; }
+        .seg-btn {
+          flex: 1;
+          padding: 5px;
+          border-radius: 5px;
+          border: none;
+          background: transparent;
+          color: rgba(255,255,255,0.35);
+          font-family: monospace;
+          font-size: 10px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.18s;
+        }
+        .seg-btn.active { background: rgba(255,255,255,0.1); color: #fff; }
+      `}</style>
+
       <div
         style={{
-          padding: "10px 14px",
-          background: "#f9fafb",
-          borderBottom: "1px solid #e5e7eb",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
+          background: "#0d0d14",
+          borderRadius: 14,
+          border: "1px solid rgba(255,255,255,0.08)",
+          overflow: "hidden",
+          boxShadow:
+            "0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset",
+          fontFamily: "monospace",
+          // CSS var for palette accent
+          ["--p-accent" as string]: palette.accent,
+          ["--p-bg" as string]: palette.accent + "14",
         }}
       >
-        <div style={{ display: "flex", gap: 6 }}>
-          {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
-            <div
-              key={c}
-              style={{
-                width: 10,
-                height: 10,
-                borderRadius: "50%",
-                background: c,
-              }}
-            />
-          ))}
-        </div>
-        <span
-          style={{ fontFamily: "monospace", fontSize: 9, color: "#9ca3af" }}
-        >
-          3D Scatter · Interactive
-        </span>
-      </div>
-      <div style={{ position: "relative", height: 232 }}>
+        {/* Title bar */}
         <div
           style={{
-            position: "absolute",
-            inset: 0,
-            opacity: ready ? 1 : 0,
-            transition: "opacity 0.5s ease",
+            padding: "11px 16px",
+            background: "rgba(255,255,255,0.03)",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          <div ref={plotRef} style={{ width: "100%", height: "100%" }} />
-        </div>
-        {!ready && (
-          <div
+          <div style={{ display: "flex", gap: 6 }}>
+            {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
+              <div
+                key={c}
+                style={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
+                  background: c,
+                }}
+              />
+            ))}
+          </div>
+          <span
             style={{
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              fontSize: 10,
+              color: "rgba(255,255,255,0.25)",
+              letterSpacing: "0.1em",
             }}
           >
+            CHART EDITOR
+          </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <div
               style={{
-                width: 20,
-                height: 20,
-                border: "2px solid rgba(6,182,212,0.2)",
-                borderTopColor: "#06b6d4",
+                width: 6,
+                height: 6,
                 borderRadius: "50%",
-                animation: "hiw-spin 0.8s linear infinite",
+                background: palette.accent,
+                opacity: 0.8,
               }}
             />
+            <span style={{ fontSize: 9, color: "rgba(255,255,255,0.2)" }}>
+              {palette.name}
+            </span>
           </div>
-        )}
-      </div>
-      <div
-        style={{
-          padding: "10px 14px",
-          borderTop: "1px solid #e5e7eb",
-          background: "rgba(6,182,212,0.03)",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
-        <span style={{ color: "#06b6d4", fontSize: 12 }}>✦</span>
-        <span
-          style={{ fontFamily: "monospace", fontSize: 10, color: "#6b7280" }}
+        </div>
+
+        {/* Body */}
+        <div style={{ display: "flex", height: 400 }}>
+          {/* Sidebar */}
+          <div
+            style={{
+              width: 185,
+              borderRight: "1px solid rgba(255,255,255,0.06)",
+              background: "rgba(0,0,0,0.25)",
+              display: "flex",
+              flexDirection: "column",
+              flexShrink: 0,
+            }}
+          >
+            {/* Tab nav */}
+            <div
+              style={{
+                padding: "8px 8px 0",
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+              }}
+            >
+              {TABS.map((tab) => (
+                <button
+                  key={tab.id}
+                  className={`chart-tab-btn${activeTab === tab.id ? " active" : ""}`}
+                  onClick={() => setActiveTab(tab.id)}
+                >
+                  <span style={{ fontSize: 12 }}>{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="section-divider" style={{ margin: "8px 0" }} />
+
+            {/* Tab content */}
+            <div
+              style={{
+                flex: 1,
+                overflowY: "auto",
+                padding: "0 8px 12px",
+                scrollbarWidth: "none",
+              }}
+            >
+              {activeTab === "type" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 4 }}
+                >
+                  <span className="ctrl-label">CHART TYPE</span>
+                  {CHART_TYPES.map((ct) => (
+                    <button
+                      key={ct.id}
+                      className={`chart-type-btn${chartType === ct.id ? " active" : ""}`}
+                      onClick={() => setChartType(ct.id)}
+                    >
+                      <span
+                        style={{
+                          fontSize: 11,
+                          color:
+                            chartType === ct.id
+                              ? palette.accent
+                              : "rgba(255,255,255,0.25)",
+                          fontFamily: "monospace",
+                          letterSpacing: "0.05em",
+                          flexShrink: 0,
+                        }}
+                      >
+                        {ct.icon}
+                      </span>
+                      <div>
+                        <div
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color:
+                              chartType === ct.id
+                                ? "#fff"
+                                : "rgba(255,255,255,0.5)",
+                          }}
+                        >
+                          {ct.label}
+                        </div>
+                        <div
+                          style={{
+                            fontSize: 9,
+                            color: "rgba(255,255,255,0.2)",
+                          }}
+                        >
+                          {ct.desc}
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {activeTab === "style" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 14 }}
+                >
+                  <div>
+                    <span className="ctrl-label">COLOR PALETTE</span>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                      }}
+                    >
+                      {PALETTES.map((pal, i) => (
+                        <button
+                          key={pal.id}
+                          className={`palette-btn${selectedPalette === i ? " active" : ""}`}
+                          onClick={() => setSelectedPalette(i)}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              alignItems: "center",
+                              marginBottom: 5,
+                            }}
+                          >
+                            <span
+                              style={{
+                                fontSize: 10,
+                                fontWeight: 700,
+                                color:
+                                  selectedPalette === i
+                                    ? "#fff"
+                                    : "rgba(255,255,255,0.45)",
+                              }}
+                            >
+                              {pal.name}
+                            </span>
+                            {selectedPalette === i && (
+                              <span style={{ fontSize: 9, color: pal.accent }}>
+                                ● active
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ display: "flex", gap: 3 }}>
+                            {pal.colors.map((c) => (
+                              <div
+                                key={c}
+                                style={{
+                                  flex: 1,
+                                  height: 16,
+                                  borderRadius: 3,
+                                  background: c,
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="ctrl-label">THEME</span>
+                    <div style={{ display: "flex", gap: 4 }}>
+                      {THEMES.map((th, i) => (
+                        <button
+                          key={th.id}
+                          className={`theme-btn${selectedTheme === i ? " active" : ""}`}
+                          onClick={() => setSelectedTheme(i)}
+                          style={{
+                            background: th.bg,
+                            borderColor:
+                              selectedTheme === i
+                                ? "rgba(255,255,255,0.5)"
+                                : "rgba(255,255,255,0.08)",
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontSize: 8,
+                              color:
+                                selectedTheme === i
+                                  ? "#fff"
+                                  : "rgba(255,255,255,0.3)",
+                              fontFamily: "monospace",
+                              display: "block",
+                            }}
+                          >
+                            {th.label}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="ctrl-label">
+                      OPACITY — {Math.round(opacity * 100)}%
+                    </span>
+                    <input
+                      type="range"
+                      className="range-slider"
+                      min="30"
+                      max="100"
+                      value={Math.round(opacity * 100)}
+                      onChange={(e) => setOpacity(Number(e.target.value) / 100)}
+                    />
+                  </div>
+
+                  {(chartType === "line" || chartType === "scatter") && (
+                    <div>
+                      <span className="ctrl-label">
+                        MARKER SIZE — {markerSize}px
+                      </span>
+                      <input
+                        type="range"
+                        className="range-slider"
+                        min="3"
+                        max="16"
+                        value={markerSize}
+                        onChange={(e) => setMarkerSize(Number(e.target.value))}
+                      />
+                    </div>
+                  )}
+
+                  {chartType === "bar" && (
+                    <div>
+                      <span className="ctrl-label">BAR MODE</span>
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 4,
+                          background: "rgba(255,255,255,0.04)",
+                          borderRadius: 7,
+                          padding: 3,
+                        }}
+                      >
+                        {(["group", "stack"] as const).map((m) => (
+                          <button
+                            key={m}
+                            className={`seg-btn${barMode === m ? " active" : ""}`}
+                            onClick={() => setBarMode(m)}
+                          >
+                            {m.charAt(0).toUpperCase() + m.slice(1)}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {(chartType === "line" || chartType === "area") && (
+                    <div className="toggle-row">
+                      <span className="toggle-label">Smooth curves</span>
+                      <div
+                        className="toggle-track"
+                        style={{
+                          background: smooth
+                            ? palette.accent
+                            : "rgba(255,255,255,0.1)",
+                        }}
+                        onClick={() => setSmooth(!smooth)}
+                      >
+                        <div
+                          className="toggle-thumb"
+                          style={{ left: smooth ? 16 : 2 }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === "axes" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 12 }}
+                >
+                  <div>
+                    <span className="ctrl-label">CHART TITLE</span>
+                    <input
+                      className="axis-input"
+                      placeholder="Add a title…"
+                      value={chartTitle}
+                      onChange={(e) => setChartTitle(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <span className="ctrl-label">X-AXIS LABEL</span>
+                    <input
+                      className="axis-input"
+                      placeholder="e.g. Region"
+                      value={xLabel}
+                      onChange={(e) => setXLabel(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <span className="ctrl-label">Y-AXIS LABEL</span>
+                    <input
+                      className="axis-input"
+                      placeholder="e.g. Revenue ($K)"
+                      value={yLabel}
+                      onChange={(e) => setYLabel(e.target.value)}
+                    />
+                  </div>
+                  <div className="section-divider" />
+                  <div>
+                    <span className="ctrl-label">DISPLAY</span>
+                    <div className="toggle-row">
+                      <span className="toggle-label">Show grid</span>
+                      <div
+                        className="toggle-track"
+                        style={{
+                          background: showGrid
+                            ? palette.accent
+                            : "rgba(255,255,255,0.1)",
+                        }}
+                        onClick={() => setShowGrid(!showGrid)}
+                      >
+                        <div
+                          className="toggle-thumb"
+                          style={{ left: showGrid ? 16 : 2 }}
+                        />
+                      </div>
+                    </div>
+                    <div className="toggle-row">
+                      <span className="toggle-label">Show legend</span>
+                      <div
+                        className="toggle-track"
+                        style={{
+                          background: showLegend
+                            ? palette.accent
+                            : "rgba(255,255,255,0.1)",
+                        }}
+                        onClick={() => setShowLegend(!showLegend)}
+                      >
+                        <div
+                          className="toggle-thumb"
+                          style={{ left: showLegend ? 16 : 2 }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "export" && (
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                >
+                  <span className="ctrl-label">EXPORT AS</span>
+                  {[
+                    { fmt: "PNG", icon: "🖼", desc: "High-res raster" },
+                    { fmt: "SVG", icon: "✦", desc: "Vector · scalable" },
+                    { fmt: "JPEG", icon: "◼", desc: "Compressed raster" },
+                    { fmt: "JSON", icon: "{ }", desc: "Raw chart data" },
+                  ].map(({ fmt, icon, desc }) => (
+                    <button
+                      key={fmt}
+                      className={`export-btn${fmt === "PNG" ? " primary" : ""}`}
+                      onClick={async () => {
+                        if (!plotRef.current) return;
+                        const { default: Plotly } =
+                          await import("plotly.js-dist-min");
+                        if (fmt === "PNG")
+                          Plotly.downloadImage(plotRef.current as never, {
+                            format: "png",
+                            filename: "graphix-chart",
+                            width: 1200,
+                            height: 800,
+                          });
+                        if (fmt === "SVG")
+                          Plotly.downloadImage(plotRef.current as never, {
+                            format: "svg",
+                            filename: "graphix-chart",
+                            width: 1200,
+                            height: 800,
+                          });
+                        if (fmt === "JPEG")
+                          Plotly.downloadImage(plotRef.current as never, {
+                            format: "jpeg",
+                            filename: "graphix-chart",
+                            width: 1200,
+                            height: 800,
+                          });
+                      }}
+                    >
+                      <span style={{ fontSize: 13 }}>{icon}</span>
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 700 }}>
+                          {fmt}
+                        </div>
+                        <div style={{ fontSize: 9, opacity: 0.5 }}>{desc}</div>
+                      </div>
+                    </button>
+                  ))}
+                  <div className="section-divider" />
+                  <div
+                    style={{
+                      padding: "8px 10px",
+                      background: "rgba(255,255,255,0.03)",
+                      borderRadius: 8,
+                      border: "1px solid rgba(255,255,255,0.06)",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: 9,
+                        color: "rgba(255,255,255,0.3)",
+                        marginBottom: 4,
+                      }}
+                    >
+                      EMBED CODE
+                    </div>
+                    <code
+                      style={{
+                        fontSize: 9,
+                        color: palette.accent,
+                        lineHeight: 1.6,
+                        display: "block",
+                        wordBreak: "break-all",
+                      }}
+                    >
+                      {`<iframe src="graphix.ai/embed/ch_${Math.random().toString(36).slice(2, 8)}" />`}
+                    </code>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Preview area */}
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              background: theme.bg,
+              minWidth: 0,
+            }}
+          >
+            {/* Preview topbar */}
+            <div
+              style={{
+                padding: "10px 14px",
+                borderBottom: "1px solid rgba(255,255,255,0.06)",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                background: "rgba(255,255,255,0.02)",
+                flexShrink: 0,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    background: palette.accent,
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: 9,
+                    color: "rgba(255,255,255,0.3)",
+                    letterSpacing: "0.1em",
+                  }}
+                >
+                  LIVE PREVIEW
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <span
+                  style={{
+                    fontSize: 9,
+                    color: "rgba(255,255,255,0.2)",
+                    fontFamily: "monospace",
+                    marginRight: 4,
+                  }}
+                >
+                  {chartType.toUpperCase()} · {palette.name.toUpperCase()}
+                </span>
+              </div>
+            </div>
+
+            {/* Plot */}
+            <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+              <div
+                ref={plotRef}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  opacity: ready ? 1 : 0,
+                  transition: "opacity 0.4s ease",
+                  animation: ready ? "fadeIn 0.4s ease" : "none",
+                }}
+              />
+              {!ready && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexDirection: "column",
+                    gap: 12,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 22,
+                      height: 22,
+                      border: `2px solid ${palette.accent}30`,
+                      borderTopColor: palette.accent,
+                      borderRadius: "50%",
+                      animation: "spin 0.8s linear infinite",
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: 10,
+                      color: "rgba(255,255,255,0.2)",
+                      fontFamily: "monospace",
+                    }}
+                  >
+                    Rendering…
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div
+          style={{
+            padding: "9px 16px",
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            background: "rgba(0,0,0,0.3)",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
         >
-          North & Q4 show strongest growth (+22%) — potential expansion target
-        </span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ color: palette.accent, fontSize: 12 }}>✦</span>
+            <span
+              style={{
+                fontSize: 9,
+                color: "rgba(255,255,255,0.2)",
+                fontFamily: "monospace",
+              }}
+            >
+              All changes update live · no save needed
+            </span>
+          </div>
+          <span
+            style={{
+              fontSize: 8,
+              color: "rgba(255,255,255,0.15)",
+              fontFamily: "monospace",
+            }}
+          >
+            6 chart types · 6 palettes · 4 themes
+          </span>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
-
 // ─── Step definitions ──────────────────────────────────────────
 const STEPS = [
   {
@@ -657,8 +1686,8 @@ const STEPS = [
     tag: "Selection",
     color: "#a855f7",
     headline: "Pick a chart type — or let AI choose",
-    body: "Browse 80+ chart types across 10 categories. Or skip it entirely — Graphix AI selects the most effective visualization for your data automatically.",
-    extras: ["80+ chart types", "10 categories", "AI auto-selection"],
+    body: "Browse 140+ chart types across 16 categories. Or skip it entirely — Graphix AI selects the most effective visualization for your data automatically.",
+    extras: ["140+ chart types", "16 categories", "AI auto-selection"],
     component: StepSelector,
   },
   {
@@ -672,16 +1701,16 @@ const STEPS = [
   },
   {
     num: "04",
-    tag: "Output",
+    tag: "Editing",
     color: "#f59e0b",
-    headline: "Interact, edit, and export",
-    body: "Zoom, hover, rotate 3D charts. Open the visual editor to tweak colors, fonts, and layout. Export as PNG, SVG, or CSV in one click.",
+    headline: "Customize with the visual editor",
+    body: "Fine-tune every aspect of your chart with our powerful visual editor. Change chart types, swap color palettes, adjust axes, add annotations, and export in any format — all with live preview.",
     extras: [
       "Full chart editor",
-      "Export PNG · SVG · CSV",
-      "Save to dashboard",
+      "12 color palettes",
+      "Export PNG · SVG · JPEG",
     ],
-    component: StepResult,
+    component: StepChartEditor,
   },
 ];
 

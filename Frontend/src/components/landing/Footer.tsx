@@ -8,7 +8,7 @@ const LINKS = {
     { label: "Excel Editor", href: "/panel" },
     { label: "Dashboard", href: "/dashboard" },
     { label: "Chart Types", href: "/#features" },
-    { label: "How it works", href: "/#how-it-works" },
+    { label: "How it works", href: "/howitworks" },
   ],
   Company: [
     { label: "About", href: "/about" },

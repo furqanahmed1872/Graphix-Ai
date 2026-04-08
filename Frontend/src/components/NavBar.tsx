@@ -107,8 +107,8 @@ const CSS = `
 
 const LINKS = [
   { label: "About", href: "/about" },
-  { label: "How it works", href: "#how-it-works" },
-  { label: "Pricing", href: "#pricing" },
+  { label: "How it works", href: "/howitworks" },
+  { label: "Pricing", href: "/pricing" },
   { label: "Excel Editor", href: "/panel" },
 ];
 

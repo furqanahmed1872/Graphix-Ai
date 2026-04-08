@@ -3589,27 +3589,27 @@ export default function ChartEditor({
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
-const getLiveData = useCallback((): { data: any[]; layout: any } => {
-  const liveDiv = divRef?.current;
-  const msgLayout = message?.content?.layout || {};
-  if (liveDiv && liveDiv.data && liveDiv.data.length > 0) {
-    const liveLayout = liveDiv.layout || {};
-    // Always preserve title from message.content if live div has stripped it
-    const resolvedTitle = liveLayout.title || msgLayout.title;
+  const getLiveData = useCallback((): { data: any[]; layout: any } => {
+    const liveDiv = divRef?.current;
+    const msgLayout = message?.content?.layout || {};
+    if (liveDiv && liveDiv.data && liveDiv.data.length > 0) {
+      const liveLayout = liveDiv.layout || {};
+      // Always preserve title from message.content if live div has stripped it
+      const resolvedTitle = liveLayout.title || msgLayout.title;
+      return {
+        data: liveDiv.data,
+        layout: {
+          ...msgLayout,
+          ...liveLayout,
+          title: resolvedTitle,
+        },
+      };
+    }
     return {
-      data: liveDiv.data,
-      layout: {
-        ...msgLayout,
-        ...liveLayout,
-        title: resolvedTitle,
-      },
+      data: message?.content?.data || [],
+      layout: msgLayout,
     };
-  }
-  return {
-    data: message?.content?.data || [],
-    layout: msgLayout,
-  };
-}, [divRef, message]);
+  }, [divRef, message]);
   const { token, isAuthenticated, addSavedChart, updateSavedChart } =
     useAppStore();
   const [dbSaveStatus, setDbSaveStatus] = useState<
@@ -4565,38 +4565,23 @@ const getLiveData = useCallback((): { data: any[]; layout: any } => {
     isLightBg,
   ]);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  // ── REPLACE WITH THIS (the fixed version) ───────────────────
   useEffect(() => {
     if (!mounted || !plotRef.current || !window.Plotly) return;
-    if (userHasEdited.current) {
-      applyChart();
-    } else {
-      const { data: ld, layout: ll } = getLiveData();
-      window.Plotly.react(
-        plotRef.current,
-        ld,
-        { ...ll, autosize: true },
-        { responsive: true, displayModeBar: false },
-      );
-    }
-  }, [mounted, applyChart, getLiveData]);
+    // Always call applyChart — never forward the raw dark-theme layout
+    // that SingleChartArea uses (transparent bg, white text).
+    // On the editor's white card those colors are invisible:
+    //   • paper_bgcolor / plot_bgcolor → "rgba(0,0,0,0)" = white on white
+    //   • font.color → "rgba(255,255,255,0.45)" = white text on white bg
+    //   • gridcolor   → "rgba(255,255,255,0.04)" = invisible grid
+    // applyChart() always rebuilds layout with correct light-card colors.
+    // Setting userHasEdited=true here does NOT trigger a type conversion —
+    // chartTypeId is initialised from the live chart's detected type, so
+    // applyChart just re-renders the same chart with proper styling.
+    userHasEdited.current = true;
+    applyChart();
+  }, [mounted, applyChart]);
+  // Note: getLiveData removed from deps — applyChart calls it internally.
 
   const handleExport = (fmt: string) => {
     if (!plotRef.current || !window.Plotly) return;
@@ -4608,68 +4593,68 @@ const getLiveData = useCallback((): { data: any[]; layout: any } => {
     });
   };
 
- const handleSaveToDatabase = async () => {
-   if (
-     !token ||
-     !isAuthenticated ||
-     dbSaveStatus === "saving" ||
-     dbSaveStatus === "saved"
-   )
-     return;
-   setDbSaveStatus("saving");
-   try {
-     const live = getLiveData();
+  const handleSaveToDatabase = async () => {
+    if (
+      !token ||
+      !isAuthenticated ||
+      dbSaveStatus === "saving" ||
+      dbSaveStatus === "saved"
+    )
+      return;
+    setDbSaveStatus("saving");
+    try {
+      const live = getLiveData();
 
-     // Normalises both "My Chart" (string) and {text:"My Chart"} (Plotly object)
-     const rawExtract = (t: any): string => {
-       if (typeof t === "string") return t.trim();
-       if (typeof t?.text === "string") return t.text.trim();
-       return "";
-     };
+      // Normalises both "My Chart" (string) and {text:"My Chart"} (Plotly object)
+      const rawExtract = (t: any): string => {
+        if (typeof t === "string") return t.trim();
+        if (typeof t?.text === "string") return t.text.trim();
+        return "";
+      };
 
-     const finalTitle =
-       title.trim() ||
-       rawExtract(plotRef.current?.layout?.title) ||
-       rawExtract(live.layout?.title) ||
-       rawExtract(message?.content?.layout?.title) ||
-       "Untitled Chart";
+      const finalTitle =
+        title.trim() ||
+        rawExtract(plotRef.current?.layout?.title) ||
+        rawExtract(live.layout?.title) ||
+        rawExtract(message?.content?.layout?.title) ||
+        "Untitled Chart";
 
-     const plotData = plotRef.current?.data ?? live.data;
-     const plotLayout = plotRef.current?.layout ?? live.layout;
+      const plotData = plotRef.current?.data ?? live.data;
+      const plotLayout = plotRef.current?.layout ?? live.layout;
 
-     const chartJson = {
-       data: plotData,
-       layout: {
-         ...plotLayout,
-         title: { text: finalTitle }, // always clean {text} form, never raw Plotly object
-         _subtitle: subtitle,
-         _annotations: annotations,
-       },
-     };
+      const chartJson = {
+        data: plotData,
+        layout: {
+          ...plotLayout,
+          title: { text: finalTitle }, // always clean {text} form, never raw Plotly object
+          _subtitle: subtitle,
+          _annotations: annotations,
+        },
+      };
 
-     if (existingChartId) {
-       const updated = await apiUpdateChart(token, existingChartId, {
-         title: finalTitle,
-         chartConfig: chartJson,
-       });
-       updateSavedChart(updated);
-     } else {
-       const saved = await apiSaveChart(token, {
-         title: finalTitle,
-         prompt: finalTitle,
-         chartConfig: chartJson,
-       });
-       addSavedChart(saved);
-     }
+      if (existingChartId) {
+        const updated = await apiUpdateChart(token, existingChartId, {
+          title: finalTitle,
+          chartConfig: chartJson,
+        });
+        updateSavedChart(updated);
+      } else {
+        const saved = await apiSaveChart(token, {
+          title: finalTitle,
+          prompt: finalTitle,
+          chartConfig: chartJson,
+        });
+        addSavedChart(saved);
+      }
 
-     setDbSaveStatus("saved");
-     setTimeout(() => setDbSaveStatus("idle"), 3000);
-   } catch (err) {
-     console.error("Save error:", err);
-     setDbSaveStatus("error");
-     setTimeout(() => setDbSaveStatus("idle"), 3000);
-   }
- };
+      setDbSaveStatus("saved");
+      setTimeout(() => setDbSaveStatus("idle"), 3000);
+    } catch (err) {
+      console.error("Save error:", err);
+      setDbSaveStatus("error");
+      setTimeout(() => setDbSaveStatus("idle"), 3000);
+    }
+  };
 
   if (!mounted || typeof document === "undefined") return null;
 

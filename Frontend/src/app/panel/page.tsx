@@ -1,8 +1,7 @@
-'use client';
 
 import DataChartEditor from "./ExelChartEditor";
 import RouteGuard from "@/components/RouteGuard";
-
+export const metadata = { title: "Excel Editor — Graphix" };
 export default function Panel() {
   return (
     <RouteGuard>

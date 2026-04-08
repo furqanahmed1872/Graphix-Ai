@@ -19,7 +19,7 @@ const TICKER = [
   "PRICE → $0.00",
   "CSV UPLOADS → UNLIMITED",
   "EXPORT FORMATS → ALL",
-  "CHART TYPES → 80+",
+  "CHART TYPES → 140+",
   "HIDDEN FEES → NULL",
   "3D CHARTS → INCLUDED",
   "EXCEL EDITOR → FREE",
@@ -417,6 +417,7 @@ export default function PricingSection() {
 
               {/* RIGHT: stamp + terminal + CTA */}
               <div
+                className="mx-auto"
                 style={{
                   display: "flex",
                   flexDirection: "column",

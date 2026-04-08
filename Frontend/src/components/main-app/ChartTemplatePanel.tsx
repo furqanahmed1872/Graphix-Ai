@@ -399,7 +399,7 @@ function MiniChart({ tpl, animate }: { tpl: Template; animate: boolean }) {
   );
 }
 
-// ── Generator functions with full ChartEditor conversion logic ─────────────────────
+// ── Generator functions ────────────────────────────────────────────────────────
 
 function generateBoxData(sourceTraces: any[], palette: string[]) {
   return sourceTraces.map((trace: any, i: number) => {
@@ -459,15 +459,11 @@ function generateHistogramData(sourceTraces: any[], palette: string[]) {
 }
 
 function generateHeatmapData(sourceTraces: any[]) {
-  // Only reuse source if it is ALREADY a properly structured heatmap with a z matrix
   const isRealHeatmap =
     sourceTraces[0]?.type === "heatmap" &&
     sourceTraces[0]?.z &&
     Array.isArray(sourceTraces[0].z[0]);
-
   if (isRealHeatmap) return sourceTraces;
-
-  // Generate a clean, visually correct 7x5 heatmap with realistic values
   const xLabels = ["Mon", "Tue", "Wed", "Thu", "Fri"];
   const yLabels = [
     "Week 1",
@@ -478,7 +474,6 @@ function generateHeatmapData(sourceTraces: any[]) {
     "Week 6",
     "Week 7",
   ];
-  // Use sine/cosine so it looks like a real pattern not pure random
   const z = yLabels.map((_, r) =>
     xLabels.map((_, c) =>
       Math.round(
@@ -515,13 +510,9 @@ function generateFunnelData(
   const trace0 = sourceTraces[0] || {};
   const rawX = trace0.x || [];
   const rawY = (trace0.y || []).map(Number);
-
-  // Check if x values are string labels (not numeric years/coords)
   const xHasStringLabels =
     rawX.length > 0 &&
     rawX.some((v: any) => typeof v === "string" && isNaN(Number(v)));
-
-  // Only use source data if it has real string labels AND a manageable number of stages (<=10)
   if (xHasStringLabels && rawX.length <= 10 && rawY.length > 0) {
     const barColors = rawX.map(
       (_: any, i: number) => palette[i % palette.length],
@@ -537,8 +528,6 @@ function generateFunnelData(
       },
     ];
   }
-
-  // Fallback: use demo funnel data
   const demoY = [
     "Awareness",
     "Interest",
@@ -585,7 +574,6 @@ function generateWaterfallData(sourceTraces: any[], palette: string[]) {
 
 function buildPieData(rawData: any[], pal: string[], hole?: number) {
   if (rawData.length === 0) return [];
-  // If already pie data, just update
   if (rawData[0]?.type === "pie") {
     return rawData.map((t: any) => ({
       ...t,
@@ -618,19 +606,19 @@ function buildPieData(rawData: any[], pal: string[], hole?: number) {
   ];
 }
 
-function applyTemplate(tpl: Template) {
-  if (!window.Plotly) return;
-  const chartDiv = document.getElementById("main-chart-div");
-  if (!chartDiv || !(chartDiv as any).data) return;
-
-  // Always use original data so conversions start from clean source
+// ── FIX: applyTemplate now returns { data, layout } instead of only mutating
+// the DOM. The caller (ChartTemplatePanel) dispatches a custom event with the
+// result so SingleChartArea can write it into __graphixChartData[messageId].
+// ─────────────────────────────────────────────────────────────────────────────
+function buildTemplateResult(
+  tpl: Template,
+  chartDiv: any,
+): { data: any[]; layout: any } | null {
   const src: any[] = JSON.parse(
-    JSON.stringify(
-      (window as any).__graphixOriginalData || (chartDiv as any).data,
-    ),
+    JSON.stringify((window as any).__graphixOriginalData || chartDiv.data),
   );
   const baseLayout: any = {
-    ...((window as any).__graphixOriginalLayout || (chartDiv as any).layout),
+    ...((window as any).__graphixOriginalLayout || chartDiv.layout),
   };
   const pal =
     tpl.colors.length > 0
@@ -639,7 +627,6 @@ function applyTemplate(tpl: Template) {
 
   let newData: any[];
 
-  // Route to the correct generator based on chart type
   switch (tpl.type) {
     case "pie":
       newData = buildPieData(src, pal, tpl.hole || 0);
@@ -665,7 +652,6 @@ function applyTemplate(tpl: Template) {
     case "scatter":
     case "bar":
     default: {
-      // bar / scatter / line / area - standard conversions
       newData = src.map((t: any, i: number) => {
         const clr = pal[i % pal.length];
         const base: any = {
@@ -676,36 +662,18 @@ function applyTemplate(tpl: Template) {
           marker: { ...(t.marker || {}), color: clr },
           line: { ...(t.line || {}), color: clr },
         };
-
-        // Apply mode for scatter plots
-        if (tpl.mode) {
-          base.mode = tpl.mode;
-        } else if (base.type === "scatter") {
-          base.mode = "lines";
-        } else {
-          delete base.mode;
-        }
-
-        // Apply fill for area charts
+        if (tpl.mode) base.mode = tpl.mode;
+        else if (base.type === "scatter") base.mode = "lines";
+        else delete base.mode;
         if (tpl.fill) {
           base.fill = tpl.fill;
           base.fillcolor = clr + "33";
-        } else {
-          delete base.fill;
-        }
-
-        // Apply orientation for horizontal bars
-        if (tpl.orientation) {
-          base.orientation = tpl.orientation;
-        } else {
-          delete base.orientation;
-        }
-
-        // Clean up incompatible fields
+        } else delete base.fill;
+        if (tpl.orientation) base.orientation = tpl.orientation;
+        else delete base.orientation;
         delete base.hole;
         delete base.labels;
         delete base.values;
-
         return base;
       });
       break;
@@ -713,33 +681,52 @@ function applyTemplate(tpl: Template) {
   }
 
   const newLayout = { ...baseLayout };
-
-  // Set barmode for bar charts
-  if (tpl.barmode) {
-    newLayout.barmode = tpl.barmode;
-  } else if (tpl.type === "bar") {
-    newLayout.barmode = "group";
-  }
-
-  // Remove standard axes for chart types that don't use them
+  if (tpl.barmode) newLayout.barmode = tpl.barmode;
+  else if (tpl.type === "bar") newLayout.barmode = "group";
   if (tpl.type === "pie" || tpl.type === "funnel" || tpl.type === "heatmap") {
     delete newLayout.xaxis;
     delete newLayout.yaxis;
   }
 
+  return { data: newData, layout: newLayout };
+}
+
+function applyTemplate(tpl: Template) {
+  if (!window.Plotly) return;
+  const chartDiv = document.getElementById("main-chart-div");
+  if (!chartDiv || !(chartDiv as any).data) return;
+
+  const result = buildTemplateResult(tpl, chartDiv);
+  if (!result) return;
+
+  const { data: newData, layout: newLayout } = result;
+
   window.Plotly.react(chartDiv, newData, newLayout, {
     responsive: true,
     displayModeBar: false,
   });
+
+  // Update the legacy globals for backward-compat (toolbar still uses these)
   (window as any).__graphixCurrentData = newData;
   (window as any).__graphixCurrentLayout = newLayout;
+
+  // ── FIX: Dispatch event so SingleChartArea can write into the per-chart
+  // keyed store (__graphixChartData[messageId]).  SingleChartArea owns the
+  // message ID — the template panel doesn't need to know it.
+  window.dispatchEvent(
+    new CustomEvent("graphix-template-applied", {
+      detail: {
+        data: JSON.parse(JSON.stringify(newData)),
+        layout: JSON.parse(JSON.stringify(newLayout)),
+      },
+    }),
+  );
 }
 
 export default function ChartTemplatePanel() {
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [hoverKey, setHoverKey] = useState<string | null>(null);
 
-  // Clear active template when chart is reset or new AI response arrives
   useEffect(() => {
     const handler = () => setActiveKey(null);
     window.addEventListener("graphix-reset-template", handler);
@@ -779,7 +766,6 @@ export default function ChartTemplatePanel() {
 
       {GROUPS.map((group) => (
         <div key={group.label} className="mb-1">
-          {/* Group label */}
           <div className="flex items-center gap-1.5 px-2 py-1">
             <div
               style={{
@@ -837,7 +823,6 @@ export default function ChartTemplatePanel() {
                   transition: "all 0.15s",
                 }}
               >
-                {/* Canvas preview */}
                 <div
                   style={{
                     width: 60,
