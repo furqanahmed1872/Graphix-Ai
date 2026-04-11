@@ -3,7 +3,7 @@
 import { useState, useRef, useCallback } from "react";
 
 const TimelineIcons = {
-  seed: (color) => (
+  seed: (color: string) => (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
       <path
         d="M14 24 C14 24 6 18 6 11 C6 7.13 9.13 4 13 4 C14 4 14.5 4.1 14.5 4.1"
@@ -29,7 +29,7 @@ const TimelineIcons = {
       <circle cx="14" cy="10" r="2" fill={color} opacity="0.3" />
     </svg>
   ),
-  bolt: (color) => (
+  bolt: (color: string) => (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
       <path
         d="M16 3 L8 15 H14 L12 25 L20 13 H14 Z"
@@ -41,7 +41,7 @@ const TimelineIcons = {
       />
     </svg>
   ),
-  brain: (color) => (
+  brain: (color: string) => (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
       <path
         d="M10 20 C7 20 5 18 5 15.5 C5 14 5.8 12.7 7 12 C6.5 11.3 6 10.2 6 9 C6 6.8 7.8 5 10 5 C10.7 5 11.3 5.2 11.9 5.5"
@@ -81,7 +81,7 @@ const TimelineIcons = {
       />
     </svg>
   ),
-  grid: (color) => (
+  grid: (color: string) => (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
       <rect
         x="4"
@@ -145,7 +145,7 @@ const TimelineIcons = {
       />
     </svg>
   ),
-  table: (color) => (
+  table: (color: string) => (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
       <rect
         x="3"
@@ -170,7 +170,7 @@ const TimelineIcons = {
       />
     </svg>
   ),
-  rocket: (color) => (
+  rocket: (color: string) => (
     <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
       <path
         d="M14 3 C14 3 20 6 20 14 L17 17 L11 17 L8 14 C8 6 14 3 14 3Z"
@@ -286,13 +286,13 @@ const milestones = [
 ];
 
 export default function StorySection() {
-  const [activeTimeline, setActiveTimeline] = useState(null);
-  const [hoveredYear, setHoveredYear] = useState(null);
+  const [activeTimeline, setActiveTimeline] = useState<number | null>(null);
+  const [hoveredYear, setHoveredYear] = useState<number | null>(null);
 
   // Mouse glow via direct DOM mutation — zero re-renders
-  const glowRef = useRef(null);
+  const glowRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback((e) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (glowRef.current) {
       glowRef.current.style.transform = `translate3d(${e.clientX - 250}px, ${e.clientY - 250}px, 0)`;
     }

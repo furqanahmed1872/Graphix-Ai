@@ -11,8 +11,10 @@ import feedbackRoutes from "./routes/feedback.js";
 import aiRoutes from "./ai/chartRoute.js";
 
 // ── Startup guard — fail fast if critical env vars are missing ─
-if (!process.env.JWT_SECRET) {
-  console.error("FATAL: JWT_SECRET env var is not set. Refusing to start.");
+const requiredEnvVars = ["JWT_SECRET", "PORT", "CLIENT_URL"];
+const missingEnvVars = requiredEnvVars.filter((v) => !process.env[v]);
+if (missingEnvVars.length > 0) {
+  console.error(`FATAL: Missing required env vars: ${missingEnvVars.join(", ")}`);
   process.exit(1);
 }
 
@@ -22,7 +24,7 @@ const upload = multer();
 // ── CORS ──────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: process.env.CLIENT_URL,
     credentials: true,
   }),
 );
@@ -86,7 +88,7 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: message });
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () =>
   console.log(`✅ Graphix server running on http://localhost:${PORT}`),
 );

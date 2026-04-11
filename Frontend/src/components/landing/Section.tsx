@@ -314,7 +314,7 @@ const CHARTS: ChartDef[] = [
         "Support",
         "Price",
       ];
-      const closeArr = (a: number[]) => [...a, a[0]];
+      const closeArr = <T,>(a: T[]) => [...a, a[0]];
       await Plotly.react(
         el,
         [

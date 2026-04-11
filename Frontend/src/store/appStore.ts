@@ -111,7 +111,7 @@ interface AppState {
   updateSavedChart: (chart: SavedChart) => void;
 }
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
 
 export const useAppStore = create<AppState>()(
   persist(

@@ -269,7 +269,7 @@ export default function GraphApp() {
         ? `${input}\n\n[IMPORTANT: When modifying the chart, always set explicit "color" values on marker and line objects in every trace. Never omit color fields — if the user requested a color change, apply it as a hex or CSS color string on marker.color and line.color for every trace.]`
         : input;
 
-      const res = await fetch("http://localhost:3001/api/graph", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080"}/api/graph`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

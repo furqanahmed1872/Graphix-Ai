@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "node index.js",
-    "dev": "node --watch index.js"
+    "dev": "node --watch index.js",
+    "migrate": "psql $DATABASE_URL -f db/init.sql"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

@@ -71,14 +71,14 @@ const whatWeArent = [
 ];
 
 export default function TeamSection() {
-  const [hoveredAnti, setHoveredAnti] = useState(null);
+  const [hoveredAnti, setHoveredAnti] = useState<number | null>(null);
   const [displayIndex, setDisplayIndex] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
 
   // Mouse glow via direct DOM mutation — zero re-renders
-  const glowRef = useRef(null);
+  const glowRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback((e) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (glowRef.current) {
       glowRef.current.style.transform = `translate3d(${e.clientX - 300}px, ${e.clientY - 300}px, 0)`;
     }

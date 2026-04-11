@@ -12,7 +12,7 @@ declare global {
 }
 
 const CYAN = "#06b6d4";
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
 
 // Chart types supported by the ExcelChartEditor panel
 const PANEL_SUPPORTED_TYPES = new Set([

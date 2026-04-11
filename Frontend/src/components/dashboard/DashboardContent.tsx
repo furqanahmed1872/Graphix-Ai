@@ -14,7 +14,7 @@ import GraphCard from "@/components/dashboard/GraphCard";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { div } from "three/tsl";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
 const CYAN = "#06b6d4";
 
 // ─────────────────────────────────────────────────────────────
@@ -1282,15 +1282,15 @@ function TemplatesPage({ setTab }: { setTab: (t: string) => void }) {
     //   )}
     // </div>
 
-    <div class=" my-auto flex items-center justify-center p-6">
-      <div class="text-center">
-        <div class="text-xs font-medium tracking-[0.3em] text-neutral-500 uppercase mb-4">
+    <div className=" my-auto flex items-center justify-center p-6">
+      <div className="text-center">
+        <div className="text-xs font-medium tracking-[0.3em] text-neutral-500 uppercase mb-4">
           Under Construction
         </div>
-        <h1 class="text-5xl md:text-6xl font-light text-white tracking-tight">
+        <h1 className="text-5xl md:text-6xl font-light text-white tracking-tight">
           Coming Soon
         </h1>
-        <div class="h-px w-16 bg-neutral-800 mx-auto mt-8"></div>
+        <div className="h-px w-16 bg-neutral-800 mx-auto mt-8"></div>
       </div>
     </div>
   );

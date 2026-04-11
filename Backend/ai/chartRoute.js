@@ -154,7 +154,8 @@ router.post("/", upload.single("file"), async (req, res) => {
 });
 
 // ── GET /api/status ───────────────────────────────────────────
-// Local:   http://localhost:3001/api/status
+// Local:   http://localhost:{PORT}/api/status (PORT from .env)
+// Docker:  http://localhost:5080/api/status
 // Vercel:  https://your-app.vercel.app/api/status
 router.get("/status", (req, res) => {
   const now = Date.now();

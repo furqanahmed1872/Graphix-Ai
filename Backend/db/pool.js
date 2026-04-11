@@ -2,11 +2,7 @@ import pg from "pg";
 const { Pool } = pg;
 
 const pool = new Pool({
-  host: process.env.DB_HOST || "localhost",
-  port: parseInt(process.env.DB_PORT || "5432"),
-  database: process.env.DB_NAME || "graphix_db",
-  user: process.env.DB_USER || "graphix_user",
-  password: process.env.DB_PASSWORD || "graphix_pass",
+  connectionString: process.env.DATABASE_URL,
 
   // ── Pool sizing ───────────────────────────────────────────
   max: 20, // max concurrent connections
@@ -36,7 +32,7 @@ pool
     console.error(
       "⚠️  Database connection failed on startup:",
       err.message,
-      "\nCheck DB_HOST / DB_PORT / DB_USER / DB_PASSWORD / DB_NAME in your .env",
+      "\nCheck DATABASE_URL in your .env",
     ),
   );
 

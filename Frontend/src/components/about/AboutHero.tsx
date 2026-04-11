@@ -10,12 +10,12 @@ const stats = [
 ];
 
 export default function AboutHero() {
-  const [hoveredStat, setHoveredStat] = useState(null);
+  const [hoveredStat, setHoveredStat] = useState<number | null>(null);
 
   // Mouse glow: move the DOM node directly — zero re-renders
-  const glowRef = useRef(null);
+  const glowRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback((e) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (glowRef.current) {
       glowRef.current.style.transform = `translate3d(${e.clientX - 300}px, ${e.clientY - 300}px, 0)`;
     }

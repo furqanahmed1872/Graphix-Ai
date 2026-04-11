@@ -1,0 +1,100 @@
+version: '3.8'
+
+# ── Port Configuration ───────────────────────────────────────
+# All internal port configurations come from .env files:
+# - Backend .env: PORT=5000, CLIENT_URL, DATABASE_URL
+# - Frontend .env: PORT=3000, NEXT_PUBLIC_API_URL
+# Docker-compose maps container ports to host ports (5080->5000, 3080->3000)
+
+services:
+  # PostgreSQL Database Service
+  postgres:
+    image: postgres:17-alpine
+    container_name: graphix-postgres
+    environment:
+      POSTGRES_USER: graphix_user
+      POSTGRES_PASSWORD: graphix_pass
+      POSTGRES_DB: graphix_db
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./Backend/db/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    restart: unless-stopped
+    networks:
+      - graphix-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U graphix_user -d graphix_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  # Backend service
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: graphix-backend
+    # Port mapping: host:container
+    # Container port (5000) comes from Backend/.env PORT variable
+    ports:
+      - "127.0.0.1:5080:5000"
+    env_file:
+      - ./Backend/.env
+    environment:
+      # Use postgres service name for database connection
+      - DATABASE_URL=postgresql://graphix_user:graphix_pass@postgres:5432/graphix_db
+    volumes:
+      - backend_logs:/app/logs
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - graphix-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend service
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    container_name: graphix-frontend
+    # Port mapping: host:container
+    # Container port (3000) comes from Frontend/.env PORT variable
+    ports:
+      - "127.0.0.1:3080:3000"
+    env_file:
+      - ./Frontend/.env
+    depends_on:
+      backend:
+        condition: service_healthy
+    volumes:
+      - frontend_logs:/app/.next
+    restart: unless-stopped
+    networks:
+      - graphix-network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_data:
+    driver: local
+  backend_logs:
+    driver: local
+  frontend_logs:
+    driver: local
+
+networks:
+  graphix-network:
+    driver: bridge

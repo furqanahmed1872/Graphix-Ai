@@ -40,4 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
+# Docker
+.dockerignore
+Dockerfile
+docker-compose.override.yml
+
+# Local dev
+.env.local.development

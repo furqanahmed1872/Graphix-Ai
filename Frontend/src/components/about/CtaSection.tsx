@@ -134,13 +134,13 @@ const stats = [
 ];
 
 export default function CtaSection() {
-  const [hoveredStat, setHoveredStat] = useState(null);
+  const [hoveredStat, setHoveredStat] = useState<number | null>(null);
   const [typedText, setTypedText] = useState("");
   const [cursorVisible, setCursorVisible] = useState(true);
 
   // Mouse glow via direct DOM mutation — zero re-renders
-  const glowRef = useRef(null);
-  const handleMouseMove = useCallback((e) => {
+  const glowRef = useRef<HTMLDivElement>(null);
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (glowRef.current) {
       glowRef.current.style.transform = `translate3d(${e.clientX - 400}px, ${e.clientY - 400}px, 0)`;
     }

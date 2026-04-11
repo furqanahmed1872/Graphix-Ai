@@ -161,7 +161,7 @@ const FORMULA_FUNCTIONS: Record<string, (nums: number[]) => number> = {
   COUNT: (ns) => ns.length,
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const DataChartEditor: React.FC = () => {

@@ -49,13 +49,13 @@ const teamValues = [
 ];
 
 export default function MissionSection() {
-  const [hoveredPrinciple, setHoveredPrinciple] = useState(null);
-  const [hoveredValue, setHoveredValue] = useState(null);
+  const [hoveredPrinciple, setHoveredPrinciple] = useState<number | null>(null);
+  const [hoveredValue, setHoveredValue] = useState<number | null>(null);
 
   // Mouse glow via direct DOM mutation — zero re-renders
-  const glowRef = useRef(null);
+  const glowRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseMove = useCallback((e) => {
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (glowRef.current) {
       glowRef.current.style.transform = `translate3d(${e.clientX - 250}px, ${e.clientY - 250}px, 0)`;
     }

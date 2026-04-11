@@ -3,7 +3,7 @@
  * All calls go through backend — never direct to DB from frontend.
  */
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
 
 function authHeaders(token: string) {
   return {
