@@ -44,8 +44,8 @@ next-env.d.ts
 
 # Docker
 .dockerignore
-Dockerfile
 docker-compose.override.yml
+!Dockerfile
 
 # Local dev
 .env.local.development

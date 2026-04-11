@@ -6,8 +6,8 @@ node_modules
 
 # Docker
 .dockerignore
-Dockerfile
 docker-compose.override.yml
+!Dockerfile
 
 # Logs
 logs
