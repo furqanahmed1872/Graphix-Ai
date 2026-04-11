@@ -1,4 +1,3 @@
-version: '3.8'
 
 # ── Port Configuration ───────────────────────────────────────
 # All internal port configurations come from .env files:
