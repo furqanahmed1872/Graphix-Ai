@@ -64,12 +64,6 @@ app.use("/api/charts", chartRoutes);
 app.use("/api/feedback", feedbackRoutes);
 app.use("/api/graph", aiRoutes);
 
-// ── Health check ─────────────────────────────────────────────
-// eslint-disable-next-line no-unused-vars
-app.get("/health", (req, res) => {
-  res.json({ status: "ok" });
-});
-
 // ── Status ────────────────────────────────────────────────────
 app.get("/api/status", (req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });

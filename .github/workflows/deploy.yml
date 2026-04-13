@@ -1,0 +1,35 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            cd ~/Graphix-Ai
+            git pull origin production
+            docker-compose down
+            docker-compose up -d
+            docker-compose logs
+
+      - name: Deployment Status
+        if: success()
+        run: echo "✅ Deployment completed successfully"
+
+      - name: Deployment Failed
+        if: failure()
+        run: echo "❌ Deployment failed"
