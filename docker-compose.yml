@@ -26,7 +26,7 @@ services:
     networks:
       - graphix-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5000/health || exit 1"]
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:5000/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -44,16 +44,13 @@ services:
       - "127.0.0.1:3080:3000"
     env_file:
       - ./Frontend/.env
-    depends_on:
-      backend:
-        condition: service_healthy
     volumes:
       - frontend_logs:/app/.next
     restart: unless-stopped
     networks:
       - graphix-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000 || exit 1"]
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:3000 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
