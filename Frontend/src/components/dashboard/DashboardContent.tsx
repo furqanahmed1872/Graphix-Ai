@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/store/appStore";
 import { PAGE_TITLES } from "@/lib/Data";
+import { getApiUrl } from "@/lib/api";
 import {
   Btn,
   FieldInput,
@@ -14,7 +15,7 @@ import GraphCard from "@/components/dashboard/GraphCard";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { div } from "three/tsl";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
+const API = getApiUrl();
 const CYAN = "#06b6d4";
 
 // ─────────────────────────────────────────────────────────────

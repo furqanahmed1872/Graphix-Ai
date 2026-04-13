@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/store/appStore";
 import Plotly from "plotly.js-dist-min";
+import { getApiUrl } from "@/lib/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ChartType {
@@ -161,7 +162,7 @@ const FORMULA_FUNCTIONS: Record<string, (nums: number[]) => number> = {
   COUNT: (ns) => ns.length,
 };
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
+const API = getApiUrl();
 
 // ─── Component ────────────────────────────────────────────────────────────────
 const DataChartEditor: React.FC = () => {

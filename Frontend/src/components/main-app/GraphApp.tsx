@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { getApiUrl } from "@/lib/api";
 import Sidebar from "./Sidebar";
 import SingleChartArea from "./SingleChartArea";
 import ChartTemplatePanel from "./ChartTemplatePanel";
@@ -269,7 +270,7 @@ export default function GraphApp() {
         ? `${input}\n\n[IMPORTANT: When modifying the chart, always set explicit "color" values on marker and line objects in every trace. Never omit color fields — if the user requested a color change, apply it as a hex or CSS color string on marker.color and line.color for every trace.]`
         : input;
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080"}/api/graph`, {
+      const res = await fetch(`${getApiUrl()}/api/graph`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

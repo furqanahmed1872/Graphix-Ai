@@ -2,9 +2,6 @@
 # Stage 1: Builder
 FROM node:lts-alpine AS builder
 
-# Accept build arguments for environment variables
-ARG NEXT_PUBLIC_API_URL
-
 WORKDIR /app
 
 # Copy package files
@@ -16,8 +13,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the Next.js application with environment variable
-RUN NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} npm run build
+# Build the Next.js application
+RUN npm run build
 
 # Stage 2: Runtime
 FROM node:lts-alpine

@@ -4,6 +4,7 @@
 
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
+import { getApiUrl } from "@/lib/api";
 
 // ── Types ──────────────────────────────────────────────────────
 export interface User {
@@ -111,7 +112,7 @@ interface AppState {
   updateSavedChart: (chart: SavedChart) => void;
 }
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
+const API = getApiUrl();
 
 export const useAppStore = create<AppState>()(
   persist(

@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import ChartEditor from "@/components/main-app/ChartEditor";
 import { useAppStore } from "@/store/appStore";
+import { getApiUrl } from "@/lib/api";
 
 declare global {
   interface Window {
@@ -12,7 +13,7 @@ declare global {
 }
 
 const CYAN = "#06b6d4";
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
+const API = getApiUrl();
 
 // Chart types supported by the ExcelChartEditor panel
 const PANEL_SUPPORTED_TYPES = new Set([

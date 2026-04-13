@@ -3,7 +3,27 @@
  * All calls go through backend — never direct to DB from frontend.
  */
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5080";
+/**
+ * Get API base URL based on environment
+ * - Production: /api (reverse proxy on same domain)
+ * - Development: Use NEXT_PUBLIC_API_URL env var or /api as fallback
+ */
+export function getApiUrl(): string {
+  // If explicitly set via environment variable, use it
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+
+  // Client-side: use /api relative to current origin
+  if (typeof window !== "undefined") {
+    return "/api";
+  }
+
+  // Server-side fallback (for SSR)
+  return "/api";
+}
+
+const API = getApiUrl();
 
 function authHeaders(token: string) {
   return {
