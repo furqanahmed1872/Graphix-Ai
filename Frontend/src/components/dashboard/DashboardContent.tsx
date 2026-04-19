@@ -1779,9 +1779,6 @@ export default function App() {
     useAppStore();
 
   useEffect(() => {
-    if (!isBootstrapped && !isBootstrapping) bootstrap();
-  }, []);
-  useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth >= 768) {
       setSide(true); // open on desktop
     }

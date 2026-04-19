@@ -6,10 +6,15 @@ export const loginSchema = z.object({
 });
 
 export const signupSchema = z.object({
-  name: z
+  fname: z
     .string()
     .min(2, "Name must be at least 2 characters")
     .max(50, "Name too long"),
+  lname: z
+    .string()
+    .min(2, "Name must be at least 2 characters")
+    .max(50, "Name too long"),
+
   email: z.string().min(1, "Email is required").email("Enter a valid email"),
   password: z
     .string()

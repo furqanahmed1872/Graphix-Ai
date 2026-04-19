@@ -180,6 +180,9 @@ export const useAppStore = create<AppState>()(
       },
 
       logout: () => {
+        // Clear the auth cookie so Next.js middleware redirects correctly
+        document.cookie = "graphix_token=; path=/; max-age=0; SameSite=Strict";
+
         set({
           token: null,
           isAuthenticated: false,
@@ -257,6 +260,7 @@ export const useAppStore = create<AppState>()(
       partialize: (state) => ({
         token: state.token,
         isAuthenticated: state.isAuthenticated,
+        isBootstrapped: state.isBootstrapped,
       }),
     },
   ),

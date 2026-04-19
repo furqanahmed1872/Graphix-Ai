@@ -17,7 +17,6 @@ import { apiSignup } from "@/lib/api";
 export default function SignupForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const router = useRouter();
-  const { setToken, bootstrap } = useAppStore();
 
   const {
     register,
@@ -35,19 +34,37 @@ export default function SignupForm() {
   const onSubmit = async (data: SignupInput) => {
     setServerError(null);
     try {
-      const { token } = await apiSignup({
-        firstName: data.name,
-        lastName: "",
+      const { token, user } = await apiSignup({
+        firstName: data.fname,
+        lastName: data.lname,
         email: data.email,
         password: data.password,
       });
 
-      setToken(token);
-
       // Set cookie for middleware
       document.cookie = `graphix_token=${token}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Strict`;
 
-      await bootstrap();
+      // Hydrate store directly — new users have no charts/activity yet
+      // This avoids the race condition between setToken() and bootstrap()
+      useAppStore.setState({
+        token,
+        isAuthenticated: true,
+        user,
+        subscription: {
+          plan: "free",
+          status: "active",
+          startedAt: null,
+          expiresAt: null,
+        },
+        savedCharts: [],
+        dashboardStats: [],
+        activityFeed: [],
+        graphTemplates: [],
+        feedbacks: [],
+        isBootstrapped: true, // ← mark done so AppBootstrapper renders children
+        isBootstrapping: false,
+        bootstrapError: null,
+      });
 
       router.push("/dashboard");
     } catch (err: any) {
@@ -63,21 +80,27 @@ export default function SignupForm() {
       footerLinkLabel="Sign in"
       footerLinkHref="/signin"
     >
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        className="flex flex-col gap-5"
+      >
         <div className="grid grid-cols-2 gap-4">
           <AuthInput
             label="First Name"
             type="text"
             placeholder="Alex"
             autoComplete="given-name"
-            error={errors.name?.message}
-            {...register("name")}
+            error={errors.fname?.message}
+            {...register("fname")}
           />
           <AuthInput
             label="Last Name"
             type="text"
             placeholder="Chen"
             autoComplete="family-name"
+            error={errors.lname?.message}
+            {...register("lname")}
           />
         </div>
 
@@ -98,7 +121,9 @@ export default function SignupForm() {
             autoComplete="new-password"
             error={errors.password?.message}
             right={
-              <span className="text-[0.7rem] text-[#6b7280]">8+ chars, number & uppercase</span>
+              <span className="text-[0.7rem] text-[#6b7280]">
+                8+ chars, number & uppercase
+              </span>
             }
             {...register("password")}
           />
@@ -111,28 +136,43 @@ export default function SignupForm() {
             <input type="checkbox" className="sr-only" {...register("terms")} />
             <div
               className={`mt-0.5 w-4 h-4 border transition-all duration-200 flex items-center justify-center flex-shrink-0 ${
-                termsVal ? "bg-white border-white" : "border-[#3a3f47] bg-transparent"
+                termsVal
+                  ? "bg-white border-white"
+                  : "border-[#3a3f47] bg-transparent"
               }`}
             >
               {termsVal && (
                 <svg viewBox="0 0 10 10" fill="none" className="w-2.5 h-2.5">
-                  <path d="M1.5 5L4 7.5L8.5 2.5" stroke="#090b0e" strokeWidth="1.5" strokeLinecap="round" />
+                  <path
+                    d="M1.5 5L4 7.5L8.5 2.5"
+                    stroke="#090b0e"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
                 </svg>
               )}
             </div>
             <span className="text-[#6b7280] text-[0.8rem] leading-relaxed">
               I agree to the{" "}
-              <Link href="/terms" className="text-white underline underline-offset-2 hover:text-[#00d4c8] transition-colors">
+              <Link
+                href="/terms"
+                className="text-white underline underline-offset-2 hover:text-[#00d4c8] transition-colors"
+              >
                 Terms of Use
               </Link>{" "}
               and{" "}
-              <Link href="/policy" className="text-white underline underline-offset-2 hover:text-[#00d4c8] transition-colors">
+              <Link
+                href="/policy"
+                className="text-white underline underline-offset-2 hover:text-[#00d4c8] transition-colors"
+              >
                 Privacy Policy
               </Link>
             </span>
           </label>
           {errors.terms && (
-            <p className="text-red-400 text-[0.72rem] ml-7">{errors.terms.message}</p>
+            <p className="text-red-400 text-[0.72rem] ml-7">
+              {errors.terms.message}
+            </p>
           )}
         </div>
 
@@ -143,8 +183,15 @@ export default function SignupForm() {
         )}
 
         <div className="flex items-center justify-between mt-1">
-          <AuthButton loading={isSubmitting} label="Sign up" loadingLabel="Creating account…" />
-          <Link href="/signin" className="text-[0.82rem] text-[#6b7280] hover:text-white transition-colors">
+          <AuthButton
+            loading={isSubmitting}
+            label="Sign up"
+            loadingLabel="Creating account…"
+          />
+          <Link
+            href="/signin"
+            className="text-[0.82rem] text-[#6b7280] hover:text-white transition-colors"
+          >
             Already have an account?{" "}
             <span className="text-white font-medium">Log in</span>
           </Link>

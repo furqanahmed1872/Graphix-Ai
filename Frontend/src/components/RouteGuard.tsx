@@ -38,7 +38,7 @@ export default function RouteGuard({
 
   // ✅ While localStorage is being read, show nothing (not a redirect)
   if (!_hasHydrated) {
-    return null;
+    return <div style={{ background: "#09090f", minHeight: "100vh" }} />;
   }
 
   if (!isAuthenticated) {

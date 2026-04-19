@@ -272,7 +272,8 @@ export default function GraphApp() {
 
       const res = await fetch(`${getApiUrl()}/api/graph`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`},
+        
         body: JSON.stringify({
           prompt: augmentedPrompt,
           fileContent,

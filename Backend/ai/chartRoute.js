@@ -1,5 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
+import { requireAuth } from "../middleware/auth.js";
 import {
   SYSTEM_PROMPT_WITH_CONTEXT,
   SYSTEM_PROMPT_NO_CONTEXT,
@@ -15,7 +16,7 @@ const router = Router();
 const upload = multer();
 
 // ── POST /api/chart ───────────────────────────────────────────
-router.post("/", upload.single("file"), async (req, res) => {
+router.post("/", requireAuth, upload.single("file"), async (req, res) => {
   const { prompt, fileContent, previousChart } = req.body;
 
   if (!prompt || typeof prompt !== "string") {
