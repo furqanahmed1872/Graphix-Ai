@@ -2,6 +2,13 @@
 # Stage 1: Builder
 FROM node:lts-alpine AS builder
 
+# Accept build arguments for Next.js public variables
+ARG NEXT_PUBLIC_API_URL
+ARG CACHE_BUST
+
+# Invalidate cache to force rebuild
+RUN echo "Cache bust: $CACHE_BUST"
+
 WORKDIR /app
 
 # Copy package files
@@ -13,8 +20,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the Next.js application
-RUN npm run build
+# Build the Next.js application with environment variables
+RUN NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} npm run build
 
 # Stage 2: Runtime
 FROM node:lts-alpine

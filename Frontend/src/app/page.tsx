@@ -1,6 +1,7 @@
 "use client";
 import dynamic from "next/dynamic";
 import Hero from "@/components/landing/Hero";
+import { use, useEffect } from "react";
 
 const LiveDemoSection = dynamic(() => import("@/components/landing/Section"), {
   ssr: false,
@@ -15,6 +16,11 @@ const CTA = dynamic(() => import("@/components/landing/CTA"));
 const Footer = dynamic(() => import("@/components/landing/Footer"));
 
 export default function Home() {
+
+  useEffect(() => {
+    console.log("Home page loaded");
+   }, []);
+
   return (
     // NO mx-20, NO border-x on mobile. On desktop only: side margins + borders.
     <div

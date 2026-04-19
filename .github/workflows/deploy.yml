@@ -22,9 +22,9 @@ jobs:
           script: |
             cd ~/Graphix-Ai
             git pull origin production
-            docker-compose down
-            docker-compose up -d
-            docker-compose logs
+            docker compose down
+            docker compose up -d
+            docker compose logs
 
       - name: Deployment Status
         if: success()

@@ -18,8 +18,6 @@ services:
     env_file:
       - ./Backend/.env
     # DATABASE_URL in .env points to external VPS database
-    volumes:
-      - backend_logs:/app/logs
     restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -37,6 +35,9 @@ services:
     build:
       context: ./Frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        CACHE_BUST: ${CACHE_BUST}
     container_name: graphix-frontend
     # Port mapping: host:container
     # Container port (3000) comes from Frontend/.env PORT variable
@@ -44,8 +45,6 @@ services:
       - "127.0.0.1:3080:3000"
     env_file:
       - ./Frontend/.env
-    volumes:
-      - frontend_logs:/app/.next
     restart: unless-stopped
     networks:
       - graphix-network
@@ -55,12 +54,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
-volumes:
-  backend_logs:
-    driver: local
-  frontend_logs:
-    driver: local
 
 networks:
   graphix-network:

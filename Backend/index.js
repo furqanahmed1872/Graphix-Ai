@@ -21,6 +21,9 @@ if (missingEnvVars.length > 0) {
 const app = express();
 const upload = multer();
 
+// Trust proxy — needed when behind reverse proxy/load balancer
+app.set("trust proxy", 1);
+
 // ── CORS ──────────────────────────────────────────────────────
 app.use(
   cors({
@@ -39,6 +42,7 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many attempts. Please try again in 15 minutes." },
+  keyGenerator: (req) => req.ip,
 });
 
 // General API: 300 requests per minute per IP (prevents scraping)
@@ -48,6 +52,7 @@ const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests. Please slow down." },
+  keyGenerator: (req) => req.ip,
 });
 
 // Apply general limiter to all /api routes
