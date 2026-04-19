@@ -4,6 +4,10 @@ FROM node:lts-alpine AS builder
 
 # Accept build arguments for Next.js public variables
 ARG NEXT_PUBLIC_API_URL
+ARG CACHE_BUST
+
+# Invalidate cache to force rebuild
+RUN echo "Cache bust: $CACHE_BUST"
 
 WORKDIR /app
 
