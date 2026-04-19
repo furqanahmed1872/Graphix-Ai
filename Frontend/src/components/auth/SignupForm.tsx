@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
@@ -31,6 +31,10 @@ export default function SignupForm() {
 
   const password = watch("password", "");
   const termsVal = watch("terms");
+
+  useEffect(() => {
+   console.log("Signup form loaded");
+  }, []);
 
   const onSubmit = async (data: SignupInput) => {
     console.log("Signing Up", data);
