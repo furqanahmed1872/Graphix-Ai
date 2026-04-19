@@ -62,7 +62,7 @@ export default function SignupForm() {
 
   return (
     <AuthCard
-      title="Sign up now bro"
+      title="Sign up now"
       subtitle="Join 12,000+ teams already seeing their data differently."
       footerText="Already have an account?"
       footerLinkLabel="Sign in"
