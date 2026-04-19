@@ -33,6 +33,7 @@ export default function SignupForm() {
   const termsVal = watch("terms");
 
   const onSubmit = async (data: SignupInput) => {
+    console.log("Signing Up", data);
     setServerError(null);
     try {
       const { token } = await apiSignup({
