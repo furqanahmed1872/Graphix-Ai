@@ -11,6 +11,7 @@
 export function getApiUrl(): string {
   // If explicitly set via environment variable, use it
   if (process.env.NEXT_PUBLIC_API_URL) {
+    console.log("Using API URL from environment:", process.env.NEXT_PUBLIC_API_URL);
     return process.env.NEXT_PUBLIC_API_URL;
   }
 
@@ -64,6 +65,7 @@ export async function apiSignup(payload: {
   email: string;
   password: string;
 }) {
+  console.log("Signing up with API URL:", API);
   const res = await fetch(`${API}/api/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
