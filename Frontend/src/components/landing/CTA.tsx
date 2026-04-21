@@ -695,7 +695,7 @@ export default function CTA() {
               <div data-anim="stats" className="cta-stats-row">
                 {[
                   {
-                    val: 70,
+                    val: 140,
                     suffix: "+",
                     label: "CHART TYPES",
                     color: "black",
