@@ -24,7 +24,7 @@ const FEATURES = [
       </svg>
     ),
     headline: "Natural Language → Perfect Chart",
-    body: "Type what you want in plain English. No formulas, no code, no complexity. The AI understands your intent, auto-selects from 80+ chart types, and delivers publication-ready visualizations in under 3 seconds.",
+    body: "Type what you want in plain English. No formulas, no code, no complexity. The AI understands your intent, auto-selects from 140+ chart types, and delivers publication-ready visualizations in under 3 seconds.",
     pills: [
       "Natural language",
       "3s generation",
@@ -34,7 +34,7 @@ const FEATURES = [
     stat: { num: "< 3s", label: "avg. generation" },
   },
   {
-    tag: "80+ Charts",
+    tag: "140+ Charts",
     accent: "#a855f7",
     gradient: "from-purple-500/20 via-purple-500/5 to-transparent",
     icon: (
@@ -53,7 +53,7 @@ const FEATURES = [
       </svg>
     ),
     headline: "Every Chart Type That Matters",
-    body: "From basic bars to 3D surfaces, violin plots to candlesticks, waterfall to ternary diagrams. Statistical, financial, scientific, geospatial — 80+ chart types across 10 categories, all fully interactive with WebGL rendering.",
+    body: "From basic bars to 3D surfaces, violin plots to candlesticks, waterfall to ternary diagrams. Statistical, financial, scientific, geospatial — 140+ chart types across 10 categories, all fully interactive with WebGL rendering.",
     pills: [
       "Line · Scatter · Bar",
       "3D Surface · Mesh",
@@ -62,7 +62,7 @@ const FEATURES = [
       "Candlestick · Waterfall",
       "Ternary · Parallel",
     ],
-    stat: { num: "80+", label: "chart types" },
+    stat: { num: "140+", label: "chart types" },
     featured: true,
   },
   {
@@ -469,7 +469,7 @@ export default function FeaturesSection() {
             }`}
           >
             {[
-              ["80+", "Chart types", "#a855f7"],
+              ["140+", "Chart types", "#a855f7"],
               ["12", "Color palettes", "#10b981"],
               ["15", "Font options", "#f59e0b"],
               ["4", "Export formats", "#f97316"],
