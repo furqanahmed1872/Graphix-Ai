@@ -33,8 +33,8 @@ function shapeChart(c) {
     updated: timeAgo(c.updated_at),
     createdAt: c.created_at,
     updatedAt: c.updated_at,
-    shareToken: null,
-    shared: false,
+    shareToken: c.share_token ?? null,
+    shared: !!c.share_token,
   };
 }
 
@@ -83,9 +83,9 @@ router.post("/", requireAuth, async (req, res) => {
       `INSERT INTO saved_charts
          (user_id, title, prompt, chart_config, tag, category, description, trend, trend_up, sparkline)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-      RETURNING id, title, prompt, chart_config, tag, category, description,
-          views, trend, trend_up, starred, sparkline,
-          created_at, updated_at`,
+       RETURNING id, title, prompt, chart_config, tag, category, description,
+                 views, trend, trend_up, starred, sparkline, share_token,
+                 created_at, updated_at`,
       [
         userId,
         title || "Untitled Chart",
@@ -158,8 +158,8 @@ router.get("/:id", requireAuth, async (req, res) => {
     );
     const { rows } = await pool.query(
       `SELECT id, title, prompt, chart_config, tag, category, description,
-       views, trend, trend_up, starred, sparkline,
-       created_at, updated_at
+              views, trend, trend_up, starred, sparkline, share_token,
+              created_at, updated_at
          FROM saved_charts WHERE id = $1 AND user_id = $2`,
       [id, userId],
     );
@@ -203,9 +203,9 @@ router.patch("/:id", requireAuth, async (req, res) => {
          chart_config = COALESCE($11, chart_config),
          updated_at   = NOW()
        WHERE id = $1 AND user_id = $2
-      RETURNING id, title, prompt, chart_config, tag, category, description,
-          views, trend, trend_up, starred, sparkline,
-          created_at, updated_at`,
+       RETURNING id, title, prompt, chart_config, tag, category, description,
+                 views, trend, trend_up, starred, sparkline, share_token,
+                 created_at, updated_at`,
       [
         id,
         userId,
