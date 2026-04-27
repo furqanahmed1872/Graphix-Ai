@@ -5,7 +5,7 @@ export const metadata = {
   title: "Graphix — AI Data Visualization",
   description: "Turn your data into beautiful charts with AI",
   icons: {
-    icon: "/favicon.png", // ✅ "icons" not "icon"
+    icon: "/logo.png", // ✅ "icons" not "icon"
   },
 };
 
