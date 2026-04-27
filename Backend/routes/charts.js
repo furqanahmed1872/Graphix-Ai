@@ -90,7 +90,7 @@ router.post("/", requireAuth, async (req, res) => {
         userId,
         title || "Untitled Chart",
         prompt || "",
-        chartConfig,
+        JSON.stringify(chartConfig),
         tag,
         category,
         description,
@@ -217,7 +217,7 @@ router.patch("/:id", requireAuth, async (req, res) => {
         trendUp ?? null,
         starred ?? null,
         sparkline ? JSON.stringify(sparkline) : null,
-        chartConfig ?? null,
+        chartConfig ? JSON.stringify(chartConfig) : null,  // ← was: chartConfig ?? null
       ],
     );
     if (rows.length === 0) {
