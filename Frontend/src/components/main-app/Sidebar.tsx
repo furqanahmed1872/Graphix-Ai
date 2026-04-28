@@ -144,7 +144,7 @@ const handleDelete = (id: string) => {
                   <img
                     src="/logo.png"
                     alt=""
-                    className="h-5 brightness-0 invert"
+                    className="h-5 "
                   />
                 </div>
 

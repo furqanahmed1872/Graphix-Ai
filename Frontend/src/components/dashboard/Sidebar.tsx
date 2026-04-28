@@ -182,7 +182,7 @@ const fullName = user
                   <img
                     src="/logo.png"
                     alt=""
-                    style={{ height: 16, filter: "brightness(0) invert(1)" }}
+                    style={{ height: 16,  }}
                   />
                 </div>
 

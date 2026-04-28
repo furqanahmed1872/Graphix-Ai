@@ -197,7 +197,7 @@ export default function WaveHero({ onSend, isLoading }: WaveHeroProps) {
             <img
               src="/logo.png"
               alt=""
-              style={{ height: 28, filter: "brightness(0) invert(1)" }}
+              style={{ height: 28 }}
             />
           </div>
 
