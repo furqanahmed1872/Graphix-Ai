@@ -11,13 +11,15 @@ import AuthInput from "./ui/AuthInput";
 import AuthButton from "./ui/AuthButton";
 import AuthDivider from "./ui/AuthDivider";
 import { useAppStore } from "@/store/appStore";
-import { apiLogin } from "@/lib/api";
+import { apiLogin, getApiUrl } from "@/lib/api";
 
 export default function LoginForm() {
   const [serverError, setServerError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setToken, bootstrap } = useAppStore();
+  const API = getApiUrl();
+  const oauthError = searchParams.get("error");
 
   const {
     register,
@@ -47,8 +49,14 @@ export default function LoginForm() {
       const redirect = searchParams.get("redirect") || "/dashboard";
       router.push(redirect);
     } catch (err: any) {
-      setServerError(err.message || "Invalid email or password. Please try again.");
+      setServerError(
+        err.message || "Invalid email or password. Please try again.",
+      );
     }
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${API}/api/auth/google`;
   };
 
   return (
@@ -59,7 +67,18 @@ export default function LoginForm() {
       footerLinkLabel="Sign up"
       footerLinkHref="/signup"
     >
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-5">
+      <>
+        {oauthError && (
+          <p className="text-red-400 text-[0.78rem] bg-red-500/10 border border-red-500/20 px-3 py-2">
+            Google sign-in failed. Please try again.
+          </p>
+        )}
+      </>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        className="flex flex-col gap-5"
+      >
         <AuthInput
           label="Email address"
           type="email"
@@ -93,7 +112,11 @@ export default function LoginForm() {
         )}
 
         <div className="flex items-center gap-6 mt-1">
-          <AuthButton loading={isSubmitting} label="Sign in" loadingLabel="Signing in…" />
+          <AuthButton
+            loading={isSubmitting}
+            label="Sign in"
+            loadingLabel="Signing in…"
+          />
           <Link
             href="/signup"
             className="text-[0.82rem] text-[#6b7280] hover:text-white transition-colors whitespace-nowrap"
@@ -104,7 +127,7 @@ export default function LoginForm() {
         </div>
       </form>
 
-      <AuthDivider showGithub />
+      <AuthDivider showGithub onGoogleClick={handleGoogleLogin} />
     </AuthCard>
   );
 }

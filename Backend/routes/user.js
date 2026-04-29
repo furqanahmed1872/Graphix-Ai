@@ -1,15 +1,12 @@
+// Backend/routes/user.js
 import { Router } from "express";
-import pool from "../db/pool.js";
+import prisma from "../prisma/client.js";
 import { requireAuth } from "../middleware/auth.js";
 
 const router = Router();
 
 // ── Helpers ───────────────────────────────────────────────────
 
-/**
- * Convert an updatedAt date to a human-readable "X ago" string.
- * Runs server-side so the client always gets a consistent value.
- */
 function timeAgo(date) {
   const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
   if (seconds < 60) return "just now";
@@ -19,61 +16,42 @@ function timeAgo(date) {
   return new Date(date).toLocaleDateString();
 }
 
-/**
- * Compute the 4 dashboard stat cards purely from DB data.
- * No magic numbers — everything derived from real rows.
- */
 function buildDashboardStats(charts, subscription) {
-  const totalGraphs = charts.length;
-  const totalViews = charts.reduce((sum, c) => sum + (c.views || 0), 0);
-  const sharedCount = charts.filter(
-    (c) => c.chart_config?.shared === true,
-  ).length;
+  const totalGraphs  = charts.length;
+  const totalViews   = charts.reduce((sum, c) => sum + (c.views || 0), 0);
+  const sharedCount  = charts.filter((c) => !!c.shareToken).length;
 
-  // Storage: rough estimate — each chart_config JSON byte ≈ 1 byte
   const storageBytes = charts.reduce(
-    (sum, c) => sum + JSON.stringify(c.chart_config || {}).length,
+    (sum, c) => sum + JSON.stringify(c.chartConfig || {}).length,
     0,
   );
   const storageMB = (storageBytes / (1024 * 1024)).toFixed(1);
 
-  // Deltas — compare last 7 days vs previous 7 days
-  const now = Date.now();
-  const day7 = now - 7 * 86400_000;
+  const now   = Date.now();
+  const day7  = now - 7  * 86400_000;
   const day14 = now - 14 * 86400_000;
 
-  const recentCharts = charts.filter(
-    (c) => new Date(c.created_at).getTime() > day7,
-  ).length;
-  const prevCharts = charts.filter(
-    (c) =>
-      new Date(c.created_at).getTime() > day14 &&
-      new Date(c.created_at).getTime() <= day7,
-  ).length;
+  const recentCharts = charts.filter((c) => new Date(c.createdAt).getTime() > day7).length;
+  const prevCharts   = charts.filter((c) => {
+    const t = new Date(c.createdAt).getTime();
+    return t > day14 && t <= day7;
+  }).length;
   const chartsDelta = recentCharts - prevCharts;
 
   const recentViews = charts
-    .filter((c) => new Date(c.updated_at).getTime() > day7)
+    .filter((c) => new Date(c.updatedAt).getTime() > day7)
     .reduce((s, c) => s + (c.views || 0), 0);
 
   return [
     {
       label: "Total Graphs",
       value: String(totalGraphs),
-      delta:
-        chartsDelta > 0
-          ? `+${chartsDelta} this week`
-          : chartsDelta < 0
-            ? `${chartsDelta} this week`
-            : "No change",
+      delta: chartsDelta > 0 ? `+${chartsDelta} this week` : chartsDelta < 0 ? `${chartsDelta} this week` : "No change",
       icon: "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
     },
     {
       label: "Total Views",
-      value:
-        totalViews >= 1000
-          ? `${(totalViews / 1000).toFixed(1)}k`
-          : String(totalViews),
+      value: totalViews >= 1000 ? `${(totalViews / 1000).toFixed(1)}k` : String(totalViews),
       delta: recentViews > 0 ? `+${recentViews} this week` : "No views yet",
       icon: "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z",
     },
@@ -86,58 +64,43 @@ function buildDashboardStats(charts, subscription) {
     {
       label: "Storage Used",
       value: `${storageMB}MB`,
-      delta:
-        subscription?.plan === "free"
-          ? "Free plan limit: 100MB"
-          : "Unlimited on Pro",
+      delta: subscription?.plan === "free" ? "Free plan limit: 100MB" : "Unlimited on Pro",
       icon: "M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4",
     },
   ];
 }
 
 // ── PATCH /api/user/profile ───────────────────────────────────
-// Add this route to Backend/routes/user.js (inside the router, before export)
-// Updates the logged-in user's firstName, lastName, and/or email.
-
 router.patch("/profile", requireAuth, async (req, res) => {
   const { userId } = req.user;
   const { firstName, lastName, email } = req.body;
 
-  // At least one field must be provided
   if (!firstName && !lastName && !email) {
     return res.status(400).json({ error: "No fields to update." });
   }
 
   try {
-    const { rows } = await pool.query(
-      `UPDATE users
-         SET first_name = COALESCE($2, first_name),
-             last_name  = COALESCE($3, last_name),
-             email      = COALESCE($4, email)
-         WHERE id = $1
-         RETURNING id, email, first_name, last_name, avatar, created_at`,
-      [
-        userId,
-        firstName ?? null,
-        lastName  ?? null,
-        email     ?? null,
-      ],
-    );
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        // Only update fields that were actually provided
+        ...(firstName && { firstName: firstName.trim() }),
+        ...(lastName  && { lastName:  lastName.trim()  }),
+        ...(email     && { email:     email.toLowerCase().trim() }),
+      },
+    });
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "User not found." });
-    }
-
-    const u = rows[0];
     return res.json({
-      id:        u.id,
-      email:     u.email,
-      firstName: u.first_name,
-      lastName:  u.last_name,
-      avatar:    u.avatar,
-      createdAt: u.created_at,
+      id:        user.id,
+      email:     user.email,
+      firstName: user.firstName,
+      lastName:  user.lastName,
+      avatar:    user.avatar,
+      createdAt: user.createdAt,
     });
   } catch (err) {
+    // P2025 = record not found
+    if (err.code === "P2025") return res.status(404).json({ error: "User not found." });
     console.error("Update profile error:", err);
     return res.status(500).json({ error: "Failed to update profile." });
   }
@@ -148,168 +111,134 @@ router.get("/bootstrap", requireAuth, async (req, res) => {
   const { userId } = req.user;
 
   try {
-    const [
-      userResult,
-      subResult,
-      chartsResult,
-      activityResult,
-      templatesResult,
-      feedbacksResult,
-    ] = await Promise.all([
-      // User profile
-      pool.query(
-        `SELECT id, email, first_name, last_name, avatar, created_at
-           FROM users WHERE id = $1`,
-        [userId],
-      ),
+    // All 6 queries fire in parallel — same as before
+    const [user, subscription, charts, activityLogs, graphTemplates, feedbacks] =
+      await Promise.all([
 
-      // Latest subscription
-      pool.query(
-        `SELECT plan, status, started_at, expires_at
-           FROM subscriptions WHERE user_id = $1
-           ORDER BY created_at DESC LIMIT 1`,
-        [userId],
-      ),
+        // User profile
+        prisma.user.findUnique({
+          where: { id: userId },
+        }),
 
-      // Saved charts — all new display columns included
-      pool.query(
-        `SELECT
-           id, title, prompt, chart_config,
-           tag, category, description,
-           views, trend, trend_up, starred, sparkline,
-           share_token,
-           created_at, updated_at
-         FROM saved_charts
-         WHERE user_id = $1
-         ORDER BY updated_at DESC
-         LIMIT 50`,
-        [userId],
-      ),
+        // Latest subscription
+        prisma.subscription.findFirst({
+          where:   { userId },
+          orderBy: { createdAt: "desc" },
+        }),
 
-      // Activity feed — last 20 actions by this user
-      pool.query(
-        `SELECT
-           al.id, al.action, al.chart_title, al.avatar, al.created_at,
-           al.user_id = $1 AS own
-         FROM activity_log al
-         WHERE al.user_id = $1
-         ORDER BY al.created_at DESC
-         LIMIT 20`,
-        [userId],
-      ),
+        // Saved charts — last 50
+        prisma.savedChart.findMany({
+          where:   { userId },
+          orderBy: { updatedAt: "desc" },
+          take:    50,
+        }),
 
-      // Global templates
-      pool.query(
-        `SELECT id, title, category, description,
-                trend, is_trending, template,
-                tag, chart_count
-           FROM graph_templates
-           ORDER BY is_trending DESC, created_at ASC`,
-      ),
+        // Activity feed — last 20
+        prisma.activityLog.findMany({
+          where:   { userId },
+          orderBy: { createdAt: "desc" },
+          take:    20,
+        }),
 
-      // Global feedbacks
-      pool.query(
-        `SELECT id, author_name, message, rating, created_at
-           FROM feedbacks
-           ORDER BY created_at DESC LIMIT 20`,
-      ),
-    ]);
+        // Global templates
+        prisma.graphTemplate.findMany({
+          orderBy: [{ isTrending: "desc" }, { createdAt: "asc" }],
+        }),
 
-     // ── 404 guard ─────────────────────────────────────────────
-     FIND: if (userResult.rows.length === 0) {
-       return res.status(404).json({ error: "User not found." });
-     }
+        // Global feedbacks
+        prisma.feedback.findMany({
+          orderBy: { createdAt: "desc" },
+          take:    20,
+        }),
+      ]);
 
-    const u = userResult.rows[0];
-    const sub = subResult.rows[0] || {
-      plan: "free",
-      status: "active",
-      started_at: null,
-      expires_at: null,
+    if (!user) return res.status(404).json({ error: "User not found." });
+
+    const sub = subscription ?? {
+      plan:      "free",
+      status:    "active",
+      startedAt: null,
+      expiresAt: null,
     };
 
-    const charts = chartsResult.rows;
-
     // ── Shape savedCharts ─────────────────────────────────────
+    // Prisma returns camelCase — no manual mapping needed for most fields
     const savedCharts = charts.map((c) => ({
-      id: c.id,
-      title: c.title,
-      prompt: c.prompt,
-      chartConfig: c.chart_config,
-      // display fields
-      tag: c.tag,
-      category: c.category,
-      desc: c.description,
-      views: c.views,
-      trend: c.trend,
-      up: c.trend_up,
-      starred: c.starred,
-      data: Array.isArray(c.sparkline) ? c.sparkline : [],
-      updated: timeAgo(c.updated_at),
-      // raw timestamps
-      createdAt: c.created_at,
-      updatedAt: c.updated_at,
-      shareToken: c.share_token ?? null, // ← ADD
-      shared: !!c.share_token, // ← ADD
+      id:          c.id,
+      title:       c.title,
+      prompt:      c.prompt,
+      chartConfig: c.chartConfig,
+      tag:         c.tag,
+      category:    c.category,
+      desc:        c.description,
+      views:       c.views,
+      trend:       c.trend,
+      up:          c.trendUp,
+      starred:     c.starred,
+      data:        Array.isArray(c.sparkline) ? c.sparkline : [],
+      updated:     timeAgo(c.updatedAt),
+      createdAt:   c.createdAt,
+      updatedAt:   c.updatedAt,
+      shareToken:  c.shareToken ?? null,
+      shared:      !!c.shareToken,
     }));
 
     // ── Shape activityFeed ────────────────────────────────────
-    const activityFeed = activityResult.rows.map((a) => ({
-      id: a.id,
+    const activityFeed = activityLogs.map((a) => ({
+      id:     a.id,
       action: a.action,
-      graph: a.chart_title,
-      time: timeAgo(a.created_at),
+      graph:  a.chartTitle,
+      time:   timeAgo(a.createdAt),
       avatar: a.avatar,
-      own: a.own,
+      own:    a.userId === userId,   // computed — no raw SQL needed
     }));
 
-    // ── Compute dashboardStats from real data ─────────────────
+    // ── Dashboard stats ───────────────────────────────────────
     const dashboardStats = buildDashboardStats(charts, sub);
 
-    // ── Shape globalData ──────────────────────────────────────
-    const graphTemplates = templatesResult.rows.map((t) => ({
-      id: t.id,
-      title: t.title,
-      category: t.category,
+    // ── Shape global data ─────────────────────────────────────
+    const shapedTemplates = graphTemplates.map((t) => ({
+      id:          t.id,
+      title:       t.title,
+      category:    t.category,
       description: t.description,
-      trend: t.trend,
-      isTrending: t.is_trending,
-      template: t.template,
-      tag: t.tag,
-      count: t.chart_count,
-      desc: t.description,
+      trend:       t.trend,
+      isTrending:  t.isTrending,
+      template:    t.template,
+      tag:         t.tag,
+      count:       t.chartCount,
+      desc:        t.description,
     }));
 
-    const feedbacks = feedbacksResult.rows.map((f) => ({
-      id: f.id,
-      authorName: f.author_name,
-      message: f.message,
-      rating: f.rating,
-      createdAt: f.created_at,
+    const shapedFeedbacks = feedbacks.map((f) => ({
+      id:         f.id,
+      authorName: f.authorName,
+      message:    f.message,
+      rating:     f.rating,
+      createdAt:  f.createdAt,
     }));
 
-    // ── Final response ────────────────────────────────────────
     return res.json({
       user: {
-        id: u.id,
-        email: u.email,
-        firstName: u.first_name,
-        lastName: u.last_name,
-        avatar: u.avatar,
-        createdAt: u.created_at,
+        id:        user.id,
+        email:     user.email,
+        firstName: user.firstName,
+        lastName:  user.lastName,
+        avatar:    user.avatar,
+        createdAt: user.createdAt,
       },
       subscription: {
-        plan: sub.plan,
-        status: sub.status,
-        startedAt: sub.started_at,
-        expiresAt: sub.expires_at,
+        plan:      sub.plan,
+        status:    sub.status,
+        startedAt: sub.startedAt,
+        expiresAt: sub.expiresAt,
       },
       savedCharts,
       dashboardStats,
       activityFeed,
       globalData: {
-        graphTemplates,
-        feedbacks,
+        graphTemplates: shapedTemplates,
+        feedbacks:      shapedFeedbacks,
       },
     });
   } catch (err) {

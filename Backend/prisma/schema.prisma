@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Users ─────────────────────────────────────────────────────
+model User {
+  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  email        String   @unique
+  passwordHash String?  @map("password_hash")       // nullable — Google OAuth users have no password
+  firstName    String   @default("") @map("first_name")
+  lastName     String   @default("") @map("last_name")
+  avatar       String   @default("U")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  subscriptions Subscription[]
+  savedCharts   SavedChart[]
+  activityLogs  ActivityLog[]
+  feedbacks     Feedback[]
+
+  @@map("users")
+}
+
+// ── Subscriptions ─────────────────────────────────────────────
+model Subscription {
+  id        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  plan      String    @default("free")    // 'free' | 'pro' | 'enterprise'
+  status    String    @default("active")  // 'active' | 'cancelled' | 'expired'
+  startedAt DateTime  @default(now()) @map("started_at") @db.Timestamptz
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("subscriptions")
+}
+
+// ── Saved Charts ──────────────────────────────────────────────
+model SavedChart {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  title       String   @default("Untitled Chart")
+  prompt      String   @default("")
+  chartConfig Json     @default("{}") @map("chart_config")
+
+  // Display / dashboard fields
+  tag         String   @default("Line")
+  category    String   @default("General")
+  description String   @default("")
+  views       Int      @default(0)
+  trend       String   @default("0%")
+  trendUp     Boolean  @default(true) @map("trend_up")
+  starred     Boolean  @default(false)
+  sparkline   Json     @default("[]")
+  shareToken  String?  @unique @map("share_token")
+
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityLogs ActivityLog[]
+
+  @@unique([id, userId], name: "id_userId")
+  @@index([userId])
+  @@index([userId, updatedAt(sort: Desc)])
+  @@map("saved_charts")
+}
+
+// ── Activity Log ──────────────────────────────────────────────
+model ActivityLog {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  action     String   // 'Created' | 'Edited' | 'Shared' | 'Starred' | 'Deleted'
+  chartId    String?  @map("chart_id") @db.Uuid
+  chartTitle String   @default("") @map("chart_title")
+  avatar     String   @default("U")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  chart SavedChart? @relation(fields: [chartId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("activity_log")
+}
+
+// ── Graph Templates (global) ──────────────────────────────────
+model GraphTemplate {
+  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  title       String
+  category    String   @default("General")
+  description String   @default("")
+  template    Json     @default("{}")
+  trend       String   @default("")
+  isTrending  Boolean  @default(false) @map("is_trending")
+  tag         String   @default("General")
+  chartCount  Int      @default(0) @map("chart_count")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([isTrending, createdAt])
+  @@map("graph_templates")
+}
+
+// ── Feedbacks (global) ────────────────────────────────────────
+model Feedback {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid   // nullable — seeded rows have no user
+  authorName String   @default("Anonymous") @map("author_name")
+  message    String
+  rating     Int      @default(5)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt(sort: Desc)])
+  @@map("feedbacks")
+}

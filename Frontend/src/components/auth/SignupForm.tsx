@@ -12,7 +12,9 @@ import AuthButton from "./ui/AuthButton";
 import AuthDivider from "./ui/AuthDivider";
 import PasswordStrength from "./ui/PasswordStrength";
 import { useAppStore } from "@/store/appStore";
-import { apiSignup } from "@/lib/api";
+import { apiSignup, getApiUrl } from "@/lib/api";
+
+const API = getApiUrl();
 
 export default function SignupForm() {
   const [serverError, setServerError] = useState<string | null>(null);
@@ -32,7 +34,7 @@ export default function SignupForm() {
   const termsVal = watch("terms");
 
   useEffect(() => {
-   console.log("Signup form loaded");
+    console.log("Signup form loaded");
   }, []);
 
   const onSubmit = async (data: SignupInput) => {
@@ -75,6 +77,10 @@ export default function SignupForm() {
     } catch (err: any) {
       setServerError(err.message || "Something went wrong. Please try again.");
     }
+  };
+
+  const handleGoogleSignup = () => {
+    window.location.href = `${API}/api/auth/google`;
   };
 
   return (
@@ -203,7 +209,7 @@ export default function SignupForm() {
         </div>
       </form>
 
-      <AuthDivider showGithub />
+      <AuthDivider showGithub onGoogleClick={handleGoogleLogin} />
     </AuthCard>
   );
 }

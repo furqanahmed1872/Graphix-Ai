@@ -15,7 +15,7 @@ export default function AuthButton({
     <button
       type="submit"
       disabled={loading}
-      className={`bg-[#00d4c8] hover:cursor-pointer text-[#090b0e] font-syne font-bold text-[0.82rem] uppercase tracking-widest py-3.5 px-8 hover:opacity-85 transition-opacity duration-200 disabled:opacity-60 flex items-center justify-center gap-2 ${fullWidth ? "w-full" : ""}`}
+      className={`bg-[#00d4c8] hover:cursor-pointer text-[#090b0e] font-syne font-bold text-[0.82rem] uppercase tracking-widest py-3.5 px-5 hover:opacity-85 transition-opacity duration-200 disabled:opacity-60 flex items-center justify-center gap-2 ${fullWidth ? "w-full" : ""}`}
     >
       {loading ? (
         <>
