@@ -5,8 +5,8 @@ import { useAppStore } from "@/store/appStore";
 import { Arrow } from "./Nav";
 import GraphField from "./GraphField";
 
-/**
- * Closing band — the chord field returns, dimmed, behind a last call.
+/**  
+ * Cl  osing band — the chord field returns, dimmed, behind a last call.
  */
 
 export default function CTA() {
