@@ -3,7 +3,7 @@ import { pathToFileURL } from "node:url";
 import express from "express";
 import cors from "cors";
 import multer from "multer";
-import rateLimit from "express-rate-limit";
+import rateLimit, { ipKeyGenerator } from "express-rate-limit";
 import { PostgresRateLimitStore } from "./middleware/pgRateLimitStore.js";
 
 import authRoutes from "./routes/auth.js";
@@ -13,7 +13,9 @@ import feedbackRoutes from "./routes/feedback.js";
 import aiRoutes from "./ai/chartRoute.js";
 
 // ── Startup guard — fail fast if critical env vars are missing ─
-const requiredEnvVars = ["JWT_SECRET", "PORT", "CLIENT_URL"];
+// PORT and CLIENT_URL are deliberately not required: serverless never binds a
+// port, and same-origin deployment has no cross-origin to allow.
+const requiredEnvVars = ["JWT_SECRET"];
 const missingEnvVars = requiredEnvVars.filter((v) => !process.env[v]);
 if (missingEnvVars.length > 0) {
   console.error(`FATAL: Missing required env vars: ${missingEnvVars.join(", ")}`);
@@ -27,14 +29,40 @@ const upload = multer();
 app.set("trust proxy", 1);
 
 // ── CORS ──────────────────────────────────────────────────────
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL,
-    credentials: true,
-  }),
-);
+// Only needed when the site and API are on different origins (local dev:
+// :3000 -> :5000). In production they share an origin behind /api/*, so
+// leaving CLIENT_URL unset skips CORS entirely rather than sending a
+// wildcard that would conflict with credentials.
+if (process.env.CLIENT_URL) {
+  app.use(
+    cors({
+      origin: process.env.CLIENT_URL,
+      credentials: true,
+    }),
+  );
+}
 
 app.use(express.json({ limit: "10mb" }));
+
+// ── Client IP ─────────────────────────────────────────────────
+// serverless-http builds a request with no underlying socket, so
+// `req.socket.remoteAddress` is undefined and Express derives `req.ip` from
+// it — leaving req.ip undefined no matter what `trust proxy` says. Every
+// request would then share a single rate-limit bucket, turning the 20-per-15
+// -minutes auth limit into a site-wide lockout. req.ips is still parsed from
+// X-Forwarded-For, so prefer that, and fall back to the headers directly.
+function clientIp(req) {
+  const ip =
+    req.ip ||
+    (req.ips && req.ips[0]) ||
+    req.headers["x-nf-client-connection-ip"] ||
+    (req.headers["x-forwarded-for"] || "").split(",")[0].trim() ||
+    req.socket?.remoteAddress;
+
+  // ipKeyGenerator normalises IPv6 to a /64 subnet so a single client cannot
+  // walk its own address space to get a fresh allowance per request.
+  return ip ? ipKeyGenerator(ip) : "unknown";
+}
 
 // ── Rate Limiters ─────────────────────────────────────────────
 // Auth routes: 20 attempts per 15 minutes per IP
@@ -44,6 +72,7 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many attempts. Please try again in 15 minutes." },
+  keyGenerator: clientIp,
   // Shared across instances. The default MemoryStore counts per process, so
   // on serverless an attacker gets a fresh allowance on every cold start.
   store: new PostgresRateLimitStore({ prefix: "auth" }),
@@ -56,6 +85,7 @@ const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests. Please slow down." },
+  keyGenerator: clientIp,
 });
 
 // Apply general limiter to all /api routes
