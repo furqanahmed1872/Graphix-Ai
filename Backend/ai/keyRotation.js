@@ -1,23 +1,29 @@
 // ── Groq Key Rotation ─────────────────────────────────────────
 //
-// Failure causes are NOT interchangeable, and treating them as one thing is
-// what made a single bad request take the whole service down:
+// State lives in Postgres, not in this process. On serverless every request
+// may get a fresh container, so in-memory cooldowns never survived: a
+// rate-limited key was retried immediately and a revoked key was retried
+// forever. Both are exactly what rotation exists to prevent.
 //
-//   429  the key really is rate limited      -> short cooldown, retry later
-//   401  the key is wrong/revoked            -> permanently out, alert loudly
-//   400  the *request* was bad (too long)    -> nothing to do with the key
+// Failure causes are not interchangeable:
 //
-// The previous version funnelled all three into a 60s cooldown. With one key
-// configured that meant any 400 or 429 blocked every user for a full minute.
+//   429  the key really is rate limited   -> cooldown, retry later
+//   401  the key is wrong/revoked         -> permanently out
+//   400  the *request* was bad            -> nothing to do with the key
+//
+// Keys are identified by a SHA-256 prefix, never stored in full, and never
+// by their position in .env — reordering the variables or swapping one key
+// must not let it inherit another key's cooldown.
 
-// Both spellings are accepted. The loader used to read only GROQ_KEY_N, so a
-// .env using the (equally natural) GROQ_API_KEY_N loaded zero rotation keys
-// and silently fell back to the single GROQ_API_KEY — which looks exactly
-// like "I configured four keys and still get rate limited".
+import crypto from "node:crypto";
+import prisma from "../prisma/client.js";
+
 const PLACEHOLDER = /^(your_|<|changeme|xxx|replace)/i;
 
 const KEYS = [];
+const keySources = [];
 const seen = new Set();
+
 const addKey = (raw, source) => {
   const k = (raw || "").trim();
   if (!k || PLACEHOLDER.test(k)) return;
@@ -27,8 +33,10 @@ const addKey = (raw, source) => {
   keySources.push(source);
 };
 
-const keySources = [];
-for (let i = 1; i <= 50; i++) {
+// Both spellings are accepted. Reading only GROQ_KEY_N once meant a .env
+// using GROQ_API_KEY_N loaded zero rotation keys and silently fell back to
+// the single GROQ_API_KEY.
+for (let i = 1; i <= 100; i++) {
   addKey(process.env[`GROQ_KEY_${i}`], `GROQ_KEY_${i}`);
   addKey(process.env[`GROQ_API_KEY_${i}`], `GROQ_API_KEY_${i}`);
 }
@@ -40,45 +48,119 @@ console.log(
 if (KEYS.length === 0) {
   console.error(
     "[keyRotation] No Groq keys found. Set GROQ_API_KEY, or GROQ_API_KEY_1..N " +
-      "(GROQ_KEY_1..N also works) in Backend/.env",
+      "(GROQ_KEY_1..N also works) in the environment.",
   );
 }
-if (KEYS.length === 1) {
-  console.warn(
-    "[keyRotation] Only one Groq key is configured. A rate limit on it has " +
-      "no fallback and will surface to users. Add GROQ_KEY_1..N for headroom.",
-  );
-}
+
+const FINGERPRINTS = KEYS.map((k) =>
+  crypto.createHash("sha256").update(k).digest("hex").slice(0, 16),
+);
 
 const DEFAULT_COOLDOWN_MS = 20 * 1000;
+const CACHE_TTL_MS = 3000; // cooldowns are >=20s, so a 3s cache cannot skip one
 
 let currentKeyIndex = 0;
-const exhaustedUntil = {}; // index -> epoch ms the cooldown ends
-const invalidKeys = new Set(); // indices that will never work again
 
-export function getNextAvailableKey() {
+// Read-through cache of unavailable keys, plus a fallback copy used when the
+// database is unreachable. Chart generation must not hard-fail just because
+// the cooldown table is momentarily unavailable.
+let cache = { at: 0, cooling: new Map(), invalid: new Set() };
+const memoryFallback = { cooling: new Map(), invalid: new Set() };
+let degraded = false;
+
+async function loadState() {
   const now = Date.now();
-  const usable = KEYS.map((_, i) => i).filter((i) => !invalidKeys.has(i));
+  if (now - cache.at < CACHE_TTL_MS) return cache;
 
+  try {
+    const rows = await prisma.groqKeyState.findMany({
+      where: { status: { not: "available" } },
+      select: { fingerprint: true, status: true, cooldownUntil: true },
+    });
+
+    const cooling = new Map();
+    const invalid = new Set();
+    for (const r of rows) {
+      if (r.status === "invalid") invalid.add(r.fingerprint);
+      else if (r.cooldownUntil && r.cooldownUntil.getTime() > now) {
+        cooling.set(r.fingerprint, r.cooldownUntil.getTime());
+      }
+    }
+    cache = { at: now, cooling, invalid };
+    if (degraded) {
+      console.log("[keyRotation] key-state database reachable again");
+      degraded = false;
+    }
+    return cache;
+  } catch (err) {
+    if (!degraded) {
+      console.error(
+        "[keyRotation] key-state table unreachable, falling back to " +
+          "in-process state: " + err.message.slice(0, 120),
+      );
+      degraded = true;
+    }
+    return { at: now, ...memoryFallback };
+  }
+}
+
+async function writeState(index, status, cooldownUntil, lastError) {
+  const fingerprint = FINGERPRINTS[index];
+  // Always record locally too, so the fallback path stays useful.
+  if (status === "invalid") memoryFallback.invalid.add(fingerprint);
+  else if (cooldownUntil) {
+    memoryFallback.cooling.set(fingerprint, cooldownUntil.getTime());
+  }
+  cache.at = 0; // force the next read to refresh
+
+  try {
+    await prisma.groqKeyState.upsert({
+      where: { fingerprint },
+      create: { fingerprint, status, cooldownUntil, lastError },
+      update: { status, cooldownUntil, lastError },
+    });
+  } catch (err) {
+    console.error(
+      `[keyRotation] could not persist state for key #${index + 1}: ` +
+        err.message.slice(0, 120),
+    );
+  }
+}
+
+export async function getNextAvailableKey() {
+  if (KEYS.length === 0) {
+    return { key: null, index: -1, allExhausted: true, allInvalid: true };
+  }
+
+  const now = Date.now();
+  const { cooling, invalid } = await loadState();
+
+  const usable = FINGERPRINTS.map((f, i) => i).filter(
+    (i) => !invalid.has(FINGERPRINTS[i]),
+  );
   if (usable.length === 0) {
     return { key: null, index: -1, allExhausted: true, allInvalid: true };
   }
 
+  // Start from wherever we left off so load spreads across keys rather than
+  // hammering the first one. indexOf can be -1 if the current key was just
+  // marked invalid, hence the clamp.
+  const start = Math.max(0, usable.indexOf(currentKeyIndex));
   for (let n = 0; n < usable.length; n++) {
-    const start = Math.max(0, usable.indexOf(currentKeyIndex));
     const idx = usable[(start + n) % usable.length];
-    if (!exhaustedUntil[idx] || exhaustedUntil[idx] < now) {
+    const until = cooling.get(FINGERPRINTS[idx]);
+    if (!until || until < now) {
       currentKeyIndex = idx;
       return { key: KEYS[idx], index: idx };
     }
   }
 
-  // Every usable key is cooling down — report when the earliest one frees up
-  // so the caller can tell the user something specific.
+  // Everything usable is cooling — report when the earliest frees up so the
+  // caller can tell the user something specific.
   let soonestIdx = usable[0];
   let soonestTime = Infinity;
   for (const i of usable) {
-    const t = exhaustedUntil[i] || 0;
+    const t = cooling.get(FINGERPRINTS[i]) || 0;
     if (t < soonestTime) {
       soonestTime = t;
       soonestIdx = i;
@@ -93,42 +175,42 @@ export function getNextAvailableKey() {
 }
 
 /** A genuine rate limit. Honours Groq's Retry-After header when it sends one. */
-export function markKeyExhausted(index, retryAfterMs = DEFAULT_COOLDOWN_MS) {
+export async function markKeyExhausted(index, retryAfterMs = DEFAULT_COOLDOWN_MS) {
   const ms = Math.min(Math.max(retryAfterMs, 1000), 5 * 60 * 1000);
-  exhaustedUntil[index] = Date.now() + ms;
+  const until = new Date(Date.now() + ms);
   console.log(
     `Key #${index + 1} rate limited, cooling down ${Math.round(ms / 1000)}s`,
   );
-  const usable = KEYS.map((_, i) => i).filter((i) => !invalidKeys.has(i));
-  if (usable.length > 1) currentKeyIndex = (index + 1) % KEYS.length;
+  currentKeyIndex = (index + 1) % Math.max(1, KEYS.length);
+  await writeState(index, "cooling", until, "429 rate limited");
 }
 
 /** The key itself is bad (401/403). No cooldown will fix it. */
-export function markKeyInvalid(index) {
-  invalidKeys.add(index);
+export async function markKeyInvalid(index) {
   console.error(
     `[keyRotation] Key #${index + 1} rejected as invalid (401/403). ` +
-      `Remove or replace it. ${KEYS.length - invalidKeys.size} key(s) left.`,
+      `Remove or replace it.`,
   );
-  if (invalidKeys.size === KEYS.length) {
-    console.error("[keyRotation] NO VALID GROQ KEYS REMAIN — chart generation is down.");
-  }
+  await writeState(index, "invalid", null, "401/403 invalid key");
 }
 
-export function keyReport() {
+export async function keyReport() {
   const now = Date.now();
-  return KEYS.map((_, i) => ({
-    key: `Key #${i + 1}`,
-    status: invalidKeys.has(i)
-      ? "invalid"
-      : exhaustedUntil[i] && exhaustedUntil[i] > now
-        ? "cooling down"
-        : "available",
-    resetsIn:
-      !invalidKeys.has(i) && exhaustedUntil[i] && exhaustedUntil[i] > now
-        ? `${Math.ceil((exhaustedUntil[i] - now) / 1000)}s`
-        : "ready",
-  }));
+  const { cooling, invalid } = await loadState();
+  return KEYS.map((_, i) => {
+    const f = FINGERPRINTS[i];
+    const until = cooling.get(f);
+    return {
+      key: `Key #${i + 1}`,
+      source: keySources[i],
+      status: invalid.has(f)
+        ? "invalid"
+        : until && until > now
+          ? "cooling down"
+          : "available",
+      resetsIn: until && until > now ? `${Math.ceil((until - now) / 1000)}s` : "ready",
+    };
+  });
 }
 
-export { KEYS, exhaustedUntil, invalidKeys, currentKeyIndex };
+export { KEYS, FINGERPRINTS };

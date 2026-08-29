@@ -1,0 +1,30 @@
+# Netlify — hosts both halves of Graphix from one repo.
+#
+#   Frontend  -> Next.js site
+#   Backend   -> Express API, run as a function at /api/*
+#
+# Both are on the same origin, so there is no CORS boundary between them.
+
+[build]
+  command = "npm ci && npm --prefix Backend ci && npm --prefix Backend exec prisma generate && npm --prefix Frontend ci && npm --prefix Frontend run build"
+  publish = "Frontend/.next"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+# Send every API call to the Express function. Must come before the Next.js
+# plugin's own routing, which is why it is declared here explicitly.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+[functions]
+  # Prisma ships a WASM query compiler that esbuild will not trace on its own.
+  included_files = ["Backend/node_modules/.prisma/**", "Backend/prisma/**"]
+  node_bundler = "esbuild"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

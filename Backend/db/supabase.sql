@@ -114,6 +114,42 @@ CREATE INDEX IF NOT EXISTS idx_graph_templates_trending
 CREATE INDEX IF NOT EXISTS idx_feedbacks_created_at
   ON public.feedbacks (created_at DESC);
 
+-- ── Groq key state ───────────────────────────────────────────
+-- Serverless functions get a fresh process per invocation, so the key
+-- cooldowns that used to live in memory never survived. Without this table
+-- a rate-limited key is retried immediately and a revoked key is retried
+-- forever, which is exactly the failure this was meant to prevent.
+--
+-- Keyed by fingerprint, not by position in .env: reordering the variables
+-- or swapping a key must not inherit another key's cooldown. The key itself
+-- is never stored — only a SHA-256 prefix.
+CREATE TABLE IF NOT EXISTS public.groq_key_state (
+  fingerprint    TEXT PRIMARY KEY,
+  status         TEXT NOT NULL DEFAULT 'available',  -- 'available' | 'cooling' | 'invalid'
+  cooldown_until TIMESTAMPTZ,
+  last_error     TEXT,
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Only unavailable keys are ever queried, so index that path.
+CREATE INDEX IF NOT EXISTS idx_groq_key_state_unavailable
+  ON public.groq_key_state (status, cooldown_until)
+  WHERE status <> 'available';
+
+-- ── Rate limit counters ──────────────────────────────────────
+-- Only the auth limiter uses this. The general /api limiter stays in memory
+-- deliberately: DB-backing it would mean a write on every request to enforce
+-- an anti-scraping cap, which costs more than it protects.
+CREATE TABLE IF NOT EXISTS public.rate_limit_hits (
+  key        TEXT PRIMARY KEY,
+  hits       INT NOT NULL DEFAULT 0,
+  expires_at TIMESTAMPTZ NOT NULL
+);
+
+-- Lets expired rows be swept cheaply.
+CREATE INDEX IF NOT EXISTS idx_rate_limit_expires
+  ON public.rate_limit_hits (expires_at);
+
 -- ═══════════════════════════════════════════════════════════════
 -- ROW LEVEL SECURITY — do not skip this
 --
@@ -133,6 +169,8 @@ ALTER TABLE public.saved_charts    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.activity_log    ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.graph_templates ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.feedbacks       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.groq_key_state  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.rate_limit_hits ENABLE ROW LEVEL SECURITY;
 
 -- Belt and braces: revoke the PostgREST roles outright as well. Guarded so
 -- this file also runs on a plain Postgres (local, CI) where those Supabase

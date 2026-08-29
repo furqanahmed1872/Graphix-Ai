@@ -120,3 +120,17 @@ model Feedback {
   @@index([createdAt(sort: Desc)])
   @@map("feedbacks")
 }
+// ── Groq key state ────────────────────────────────────────────
+// Cooldowns must outlive a single process: on serverless every invocation
+// starts fresh, so in-memory state meant rate-limited keys were retried
+// instantly and revoked keys retried forever.
+model GroqKeyState {
+  fingerprint   String    @id
+  status        String    @default("available") // 'available' | 'cooling' | 'invalid'
+  cooldownUntil DateTime? @map("cooldown_until") @db.Timestamptz
+  lastError     String?   @map("last_error")
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz
+
+  @@index([status, cooldownUntil])
+  @@map("groq_key_state")
+}

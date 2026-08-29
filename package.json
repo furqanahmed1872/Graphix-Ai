@@ -1,0 +1,9 @@
+{
+  "name": "graphix",
+  "private": true,
+  "type": "module",
+  "description": "Root package exists so the Netlify function can resolve its own dependencies. Node resolves upward from netlify/functions/, which never reaches Backend/node_modules.",
+  "dependencies": {
+    "serverless-http": "^4.0.0"
+  }
+}

@@ -1,0 +1,10 @@
+# Root-level ignores. The root package.json exists only so the Netlify
+# function can resolve its own dependencies, but it creates a node_modules
+# here that nothing was ignoring.
+node_modules/
+.env
+.env.local
+!.env.example
+
+# Netlify
+.netlify/

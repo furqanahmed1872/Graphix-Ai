@@ -43,7 +43,7 @@ async function callModel(systemPrompt, userPrompt, maxTokens) {
 
   for (let attempt = 0; attempt < KEYS.length; attempt++) {
     const { key, index, allExhausted, allInvalid, retryAfterMs } =
-      getNextAvailableKey();
+      await getNextAvailableKey();
 
     if (allInvalid) {
       return {
@@ -94,13 +94,13 @@ async function callModel(systemPrompt, userPrompt, maxTokens) {
     }
 
     if (response.status === 401 || response.status === 403) {
-      markKeyInvalid(index);
+      await markKeyInvalid(index);
       continue;
     }
 
     if (response.status === 429) {
       const ra = parseFloat(response.headers.get("retry-after") || "");
-      markKeyExhausted(index, Number.isFinite(ra) ? ra * 1000 : undefined);
+      await markKeyExhausted(index, Number.isFinite(ra) ? ra * 1000 : undefined);
       lastError = {
         status: 429,
         detail: (await response.text().catch(() => "")).slice(0, 500),
@@ -351,8 +351,8 @@ ${s.text}`;
 }
 
 // ── GET /api/status ───────────────────────────────────────────
-router.get("/status", (req, res) => {
-  res.json({ totalKeys: KEYS.length, model: GROQ_MODEL, keys: keyReport() });
+router.get("/status", async (req, res) => {
+  res.json({ totalKeys: KEYS.length, model: GROQ_MODEL, keys: await keyReport() });
 });
 
 export default router;

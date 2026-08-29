@@ -1,8 +1,10 @@
 import "dotenv/config";
+import { pathToFileURL } from "node:url";
 import express from "express";
 import cors from "cors";
 import multer from "multer";
 import rateLimit from "express-rate-limit";
+import { PostgresRateLimitStore } from "./middleware/pgRateLimitStore.js";
 
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/user.js";
@@ -42,6 +44,9 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many attempts. Please try again in 15 minutes." },
+  // Shared across instances. The default MemoryStore counts per process, so
+  // on serverless an attacker gets a fresh allowance on every cold start.
+  store: new PostgresRateLimitStore({ prefix: "auth" }),
 });
 
 // General API: 300 requests per minute per IP (prevents scraping)
@@ -91,39 +96,41 @@ app.use((err, req, res, next) => {
   res.status(status).json({ error: message });
 });
 
-const PORT = process.env.PORT;
+// ── Export for serverless, listen when run directly ───────────
+// Netlify invokes the exported app through a function handler and must not
+// bind a port. Running `node index.js` locally still starts a real server.
+export default app;
 
-// `node --watch` can spawn the replacement process before the previous one has
-// released the socket — on Windows it terminates the child without delivering a
-// signal, so the old process can't always close it first. Retry briefly instead
-// of dying on EADDRINUSE and leaving an orphan serving stale code.
-const MAX_BIND_RETRIES = 10;
-let bindRetries = 0;
+const isDirectRun =
+  process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
 
-const server = app.listen(PORT, () =>
-  console.log(`✅ Graphix server running on http://localhost:${PORT}`),
-);
+if (isDirectRun) {
+  const PORT = process.env.PORT || 5000;
+  const MAX_BIND_RETRIES = 10;
+  let bindRetries = 0;
 
-server.on("error", (err) => {
-  if (err.code !== "EADDRINUSE") throw err;
-  if (bindRetries++ >= MAX_BIND_RETRIES) {
-    console.error(
-      `FATAL: port ${PORT} is still in use after ${MAX_BIND_RETRIES} retries. ` +
-        `Another process is holding it.`,
-    );
-    process.exit(1);
-  }
-  console.warn(`Port ${PORT} busy, retrying (${bindRetries}/${MAX_BIND_RETRIES})…`);
-  setTimeout(() => server.listen(PORT), 300);
-});
+  const server = app.listen(PORT, () =>
+    console.log(`✅ Graphix server running on http://localhost:${PORT}`),
+  );
 
-// Close the socket on Ctrl+C / SIGTERM so the next start binds immediately.
-let shuttingDown = false;
-for (const signal of ["SIGINT", "SIGTERM"]) {
-  process.on(signal, () => {
-    if (shuttingDown) return;
-    shuttingDown = true;
-    server.close(() => process.exit(0));
-    setTimeout(() => process.exit(0), 3000).unref();
+  // `node --watch` can respawn before the old process released the socket.
+  server.on("error", (err) => {
+    if (err.code !== "EADDRINUSE") throw err;
+    if (bindRetries++ >= MAX_BIND_RETRIES) {
+      console.error(`FATAL: port ${PORT} still in use after ${MAX_BIND_RETRIES} retries.`);
+      process.exit(1);
+    }
+    console.warn(`Port ${PORT} busy, retrying (${bindRetries}/${MAX_BIND_RETRIES})…`);
+    setTimeout(() => server.listen(PORT), 300);
   });
+
+  let shuttingDown = false;
+  for (const signal of ["SIGINT", "SIGTERM"]) {
+    process.on(signal, () => {
+      if (shuttingDown) return;
+      shuttingDown = true;
+      server.close(() => process.exit(0));
+      setTimeout(() => process.exit(0), 3000).unref();
+    });
+  }
 }
