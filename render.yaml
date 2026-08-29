@@ -9,6 +9,10 @@ services:
     name: graphix-api
     runtime: node
     plan: free
+    # Supabase project is ap-southeast-1. Render defaults to Oregon, which
+    # would put ~200ms of Pacific between the API and its database on every
+    # query. Region cannot be changed after a service is created.
+    region: singapore
     rootDir: Backend
     buildCommand: npm ci && npx prisma generate
     startCommand: npm start
