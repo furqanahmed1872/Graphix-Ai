@@ -16,7 +16,7 @@ import Sidebar from "@/components/dashboard/Sidebar";
 import { div } from "three/tsl";
 
 const API = getApiUrl();
-const CYAN = "#06b6d4";
+const CYAN = "#E8FF5A";
 
 // ─────────────────────────────────────────────────────────────
 // MICRO UTILITIES
@@ -68,14 +68,14 @@ function FilterChip({
       onClick={onClick}
       style={{
         fontSize: 11,
-        fontWeight: 600,
+        fontWeight: 500,
         padding: "4px 12px",
-        borderRadius: 20,
+        borderRadius: 10,
         cursor: "pointer",
         border: active
           ? `1px solid ${CYAN}66`
           : "1px solid rgba(255,255,255,0.08)",
-        background: active ? `rgba(6,182,212,0.12)` : "rgba(255,255,255,0.03)",
+        background: active ? `rgba(232,255,90,0.12)` : "rgba(255,255,255,0.03)",
         color: active ? CYAN : "rgba(255,255,255,0.35)",
         transition: "all 0.15s",
         letterSpacing: "0.02em",
@@ -89,7 +89,7 @@ function FilterChip({
 // ─────────────────────────────────────────────────────────────
 // STAT CARD  — glassmorphism with gradient glow
 // ─────────────────────────────────────────────────────────────
-const STAT_ACCENTS = ["#06b6d4", "#8b5cf6", "#10b981", "#f59e0b"];
+const STAT_ACCENTS = ["#E8FF5A", "#E8FF5A", "#9BE564", "#E8FF5A"];
 const STAT_ICONS = [
   "M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z",
   "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z",
@@ -117,7 +117,7 @@ function StatCard({ stat, index }: { stat: any; index: number }) {
         transform: vis ? "none" : "translateY(16px) scale(0.97)",
         transition: "opacity 0.45s, transform 0.45s",
         position: "relative",
-        borderRadius: 14,
+        borderRadius: 10,
         padding: "20px 22px",
         background: hov ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.02)",
         border: `1px solid ${hov ? accent + "44" : "rgba(255,255,255,0.07)"}`,
@@ -128,19 +128,6 @@ function StatCard({ stat, index }: { stat: any; index: number }) {
           : "0 1px 3px rgba(0,0,0,0.3)",
       }}
     >
-      {/* Background glow */}
-      <div
-        style={{
-          position: "absolute",
-          top: -30,
-          right: -20,
-          width: 100,
-          height: 100,
-          borderRadius: "50%",
-          background: `radial-gradient(circle,${accent}18 0%,transparent 70%)`,
-          pointerEvents: "none",
-        }}
-      />
       {/* Top accent stripe */}
       <div
         style={{
@@ -166,12 +153,11 @@ function StatCard({ stat, index }: { stat: any; index: number }) {
         <p
           style={{
             margin: 0,
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
+            fontSize: 12,
+            fontWeight: 500,
+            letterSpacing: 0,
             color: "rgba(255,255,255,0.3)",
-            fontFamily: "'DM Mono',monospace",
+            fontFamily: "var(--gx-mono)",
           }}
         >
           {stat.label}
@@ -180,7 +166,7 @@ function StatCard({ stat, index }: { stat: any; index: number }) {
           style={{
             width: 30,
             height: 30,
-            borderRadius: 8,
+            borderRadius: 6,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -206,10 +192,11 @@ function StatCard({ stat, index }: { stat: any; index: number }) {
       <p
         style={{
           margin: "0 0 5px",
-          fontSize: 30,
-          fontWeight: 800,
-          color: "#fff",
-          letterSpacing: "-0.04em",
+          fontFamily: "var(--gx-display)",
+          fontSize: 38,
+          fontWeight: 400,
+          color: "var(--gx-fg)",
+          letterSpacing: "-0.015em",
           lineHeight: 1,
           fontVariantNumeric: "tabular-nums",
         }}
@@ -221,8 +208,8 @@ function StatCard({ stat, index }: { stat: any; index: number }) {
           style={{
             margin: 0,
             fontSize: 11,
-            fontWeight: 600,
-            color: stat.up !== false ? "#10b981" : "rgba(255,255,255,0.25)",
+            fontWeight: 500,
+            color: stat.up !== false ? "#9BE564" : "rgba(255,255,255,0.25)",
             display: "flex",
             alignItems: "center",
             gap: 3,
@@ -273,10 +260,11 @@ function GraphGrid({
           <h2
             style={{
               margin: "0 0 2px",
-              fontSize: 22,
-              fontWeight: 800,
-              color: "#fff",
-              letterSpacing: "-0.03em",
+              fontFamily: "var(--gx-display)",
+              fontSize: 26,
+              fontWeight: 400,
+              color: "var(--gx-fg)",
+              letterSpacing: "-0.012em",
             }}
           >
             {heading}
@@ -286,7 +274,7 @@ function GraphGrid({
               margin: 0,
               fontSize: 12,
               color: "rgba(255,255,255,0.25)",
-              fontFamily: "'DM Mono',monospace",
+              fontFamily: "var(--gx-mono)",
             }}
           >
             {filtered.length} chart{filtered.length !== 1 ? "s" : ""}
@@ -431,11 +419,11 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
       <div
         style={{
           position: "relative",
-          borderRadius: 18,
+          borderRadius: 10,
           padding: "32px 36px",
           background:
-            "linear-gradient(135deg,rgba(6,182,212,0.08) 0%,rgba(139,92,246,0.05) 50%,transparent 100%)",
-          border: "1px solid rgba(6,182,212,0.15)",
+            "linear-gradient(135deg,rgba(232,255,90,0.08) 0%,rgba(232,255,90,0.05) 50%,transparent 100%)",
+          border: "1px solid rgba(232,255,90,0.15)",
           overflow: "hidden",
         }}
       >
@@ -447,20 +435,6 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
             backgroundImage:
               "linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px)",
             backgroundSize: "32px 32px",
-            pointerEvents: "none",
-          }}
-        />
-        {/* Radial glow */}
-        <div
-          style={{
-            position: "absolute",
-            top: -60,
-            right: -60,
-            width: 240,
-            height: 240,
-            borderRadius: "50%",
-            background:
-              "radial-gradient(circle,rgba(6,182,212,0.12) 0%,transparent 70%)",
             pointerEvents: "none",
           }}
         />
@@ -479,13 +453,12 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
           <div>
             <div
               style={{
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: "0.2em",
-                textTransform: "uppercase",
+                fontSize: 12,
+                fontWeight: 500,
+                letterSpacing: 0,
                 color: CYAN,
                 marginBottom: 8,
-                fontFamily: "'DM Mono',monospace",
+                fontFamily: "var(--gx-mono)",
                 display: "flex",
                 alignItems: "center",
                 gap: 6,
@@ -497,8 +470,7 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                   height: 6,
                   borderRadius: "50%",
                   background: CYAN,
-                  boxShadow: `0 0 8px ${CYAN}`,
-                }}
+                                  }}
               />
               {greeting}
             </div>
@@ -508,11 +480,12 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
               <h1
                 style={{
                   margin: "0 0 8px",
-                  fontWeight: 900,
-                  fontSize: "clamp(1.6rem,3vw,2.2rem)",
-                  lineHeight: 1.08,
-                  letterSpacing: "-0.04em",
-                  color: "#fff",
+                  fontFamily: "var(--gx-display)",
+                  fontWeight: 400,
+                  fontSize: "clamp(2rem,3.4vw,2.8rem)",
+                  lineHeight: 1.06,
+                  letterSpacing: "-0.015em",
+                  color: "var(--gx-fg)",
                 }}
               >
                 <span style={{ color: CYAN }}>{firstName}'s</span> workspace
@@ -541,14 +514,14 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
               gap: 8,
               padding: "11px 20px",
               borderRadius: 10,
-              background: `linear-gradient(135deg,${CYAN},#0891b2)`,
+              background: `linear-gradient(135deg,${CYAN},#E8FF5A)`,
               border: "none",
               color: "#000",
-              fontWeight: 800,
+              fontWeight: 500,
               fontSize: 13,
               letterSpacing: "-0.01em",
               cursor: "pointer",
-              boxShadow: `0 4px 20px rgba(6,182,212,0.3)`,
+              boxShadow: "none",
               flexShrink: 0,
               transition: "transform 0.15s, box-shadow 0.15s",
             }}
@@ -556,12 +529,12 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
               (e.currentTarget as HTMLElement).style.transform =
                 "translateY(-1px)";
               (e.currentTarget as HTMLElement).style.boxShadow =
-                `0 6px 24px rgba(6,182,212,0.4)`;
+                `0 6px 24px rgba(232,255,90,0.4)`;
             }}
             onMouseLeave={(e) => {
               (e.currentTarget as HTMLElement).style.transform = "none";
               (e.currentTarget as HTMLElement).style.boxShadow =
-                `0 4px 20px rgba(6,182,212,0.3)`;
+                "none";
             }}
           >
             <svg
@@ -587,11 +560,10 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
           style={{
             margin: "0 0 14px",
             fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
+            fontWeight: 500,
+            letterSpacing: 0,
             color: "rgba(255,255,255,0.25)",
-            fontFamily: "'DM Mono',monospace",
+            fontFamily: "var(--gx-mono)",
           }}
         >
           Overview
@@ -616,11 +588,10 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
           style={{
             margin: "0 0 14px",
             fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: "0.14em",
-            textTransform: "uppercase",
+            fontWeight: 500,
+            letterSpacing: 0,
             color: "rgba(255,255,255,0.25)",
-            fontFamily: "'DM Mono',monospace",
+            fontFamily: "var(--gx-mono)",
           }}
         >
           Quick Actions
@@ -671,7 +642,7 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
         <div
           className=""
           style={{
-            borderRadius: 14,
+            borderRadius: 10,
             overflow: "hidden",
             border: "1px solid rgba(255,255,255,0.07)",
             background: "rgba(255,255,255,0.015)",
@@ -693,10 +664,9 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                   height: 7,
                   borderRadius: "50%",
                   background: CYAN,
-                  boxShadow: `0 0 6px ${CYAN}`,
-                }}
+                                  }}
               />
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: "#F2F1EC" }}>
                 Recent Graphs
               </span>
             </div>
@@ -706,7 +676,7 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                 background: "transparent",
                 border: "none",
                 fontSize: 11,
-                fontWeight: 600,
+                fontWeight: 500,
                 color: CYAN,
                 cursor: "pointer",
                 opacity: 0.8,
@@ -774,10 +744,10 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                   style={{
                     width: 28,
                     height: 28,
-                    borderRadius: 8,
+                    borderRadius: 6,
                     flexShrink: 0,
-                    background: "rgba(6,182,212,0.08)",
-                    border: "1px solid rgba(6,182,212,0.15)",
+                    background: "rgba(232,255,90,0.08)",
+                    border: "1px solid rgba(232,255,90,0.15)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -800,7 +770,7 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                     style={{
                       margin: "0 0 1px",
                       fontSize: 13,
-                      fontWeight: 600,
+                      fontWeight: 500,
                       color: "rgba(255,255,255,0.88)",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -812,9 +782,9 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                   <p
                     style={{
                       margin: 0,
-                      fontSize: 10,
+                      fontSize: 12,
                       color: "rgba(255,255,255,0.25)",
-                      fontFamily: "'DM Mono',monospace",
+                      fontFamily: "var(--gx-mono)",
                     }}
                   >
                     {c.updated ?? "recently"} ·{" "}
@@ -824,10 +794,10 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                 {c.trend && (
                   <span
                     style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      color: c.up !== false ? "#10b981" : "#f87171",
-                      fontFamily: "'DM Mono',monospace",
+                      fontSize: 12,
+                      fontWeight: 500,
+                      color: c.up !== false ? "#9BE564" : "#FF6B8A",
+                      fontFamily: "var(--gx-mono)",
                       flexShrink: 0,
                     }}
                   >
@@ -842,7 +812,7 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
         {/* Activity Feed */}
         <div
           style={{
-            borderRadius: 14,
+            borderRadius: 10,
             overflow: "hidden",
             border: "1px solid rgba(255,255,255,0.07)",
             background: "rgba(255,255,255,0.015)",
@@ -863,26 +833,25 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                   width: 7,
                   height: 7,
                   borderRadius: "50%",
-                  background: "#10b981",
-                  boxShadow: "0 0 6px #10b981",
-                  animation: "gcPulse 2s ease-in-out infinite",
+                  background: "#9BE564",
+                                    animation: "gcPulse 2s ease-in-out infinite",
                 }}
               />
-              <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: "#F2F1EC" }}>
                 Activity
               </span>
             </div>
             <span
               style={{
-                fontSize: 9,
-                fontWeight: 700,
+                fontSize: 11,
+                fontWeight: 500,
                 letterSpacing: "0.1em",
                 padding: "3px 8px",
-                borderRadius: 20,
-                background: "rgba(16,185,129,0.1)",
-                color: "#10b981",
-                border: "1px solid rgba(16,185,129,0.25)",
-                fontFamily: "'DM Mono',monospace",
+                borderRadius: 10,
+                background: "rgba(155,229,100,0.1)",
+                color: "#9BE564",
+                border: "1px solid rgba(155,229,100,0.25)",
+                fontFamily: "var(--gx-mono)",
               }}
             >
               LIVE
@@ -941,19 +910,19 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                   style={{
                     width: 28,
                     height: 28,
-                    borderRadius: 8,
+                    borderRadius: 6,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: 10,
-                    fontWeight: 800,
+                    fontSize: 12,
+                    fontWeight: 500,
                     flexShrink: 0,
                     background: a.own
-                      ? "rgba(6,182,212,0.12)"
+                      ? "rgba(232,255,90,0.12)"
                       : "rgba(255,255,255,0.06)",
                     color: a.own ? CYAN : "rgba(255,255,255,0.45)",
-                    fontFamily: "'DM Mono',monospace",
-                    border: `1px solid ${a.own ? "rgba(6,182,212,0.2)" : "rgba(255,255,255,0.08)"}`,
+                    fontFamily: "var(--gx-mono)",
+                    border: `1px solid ${a.own ? "rgba(232,255,90,0.2)" : "rgba(255,255,255,0.08)"}`,
                   }}
                 >
                   {a.avatar}
@@ -977,16 +946,16 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                     >
                       {a.action}
                     </span>{" "}
-                    <span style={{ color: "#fff", fontWeight: 700 }}>
+                    <span style={{ color: "#F2F1EC", fontWeight: 500 }}>
                       {a.graph}
                     </span>
                   </p>
                 </div>
                 <span
                   style={{
-                    fontSize: 9,
+                    fontSize: 11,
                     color: "rgba(255,255,255,0.2)",
-                    fontFamily: "'DM Mono',monospace",
+                    fontFamily: "var(--gx-mono)",
                     flexShrink: 0,
                   }}
                 >
@@ -1014,8 +983,8 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                 width="13"
                 height="13"
                 viewBox="0 0 24 24"
-                fill="#facc15"
-                stroke="#facc15"
+                fill="#E8FF5A"
+                stroke="#E8FF5A"
                 strokeWidth={1.5}
               >
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -1024,8 +993,8 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                 style={{
                   margin: 0,
                   fontSize: 13,
-                  fontWeight: 700,
-                  color: "#fff",
+                  fontWeight: 500,
+                  color: "#F2F1EC",
                 }}
               >
                 Starred
@@ -1037,7 +1006,7 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
                 background: "transparent",
                 border: "none",
                 fontSize: 11,
-                fontWeight: 600,
+                fontWeight: 500,
                 color: CYAN,
                 cursor: "pointer",
                 opacity: 0.8,
@@ -1078,7 +1047,7 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
 //   onUse: () => void;
 // }) {
 //   const [hov, setHov] = useState(false);
-//   const accents = ["#06b6d4", "#8b5cf6", "#10b981", "#f59e0b", "#ec4899"];
+//   const accents = ["#E8FF5A", "#E8FF5A", "#9BE564", "#E8FF5A", "#E8FF5A"];
 //   const accent = accents[index % accents.length];
 //   return (
 //     // <div
@@ -1089,7 +1058,7 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
 //     //     position: "relative",
 //     //     background: hov ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.015)",
 //     //     border: `1px solid ${hov ? accent + "44" : "rgba(255,255,255,0.07)"}`,
-//     //     borderRadius: 14,
+//     //     borderRadius: 10,
 //     //     padding: "20px 22px",
 //     //     cursor: "pointer",
 //     //     transition: "all 0.2s",
@@ -1144,8 +1113,8 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
 //     //         <span
 //     //           style={{
 //     //             fontSize: 14,
-//     //             fontWeight: 800,
-//     //             color: "#fff",
+//     //             fontWeight: 500,
+//     //             color: "#F2F1EC",
 //     //             letterSpacing: "-0.02em",
 //     //           }}
 //     //         >
@@ -1155,13 +1124,13 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
 //     //           <span
 //     //             style={{
 //     //               fontSize: 8,
-//     //               fontWeight: 700,
+//     //               fontWeight: 500,
 //     //               padding: "2px 6px",
-//     //               borderRadius: 20,
-//     //               background: "rgba(245,158,11,0.15)",
-//     //               color: "#f59e0b",
-//     //               border: "1px solid rgba(245,158,11,0.3)",
-//     //               fontFamily: "'DM Mono',monospace",
+//     //               borderRadius: 10,
+//     //               background: "rgba(232,255,90,0.15)",
+//     //               color: "#E8FF5A",
+//     //               border: "1px solid rgba(232,255,90,0.3)",
+//     //               fontFamily: "var(--gx-mono)",
 //     //               letterSpacing: "0.08em",
 //     //             }}
 //     //           >
@@ -1171,14 +1140,14 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
 //     //       </div>
 //     //       <span
 //     //         style={{
-//     //           fontSize: 10,
-//     //           fontWeight: 700,
+//     //           fontSize: 12,
+//     //           fontWeight: 500,
 //     //           padding: "2px 8px",
-//     //           borderRadius: 20,
+//     //           borderRadius: 10,
 //     //           background: `${accent}18`,
 //     //           color: accent,
 //     //           border: `1px solid ${accent}33`,
-//     //           fontFamily: "'DM Mono',monospace",
+//     //           fontFamily: "var(--gx-mono)",
 //     //         }}
 //     //       >
 //     //         {tpl.tag ?? tpl.category}
@@ -1203,15 +1172,15 @@ function DashboardHome({ setTab }: { setTab: (t: string) => void }) {
 //     //     >
 //     //       <span
 //     //         style={{
-//     //           fontSize: 10,
+//     //           fontSize: 12,
 //     //           color: "rgba(255,255,255,0.2)",
-//     //           fontFamily: "'DM Mono',monospace",
+//     //           fontFamily: "var(--gx-mono)",
 //     //         }}
 //     //       >
 //     //         {tpl.count} charts
 //     //       </span>
 //     //       {tpl.trend && (
-//     //         <span style={{ fontSize: 11, fontWeight: 700, color: accent }}>
+//     //         <span style={{ fontSize: 11, fontWeight: 500, color: accent }}>
 //     //           {tpl.trend}
 //     //         </span>
 //     //       )}
@@ -1235,8 +1204,8 @@ function TemplatesPage({ setTab }: { setTab: (t: string) => void }) {
     //       style={{
     //         margin: "0 0 6px",
     //         fontSize: 22,
-    //         fontWeight: 800,
-    //         color: "#fff",
+    //         fontWeight: 500,
+    //         color: "#F2F1EC",
     //         letterSpacing: "-0.03em",
     //       }}
     //     >
@@ -1285,7 +1254,7 @@ function TemplatesPage({ setTab }: { setTab: (t: string) => void }) {
 
     <div className=" my-auto flex items-center justify-center p-6">
       <div className="text-center">
-        <div className="text-xs font-medium tracking-[0.3em] text-neutral-500 uppercase mb-4">
+        <div className="text-xs font-medium  text-neutral-500 mb-4">
           Under Construction
         </div>
         <h1 className="text-5xl md:text-6xl font-light text-white tracking-tight">
@@ -1310,7 +1279,7 @@ function PanelCard({
   return (
     <div
       style={{
-        borderRadius: 14,
+        borderRadius: 10,
         overflow: "hidden",
         border: "1px solid rgba(255,255,255,0.07)",
         background: "rgba(255,255,255,0.015)",
@@ -1329,7 +1298,7 @@ function PanelCard({
         <div
           style={{ width: 3, height: 14, borderRadius: 2, background: CYAN }}
         />
-        <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+        <span style={{ fontSize: 13, fontWeight: 500, color: "#F2F1EC" }}>
           {title}
         </span>
       </div>
@@ -1381,8 +1350,8 @@ function SettingsPage() {
           style={{
             margin: "0 0 6px",
             fontSize: 22,
-            fontWeight: 800,
-            color: "#fff",
+            fontWeight: 500,
+            color: "#F2F1EC",
             letterSpacing: "-0.03em",
           }}
         >
@@ -1398,11 +1367,11 @@ function SettingsPage() {
             marginBottom: 14,
             padding: "10px 16px",
             borderRadius: 10,
-            background: "rgba(16,185,129,0.08)",
-            border: "1px solid rgba(16,185,129,0.25)",
-            color: "#10b981",
+            background: "rgba(155,229,100,0.08)",
+            border: "1px solid rgba(155,229,100,0.25)",
+            color: "#9BE564",
             fontSize: 13,
-            fontWeight: 600,
+            fontWeight: 500,
             display: "flex",
             alignItems: "center",
             gap: 6,
@@ -1428,11 +1397,11 @@ function SettingsPage() {
             marginBottom: 14,
             padding: "10px 16px",
             borderRadius: 10,
-            background: "rgba(239,68,68,0.08)",
-            border: "1px solid rgba(239,68,68,0.25)",
-            color: "#ef4444",
+            background: "rgba(255,107,138,0.08)",
+            border: "1px solid rgba(255,107,138,0.25)",
+            color: "#FF6B8A",
             fontSize: 13,
-            fontWeight: 600,
+            fontWeight: 500,
           }}
         >
           ✗ Failed to save — try again
@@ -1490,8 +1459,8 @@ function SettingsPage() {
               style={{
                 margin: "0 0 4px",
                 fontSize: 13,
-                fontWeight: 700,
-                color: "#fff",
+                fontWeight: 500,
+                color: "#F2F1EC",
                 textTransform: "capitalize",
               }}
             >
@@ -1536,7 +1505,7 @@ function BillingPage() {
     [
       "Plan",
       <span
-        style={{ color: CYAN, fontWeight: 700, textTransform: "capitalize" }}
+        style={{ color: CYAN, fontWeight: 500, textTransform: "capitalize" }}
       >
         {subscription?.plan ?? "Free"}
       </span>,
@@ -1574,8 +1543,8 @@ function BillingPage() {
           style={{
             margin: "0 0 6px",
             fontSize: 22,
-            fontWeight: 800,
-            color: "#fff",
+            fontWeight: 500,
+            color: "#F2F1EC",
             letterSpacing: "-0.03em",
           }}
         >
@@ -1601,7 +1570,7 @@ function BillingPage() {
               <span style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>
                 {l}
               </span>
-              <span style={{ fontSize: 13, color: "#fff" }}>{v}</span>
+              <span style={{ fontSize: 13, color: "#F2F1EC" }}>{v}</span>
             </div>
           ))}
           <Btn
@@ -1655,8 +1624,8 @@ function HelpPage() {
           style={{
             margin: "0 0 6px",
             fontSize: 22,
-            fontWeight: 800,
-            color: "#fff",
+            fontWeight: 500,
+            color: "#F2F1EC",
             letterSpacing: "-0.03em",
           }}
         >
@@ -1668,7 +1637,7 @@ function HelpPage() {
       </div>
       <div
         style={{
-          borderRadius: 14,
+          borderRadius: 10,
           overflow: "hidden",
           border: "1px solid rgba(255,255,255,0.07)",
           background: "rgba(255,255,255,0.015)",
@@ -1700,7 +1669,7 @@ function HelpPage() {
                 gap: 12,
               }}
             >
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>
+              <span style={{ fontSize: 13, fontWeight: 500, color: "#F2F1EC" }}>
                 {f.q}
               </span>
               <span
@@ -1733,7 +1702,7 @@ function HelpPage() {
       </div>
       <div
         style={{
-          borderRadius: 14,
+          borderRadius: 10,
           border: "1px solid rgba(255,255,255,0.07)",
           background: "rgba(255,255,255,0.015)",
           padding: "20px 22px",
@@ -1749,8 +1718,8 @@ function HelpPage() {
             style={{
               margin: "0 0 4px",
               fontSize: 13,
-              fontWeight: 700,
-              color: "#fff",
+              fontWeight: 500,
+              color: "#F2F1EC",
             }}
           >
             Still need help?
@@ -1850,8 +1819,8 @@ export default function App() {
       style={{
         height: "100vh",
         overflow: "hidden",
-        background: "#0a0a10",
-        color: "#fff",
+        background: "#0C0C0A",
+        color: "#F2F1EC",
         display: "flex",
         fontFamily: "'Inter','DM Sans',system-ui,sans-serif",
       }}
@@ -1864,7 +1833,7 @@ export default function App() {
         ::-webkit-scrollbar { width:4px; height:4px }
         ::-webkit-scrollbar-track { background:transparent }
         ::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:2px }
-        ::-webkit-scrollbar-thumb:hover { background:rgba(6,182,212,0.4) }
+        ::-webkit-scrollbar-thumb:hover { background:rgba(232,255,90,0.4) }
       `}</style>
 
       {/* Mobile backdrop — dims dashboard behind the open drawer */}
@@ -1875,7 +1844,6 @@ export default function App() {
             position: "fixed",
             inset: 0,
             background: "rgba(0,0,0,0.6)",
-            backdropFilter: "blur(3px)",
             zIndex: 40,
           }}
         />
@@ -1891,7 +1859,6 @@ export default function App() {
             position: "fixed",
             inset: 0,
             background: "rgba(0,0,0,0.7)",
-            backdropFilter: "blur(4px)",
             zIndex: 40,
           }}
         />
@@ -1940,8 +1907,7 @@ export default function App() {
             alignItems: "center",
             gap: 12,
             padding: "0 22px",
-            background: "rgba(10,10,16,0.92)",
-            backdropFilter: "blur(16px)",
+            background: "rgba(12,12,10,0.92)",
             borderBottom: "1px solid rgba(255,255,255,0.06)",
             zIndex: 20,
           }}
@@ -1976,7 +1942,7 @@ export default function App() {
                 height: 1.5,
                 background: "currentColor",
                 display: "block",
-                borderRadius: 1,
+                borderRadius: 2,
               }}
             />
             <span
@@ -1985,7 +1951,7 @@ export default function App() {
                 height: 1.5,
                 background: "currentColor",
                 display: "block",
-                borderRadius: 1,
+                borderRadius: 2,
               }}
             />
             <span
@@ -1994,7 +1960,7 @@ export default function App() {
                 height: 1.5,
                 background: "currentColor",
                 display: "block",
-                borderRadius: 1,
+                borderRadius: 2,
               }}
             />
           </button>
@@ -2023,7 +1989,7 @@ export default function App() {
             <span
               style={{
                 color: "rgba(255,255,255,0.85)",
-                fontWeight: 700,
+                fontWeight: 500,
                 letterSpacing: "-0.01em",
               }}
             >
@@ -2037,14 +2003,14 @@ export default function App() {
           {(tab === "graphs" || tab === "favourites" || tab === "shared") && (
             <div
               style={{
-                fontSize: 10,
-                fontWeight: 700,
+                fontSize: 12,
+                fontWeight: 500,
                 padding: "4px 10px",
-                borderRadius: 20,
-                background: "rgba(6,182,212,0.1)",
+                borderRadius: 10,
+                background: "rgba(232,255,90,0.1)",
                 color: CYAN,
-                border: "1px solid rgba(6,182,212,0.2)",
-                fontFamily: "'DM Mono',monospace",
+                border: "1px solid rgba(232,255,90,0.2)",
+                fontFamily: "var(--gx-mono)",
                 letterSpacing: "0.04em",
               }}
             >
@@ -2066,20 +2032,20 @@ export default function App() {
             style={{
               width: 32,
               height: 32,
-              borderRadius: 9,
-              background: "rgba(6,182,212,0.12)",
-              border: "1px solid rgba(6,182,212,0.25)",
+              borderRadius: 6,
+              background: "rgba(232,255,90,0.12)",
+              border: "1px solid rgba(232,255,90,0.25)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 11,
-              fontWeight: 800,
+              fontWeight: 500,
               color: CYAN,
               cursor: "pointer",
               userSelect: "none",
               flexShrink: 0,
-              fontFamily: "'DM Mono',monospace",
-              boxShadow: "0 0 0 1px rgba(6,182,212,0.1)",
+              fontFamily: "var(--gx-mono)",
+              boxShadow: "0 0 0 1px rgba(232,255,90,0.1)",
             }}
             title={
               user
@@ -2101,7 +2067,7 @@ export default function App() {
             overflowY: "auto",
             overflowX: "hidden",
             padding: "32px 32px 64px",
-            background: "#0a0a10",
+            background: "#0C0C0A",
             minHeight: 0,
           }}
         >

@@ -101,10 +101,10 @@ html, body {
 .sb-tip {
   position: absolute; left: calc(100% + 12px); top: 50%;
   transform: translateY(-50%) translateX(-4px);
-  background: rgba(255,255,255,0.06); backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.08); color: rgba(255,255,255,0.7);
-  font-size: 10px; font-family: 'DM Mono', monospace; letter-spacing: 0.06em;
-  padding: 4px 9px; border-radius: 6px; white-space: nowrap;
+  background: var(--gx-bg-raised);
+  border: 1px solid var(--gx-line); color: var(--gx-fg-muted);
+  font-size: 12px; font-family: var(--gx-mono); letter-spacing: 0;
+  padding: 5px 10px; border-radius: var(--gx-r-md); white-space: nowrap;
   pointer-events: none; opacity: 0;
   transition: opacity 0.14s ease, transform 0.14s ease; z-index: 50;
 }
@@ -114,14 +114,14 @@ html, body {
 .sb-toggle svg { transition: transform 0.26s cubic-bezier(0.4,0,0.2,1); }
 .sb-aside.collapsed .sb-toggle svg { transform: rotate(180deg); }
 @keyframes dotGlow {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(6,182,212,0.5); }
-  50%      { box-shadow: 0 0 0 3px rgba(6,182,212,0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232,255,90,0.45); }
+  50%      { box-shadow: 0 0 0 3px rgba(232,255,90,0); }
 }
 .dot-glow { animation: dotGlow 2.4s ease infinite; }
 .new-btn { position: relative; overflow: hidden; }
 .new-btn::after {
   content: ''; position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(6,182,212,0.06) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(232,255,90,0.07) 50%, transparent 100%);
   transform: translateX(-100%); transition: transform 0.4s ease;
 }
 .new-btn:hover::after { transform: translateX(100%); }
@@ -254,8 +254,6 @@ html, body {
   50%  { transform: scale(1.05); }
   100% { transform: scale(1); opacity: 1; }
 }
-.testimonial-card { transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
-.testimonial-card:hover { border-color: rgba(6,182,212,0.2) !important; transform: translateY(-2px) !important; }
 
 /* ============================================================
    PRICING animations

@@ -2379,13 +2379,13 @@ const CHART_GROUPS_ORDER = [
   { id: "bubble", label: "Bubble Charts", color: "#a855f7" },
   { id: "statistical", label: "Statistical", color: "#f59e0b" },
   { id: "histogram", label: "Histograms", color: "#8b5cf6" },
-  { id: "heatmap-contour", label: "Heatmap & Contour", color: "#06b6d4" },
+  { id: "heatmap-contour", label: "Heatmap & Contour", color: "#E8FF5A" },
   { id: "filled-area", label: "Filled & Area", color: "#ef4444" },
   { id: "3d", label: "3D Charts", color: "#a855f7" },
   { id: "maps", label: "Maps & Geo", color: "#14b8a6" },
   { id: "financial", label: "Financial", color: "#f97316" },
   { id: "polar-radar", label: "Polar & Radar", color: "#4ade80" },
-  { id: "scientific", label: "Scientific", color: "#22d3ee" },
+  { id: "scientific", label: "Scientific", color: "#E8FF5A" },
   { id: "parallel-sankey", label: "Parallel & Sankey", color: "#fb923c" },
   { id: "indicator-table", label: "Indicator & Table", color: "#64748b" },
 ];
@@ -3051,7 +3051,7 @@ function genIndicator(variant: string, traces: any[]) {
     base.mode = "number+gauge";
     base.gauge = {
       axis: { range: [0, 100] },
-      bar: { color: "#06b6d4" },
+      bar: { color: "#E8FF5A" },
       bgcolor: "white",
       borderwidth: 2,
       bordercolor: "#ccc",
@@ -3071,7 +3071,7 @@ function genIndicator(variant: string, traces: any[]) {
     base.gauge = {
       shape: "bullet",
       axis: { range: [0, 100] },
-      bar: { color: "#06b6d4" },
+      bar: { color: "#E8FF5A" },
       steps: [
         { range: [0, 50], color: "#e5e7eb" },
         { range: [50, 80], color: "#d1d5db" },
@@ -3496,7 +3496,7 @@ function Toggle({
           width: 36,
           height: 20,
           borderRadius: 10,
-          background: value ? "#06b6d4" : "#e5e7eb",
+          background: value ? "#E8FF5A" : "#e5e7eb",
         }}
       >
         <span
@@ -3564,8 +3564,8 @@ function TxtInput({
       onBlur={() => setFocused(false)}
       className="w-full px-2.5 py-[7px] text-[11px] rounded-lg bg-gray-50 text-gray-900 outline-none transition-all duration-150"
       style={{
-        border: `1.5px solid ${focused ? "#06b6d4" : "#e5e7eb"}`,
-        boxShadow: focused ? "0 0 0 3px rgba(6,182,212,0.1)" : "none",
+        border: `1.5px solid ${focused ? "#E8FF5A" : "#e5e7eb"}`,
+        boxShadow: focused ? "0 0 0 3px rgba(232,255,90,0.1)" : "none",
       }}
     />
   );
@@ -4813,9 +4813,9 @@ export default function ChartEditor({
                     key={i}
                     className="text-[10px] px-2.5 py-0.5 rounded-full font-mono"
                     style={{
-                      background: "rgba(6,182,212,0.1)",
-                      color: "#06b6d4",
-                      border: "1px solid rgba(6,182,212,0.25)",
+                      background: "rgba(232,255,90,0.1)",
+                      color: "#E8FF5A",
+                      border: "1px solid rgba(232,255,90,0.25)",
                     }}
                   >
                     {a}
@@ -4842,9 +4842,9 @@ export default function ChartEditor({
                 style={{
                   borderBottom:
                     tab === t.id
-                      ? "2.5px solid #06b6d4"
+                      ? "2.5px solid #E8FF5A"
                       : "2.5px solid transparent",
-                  color: tab === t.id ? "#06b6d4" : "#666",
+                  color: tab === t.id ? "#E8FF5A" : "#666",
                 }}
               >
                 {t.label}
@@ -4906,7 +4906,7 @@ export default function ChartEditor({
                         const isActive = chartTypeId === ct.id;
                         const grpColor =
                           CHART_GROUPS_ORDER.find((g) => g.id === ct.group)
-                            ?.color || "#06b6d4";
+                            ?.color || "#E8FF5A";
                         return (
                           <button
                             key={ct.id}
@@ -4988,14 +4988,14 @@ export default function ChartEditor({
                               style={{
                                 border:
                                   legendPos === pos
-                                    ? "1.5px solid #06b6d4"
+                                    ? "1.5px solid #E8FF5A"
                                     : "1.5px solid #e5e7eb",
                                 background:
                                   legendPos === pos
-                                    ? "rgba(6,182,212,0.07)"
+                                    ? "rgba(232,255,90,0.07)"
                                     : "#fafafa",
                                 color:
-                                  legendPos === pos ? "#06b6d4" : "#9ca3af",
+                                  legendPos === pos ? "#E8FF5A" : "#9ca3af",
                               }}
                             >
                               {pos}
@@ -5035,11 +5035,11 @@ export default function ChartEditor({
                       style={{
                         border:
                           paletteIdx === i
-                            ? "1.5px solid #06b6d4"
+                            ? "1.5px solid #E8FF5A"
                             : "1.5px solid transparent",
                         background:
                           paletteIdx === i
-                            ? "rgba(6,182,212,0.05)"
+                            ? "rgba(232,255,90,0.05)"
                             : "transparent",
                       }}
                     >
@@ -5055,7 +5055,7 @@ export default function ChartEditor({
                       <span
                         className="text-xs font-medium flex-1 text-left"
                         style={{
-                          color: paletteIdx === i ? "#06b6d4" : "#374151",
+                          color: paletteIdx === i ? "#E8FF5A" : "#374151",
                         }}
                       >
                         {p.label}
@@ -5081,11 +5081,11 @@ export default function ChartEditor({
                         style={{
                           border:
                             bgHex === b.hex
-                              ? "2px solid #06b6d4"
+                              ? "2px solid #E8FF5A"
                               : "1.5px solid #e5e7eb",
                           background:
                             bgHex === b.hex
-                              ? "rgba(6,182,212,0.05)"
+                              ? "rgba(232,255,90,0.05)"
                               : "#fafafa",
                         }}
                       >
@@ -5096,7 +5096,7 @@ export default function ChartEditor({
                         <span
                           className="text-[9.5px] font-semibold"
                           style={{
-                            color: bgHex === b.hex ? "#06b6d4" : "#9ca3af",
+                            color: bgHex === b.hex ? "#E8FF5A" : "#9ca3af",
                           }}
                         >
                           {b.label}
@@ -5479,12 +5479,12 @@ export default function ChartEditor({
                           className="py-[7px] px-1.5 rounded-lg text-[10px] font-semibold cursor-pointer transition-all text-left"
                           style={{
                             border: active
-                              ? "1.5px solid #06b6d4"
+                              ? "1.5px solid #E8FF5A"
                               : "1.5px solid #e5e7eb",
                             background: active
-                              ? "rgba(6,182,212,0.06)"
+                              ? "rgba(232,255,90,0.06)"
                               : "#fafafa",
-                            color: active ? "#06b6d4" : "#6b7280",
+                            color: active ? "#E8FF5A" : "#6b7280",
                           }}
                         >
                           {p.l}
@@ -5525,7 +5525,7 @@ export default function ChartEditor({
                         style={{
                           border: primary ? "none" : "1.5px solid #e5e7eb",
                           background: primary
-                            ? "linear-gradient(135deg,#06b6d4,#0891b2)"
+                            ? "linear-gradient(135deg,#E8FF5A,#E8FF5A)"
                             : "#fafafa",
                           color: primary ? "#fff" : "#374151",
                         }}
@@ -5563,13 +5563,13 @@ export default function ChartEditor({
                       style={{
                         border:
                           dbSaveStatus === "saved"
-                            ? "1.5px solid #06b6d4"
+                            ? "1.5px solid #E8FF5A"
                             : "1.5px solid #e5e7eb",
                         background:
                           dbSaveStatus === "saved"
-                            ? "rgba(6,182,212,0.08)"
+                            ? "rgba(232,255,90,0.08)"
                             : "#fafafa",
-                        color: dbSaveStatus === "saved" ? "#06b6d4" : "#374151",
+                        color: dbSaveStatus === "saved" ? "#E8FF5A" : "#374151",
                         cursor:
                           !isAuthenticated ||
                           dbSaveStatus === "saving" ||
@@ -5604,7 +5604,7 @@ export default function ChartEditor({
                           height="14"
                           viewBox="0 0 24 24"
                           fill="none"
-                          stroke="#06b6d4"
+                          stroke="#E8FF5A"
                           strokeWidth="2.5"
                           strokeLinecap="round"
                           style={{ flexShrink: 0 }}

@@ -38,7 +38,7 @@ function NavIcon({ id, active }: { id: string; active: boolean }) {
       height="14"
       viewBox="0 0 24 24"
       fill="none"
-      stroke={active ? "#06b6d4" : "rgba(255,255,255,0.3)"}
+      stroke={active ? "#E8FF5A" : "rgba(255,255,255,0.3)"}
       strokeWidth={1.8}
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -90,12 +90,12 @@ const fullName = user
       {/* Keyframe for active glow dot */}
       <style>{`
         @keyframes sb-glow {
-          0%, 100% { box-shadow: 0 0 4px rgba(6,182,212,0.4); }
-          50%       { box-shadow: 0 0 10px rgba(6,182,212,0.8); }
+          0%, 100% { box-shadow: 0 0 4px rgba(232,255,90,0.4); }
+          50%       { box-shadow: 0 0 10px rgba(232,255,90,0.8); }
         }
         .sb-active-dot { animation: sb-glow 2.4s ease-in-out infinite; }
         .sb-nav-btn { background: transparent; border: none; cursor: pointer; width: 100%; text-align: left; }
-        .sb-nav-btn:focus-visible { outline: 2px solid rgba(6,182,212,0.5); outline-offset: 2px; border-radius: 8px; }
+        .sb-nav-btn:focus-visible { outline: 2px solid rgba(232,255,90,0.5); outline-offset: 2px; border-radius: 8px; }
       `}</style>
 
       <aside
@@ -106,7 +106,7 @@ const fullName = user
           height: "100vh",
           display: "flex",
           flexDirection: "column",
-          background: "#0a0a10",
+          background: "#0C0C0A",
           borderRight: "1px solid rgba(255,255,255,0.06)",
           overflow: "hidden",
           transition:
@@ -114,21 +114,6 @@ const fullName = user
           position: "relative",
         }}
       >
-        {/* Subtle radial glow top */}
-        <div
-          style={{
-            position: "absolute",
-            top: -40,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: 200,
-            height: 140,
-            background:
-              "radial-gradient(ellipse at center, rgba(6,182,212,0.07) 0%, transparent 70%)",
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-        />
 
         {/* Inner column — fixed width so content doesn't reflow during transition */}
         <div
@@ -168,12 +153,10 @@ const fullName = user
                   style={{
                     width: 32,
                     height: 32,
-                    borderRadius: 9,
-                    background: "linear-gradient(135deg, #0e0e10, #18181b)",
-                    border: "1px solid rgba(6,182,212,0.2)",
-                    boxShadow:
-                      "0 0 14px rgba(6,182,212,0.08), inset 0 1px 0 rgba(255,255,255,0.04)",
-                    display: "flex",
+                    borderRadius: 6,
+                    background: "linear-gradient(135deg, #131311, #131311)",
+                    border: "1px solid rgba(232,255,90,0.2)",
+                                        display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     flexShrink: 0,
@@ -191,8 +174,8 @@ const fullName = user
                     style={{
                       margin: 0,
                       fontSize: 14,
-                      fontWeight: 800,
-                      color: "#fff",
+                      fontWeight: 500,
+                      color: "#F2F1EC",
                       letterSpacing: "-0.04em",
                       lineHeight: 1,
                       fontFamily: "'Bricolage Grotesque', 'Inter', sans-serif",
@@ -202,11 +185,10 @@ const fullName = user
                   </p>
                   <span
                     style={{
-                      fontSize: 9,
+                      fontSize: 11,
                       color: "rgba(255,255,255,0.2)",
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      fontFamily: "'DM Mono', monospace",
+                      letterSpacing: 0,
+                      fontFamily: "var(--gx-mono)",
                       display: "block",
                       marginTop: 2,
                     }}
@@ -223,11 +205,10 @@ const fullName = user
                 style={{
                   width: 32,
                   height: 32,
-                  borderRadius: 9,
-                  background: "linear-gradient(135deg, #0e0e10, #18181b)",
-                  border: "1px solid rgba(6,182,212,0.2)",
-                  boxShadow: "0 0 14px rgba(6,182,212,0.08)",
-                  display: "flex",
+                  borderRadius: 6,
+                  background: "linear-gradient(135deg, #131311, #131311)",
+                  border: "1px solid rgba(232,255,90,0.2)",
+                                    display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                 }}
@@ -263,7 +244,7 @@ const fullName = user
                     height: 1.5,
                     background: "currentColor",
                     display: "block",
-                    borderRadius: 1,
+                    borderRadius: 2,
                   }}
                 />
                 <span
@@ -272,7 +253,7 @@ const fullName = user
                     height: 1.5,
                     background: "currentColor",
                     display: "block",
-                    borderRadius: 1,
+                    borderRadius: 2,
                   }}
                 />
                 <span
@@ -281,7 +262,7 @@ const fullName = user
                     height: 1.5,
                     background: "currentColor",
                     display: "block",
-                    borderRadius: 1,
+                    borderRadius: 2,
                   }}
                 />
               </button>
@@ -316,7 +297,7 @@ const fullName = user
                   height: 1.5,
                   background: "currentColor",
                   display: "block",
-                  borderRadius: 1,
+                  borderRadius: 2,
                 }}
               />
               <span
@@ -325,7 +306,7 @@ const fullName = user
                   height: 1.5,
                   background: "currentColor",
                   display: "block",
-                  borderRadius: 1,
+                  borderRadius: 2,
                 }}
               />
               <span
@@ -334,7 +315,7 @@ const fullName = user
                   height: 1.5,
                   background: "currentColor",
                   display: "block",
-                  borderRadius: 1,
+                  borderRadius: 2,
                 }}
               />
             </button>
@@ -355,13 +336,12 @@ const fullName = user
                 {!collapsed && (
                   <div
                     style={{
-                      fontSize: 9,
-                      fontWeight: 700,
-                      letterSpacing: "0.14em",
-                      textTransform: "uppercase",
+                      fontSize: 11,
+                      fontWeight: 500,
+                      letterSpacing: 0,
                       color: "rgba(255,255,255,0.18)",
                       padding: "10px 8px 5px",
-                      fontFamily: "'DM Mono', monospace",
+                      fontFamily: "var(--gx-mono)",
                     }}
                   >
                     {grp.group}
@@ -384,14 +364,14 @@ const fullName = user
                         gap: collapsed ? 0 : 9,
                         justifyContent: collapsed ? "center" : "flex-start",
                         padding: collapsed ? "9px 0" : "7px 9px",
-                        borderRadius: 8,
+                        borderRadius: 6,
                         marginBottom: 1,
                         transition: "background 0.15s, border-color 0.15s",
                         border: active
-                          ? "1px solid rgba(6,182,212,0.2)"
+                          ? "1px solid rgba(232,255,90,0.2)"
                           : "1px solid transparent",
                         background: active
-                          ? "rgba(6,182,212,0.08)"
+                          ? "rgba(232,255,90,0.08)"
                           : "transparent",
                         position: "relative",
                       }}
@@ -418,9 +398,8 @@ const fullName = user
                             height: "50%",
                             width: 2,
                             borderRadius: 2,
-                            background: "#06b6d4",
-                            boxShadow: "0 0 6px rgba(6,182,212,0.6)",
-                          }}
+                            background: "#E8FF5A",
+                                                      }}
                         />
                       )}
 
@@ -433,7 +412,7 @@ const fullName = user
                               flex: 1,
                               fontSize: 12.5,
                               fontWeight: active ? 600 : 400,
-                              color: active ? "#fff" : "rgba(255,255,255,0.45)",
+                              color: active ? "#F2F1EC" : "rgba(255,255,255,0.45)",
                               letterSpacing: active ? "-0.01em" : "normal",
                               transition: "color 0.15s",
                               overflow: "hidden",
@@ -447,20 +426,20 @@ const fullName = user
                           {badge && (
                             <span
                               style={{
-                                fontSize: 9,
-                                fontWeight: 700,
+                                fontSize: 11,
+                                fontWeight: 500,
                                 padding: "2px 6px",
                                 borderRadius: 4,
                                 lineHeight: 1.4,
-                                fontFamily: "'DM Mono', monospace",
+                                fontFamily: "var(--gx-mono)",
                                 background: active
-                                  ? "rgba(6,182,212,0.2)"
+                                  ? "rgba(232,255,90,0.2)"
                                   : "rgba(255,255,255,0.07)",
                                 color: active
-                                  ? "#06b6d4"
+                                  ? "#E8FF5A"
                                   : "rgba(255,255,255,0.3)",
                                 border: active
-                                  ? "1px solid rgba(6,182,212,0.25)"
+                                  ? "1px solid rgba(232,255,90,0.25)"
                                   : "1px solid rgba(255,255,255,0.06)",
                               }}
                             >
@@ -503,15 +482,15 @@ const fullName = user
                 style={{
                   width: 32,
                   height: 32,
-                  borderRadius: 8,
-                  background: "rgba(6,182,212,0.15)",
-                  border: "1px solid rgba(6,182,212,0.25)",
+                  borderRadius: 6,
+                  background: "rgba(232,255,90,0.15)",
+                  border: "1px solid rgba(232,255,90,0.25)",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: 10,
-                  fontWeight: 800,
-                  color: "#06b6d4",
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "#E8FF5A",
                   cursor: "default",
                   userSelect: "none",
                 }}
@@ -535,15 +514,15 @@ const fullName = user
                     style={{
                       width: 30,
                       height: 30,
-                      borderRadius: 8,
-                      background: "rgba(6,182,212,0.15)",
-                      border: "1px solid rgba(6,182,212,0.25)",
+                      borderRadius: 6,
+                      background: "rgba(232,255,90,0.15)",
+                      border: "1px solid rgba(232,255,90,0.25)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: 10,
-                      fontWeight: 800,
-                      color: "#06b6d4",
+                      fontSize: 12,
+                      fontWeight: 500,
+                      color: "#E8FF5A",
                       flexShrink: 0,
                       userSelect: "none",
                     }}
@@ -556,8 +535,8 @@ const fullName = user
                       style={{
                         margin: 0,
                         fontSize: 12,
-                        fontWeight: 600,
-                        color: "#fff",
+                        fontWeight: 500,
+                        color: "#F2F1EC",
                         lineHeight: 1.2,
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -569,11 +548,10 @@ const fullName = user
                     <p
                       style={{
                         margin: 0,
-                        fontSize: 9,
+                        fontSize: 11,
                         color: "rgba(255,255,255,0.28)",
-                        textTransform: "uppercase",
                         letterSpacing: "0.1em",
-                        fontFamily: "'DM Mono', monospace",
+                        fontFamily: "var(--gx-mono)",
                       }}
                     >
                       {planLabel} plan

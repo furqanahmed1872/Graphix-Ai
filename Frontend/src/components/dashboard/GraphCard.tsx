@@ -12,7 +12,7 @@ declare global {
   }
 }
 
-const CYAN = "#06b6d4";
+const CYAN = "#E8FF5A";
 const API = getApiUrl();
 
 // Chart types supported by the ExcelChartEditor panel
@@ -132,28 +132,10 @@ function detectChartLabel(traces: any[]): string {
   return (m[type] ?? type.toUpperCase()) || "CHART";
 }
 
-function typeColor(label: string): string {
-  const m: Record<string, string> = {
-    BAR: "#06b6d4",
-    "H·BAR": "#06b6d4",
-    LINE: "#8b5cf6",
-    AREA: "#8b5cf6",
-    SCATTER: "#f59e0b",
-    PIE: "#ec4899",
-    DONUT: "#ec4899",
-    "3D": "#10b981",
-    SURFACE: "#10b981",
-    HEATMAP: "#f97316",
-    CONTOUR: "#f97316",
-    HIST: "#06b6d4",
-    CANDLE: "#eab308",
-    RADAR: "#a855f7",
-    SUNBURST: "#ec4899",
-    TREEMAP: "#14b8a6",
-    FUNNEL: "#f59e0b",
-    WATERFALL: "#06b6d4",
-  };
-  return m[label] ?? "#94a3b8";
+/* Every chart type used to carry its own hue. Colour is reserved for data
+   now, so the badge is simply the accent. */
+function typeColor(_label: string): string {
+  return "#E8FF5A";
 }
 
 // ── Plotly mini preview — ALL chart types ─────────────────────
@@ -207,7 +189,7 @@ function PlotlyMini({ chartConfig }: { chartConfig: any }) {
 
     const base: any = {
       paper_bgcolor: "rgba(0,0,0,0)",
-      plot_bgcolor: isHeat ? "#0f0f0f" : "rgba(0,0,0,0)",
+      plot_bgcolor: isHeat ? "#0C0C0A" : "rgba(0,0,0,0)",
       margin: is3D
         ? { l: 0, r: 0, t: 0, b: 0 }
         : isPolar
@@ -289,18 +271,18 @@ function ActionBtn({
       style={{
         width: 28,
         height: 28,
-        borderRadius: 8,
+        borderRadius: 6,
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         cursor: loading ? "default" : "pointer",
         opacity: loading ? 0.5 : 1,
         transition: "all 0.15s",
-        border: `1px solid ${active ? "rgba(6,182,212,0.4)" : danger && hov ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.12)"}`,
+        border: `1px solid ${active ? "rgba(232,255,90,0.4)" : danger && hov ? "rgba(255,107,138,0.4)" : "rgba(255,255,255,0.12)"}`,
         background: active
-          ? "rgba(6,182,212,0.18)"
+          ? "rgba(232,255,90,0.18)"
           : danger && hov
-            ? "rgba(239,68,68,0.15)"
+            ? "rgba(255,107,138,0.15)"
             : hov
               ? "rgba(255,255,255,0.1)"
               : "rgba(0,0,0,0.45)",
@@ -308,10 +290,10 @@ function ActionBtn({
           ? CYAN
           : danger
             ? hov
-              ? "#ef4444"
+              ? "#FF6B8A"
               : "rgba(255,255,255,0.4)"
             : hov
-              ? "#fff"
+              ? "#F2F1EC"
               : "rgba(255,255,255,0.4)",
       }}
     >
@@ -330,14 +312,13 @@ function Toast({ msg }: { msg: string }) {
         left: "50%",
         transform: "translateX(-50%)",
         zIndex: 99999,
-        background: "rgba(20,20,28,0.96)",
+        background: "rgba(19,19,17,0.96)",
         border: "1px solid rgba(255,255,255,0.12)",
         borderRadius: 10,
         padding: "10px 20px",
         fontSize: 12,
         color: "rgba(255,255,255,0.85)",
-        backdropFilter: "blur(12px)",
-        boxShadow: "0 4px 24px rgba(0,0,0,0.5)",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
         whiteSpace: "nowrap",
         animation: "gcIn 0.2s ease both",
       }}
@@ -378,7 +359,6 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
           inset: 0,
           zIndex: 9998,
           background: "rgba(0,0,0,0.72)",
-          backdropFilter: "blur(8px)",
         }}
       />
 
@@ -400,11 +380,11 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
             pointerEvents: "auto",
             width: "100%",
             maxWidth: 400,
-            background: "#0d0d18",
-            border: "1px solid rgba(6,182,212,0.3)",
-            borderRadius: 18,
+            background: "#131311",
+            border: "1px solid rgba(232,255,90,0.3)",
+            borderRadius: 10,
             boxShadow:
-              "0 0 0 1px rgba(6,182,212,0.08), 0 24px 64px rgba(0,0,0,0.7)",
+              "0 12px 32px rgba(0,0,0,0.45)",
             overflow: "hidden",
             animation: "shareModalIn 0.28s cubic-bezier(0.34,1.56,0.64,1) both",
           }}
@@ -414,7 +394,7 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
             style={{
               height: 2,
               background:
-                "linear-gradient(90deg, #06b6d4, #8b5cf6, transparent)",
+                "linear-gradient(90deg, #E8FF5A, #E8FF5A, transparent)",
             }}
           />
 
@@ -435,8 +415,8 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
                     width: 40,
                     height: 40,
                     borderRadius: 12,
-                    background: "rgba(6,182,212,0.12)",
-                    border: "1px solid rgba(6,182,212,0.25)",
+                    background: "rgba(232,255,90,0.12)",
+                    border: "1px solid rgba(232,255,90,0.25)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
@@ -448,7 +428,7 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
                     height="18"
                     viewBox="0 0 24 24"
                     fill="none"
-                    stroke="#06b6d4"
+                    stroke="#E8FF5A"
                     strokeWidth={2}
                     strokeLinecap="round"
                   >
@@ -465,8 +445,8 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
                     style={{
                       margin: 0,
                       fontSize: 15,
-                      fontWeight: 700,
-                      color: "#fff",
+                      fontWeight: 500,
+                      color: "#F2F1EC",
                       letterSpacing: "-0.02em",
                     }}
                   >
@@ -490,7 +470,7 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
                 style={{
                   width: 28,
                   height: 28,
-                  borderRadius: 8,
+                  borderRadius: 6,
                   border: "1px solid rgba(255,255,255,0.1)",
                   background: "rgba(255,255,255,0.05)",
                   color: "rgba(255,255,255,0.4)",
@@ -550,7 +530,7 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
-                  fontFamily: "'DM Mono', monospace",
+                  fontFamily: "var(--gx-mono)",
                 }}
               >
                 {url}
@@ -565,14 +545,14 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
                 padding: "12px",
                 borderRadius: 10,
                 border: copied
-                  ? "1px solid rgba(16,185,129,0.4)"
-                  : "1px solid rgba(6,182,212,0.35)",
+                  ? "1px solid rgba(155,229,100,0.4)"
+                  : "1px solid rgba(232,255,90,0.35)",
                 background: copied
-                  ? "rgba(16,185,129,0.12)"
-                  : "rgba(6,182,212,0.12)",
-                color: copied ? "#10b981" : "#06b6d4",
+                  ? "rgba(155,229,100,0.12)"
+                  : "rgba(232,255,90,0.12)",
+                color: copied ? "#9BE564" : "#E8FF5A",
                 fontSize: 13,
-                fontWeight: 700,
+                fontWeight: 500,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
@@ -620,7 +600,7 @@ function ShareModal({ url, onClose }: { url: string; onClose: () => void }) {
             <p
               style={{
                 margin: "12px 0 0",
-                fontSize: 10,
+                fontSize: 12,
                 color: "rgba(255,255,255,0.25)",
                 textAlign: "center",
               }}
@@ -830,12 +810,12 @@ export default function GraphCard({
 
   const isDeleting = deleteState === "deleting";
   const cardBorder = hov
-    ? "rgba(6,182,212,0.3)"
+    ? "rgba(232,255,90,0.3)"
     : star
-      ? "rgba(6,182,212,0.18)"
+      ? "rgba(232,255,90,0.18)"
       : "rgba(255,255,255,0.07)";
   const cardShadow = hov
-    ? "0 0 0 1px rgba(6,182,212,0.12), 0 8px 32px rgba(0,0,0,0.5)"
+    ? "0 8px 32px rgba(0,0,0,0.5)"
     : "0 1px 3px rgba(0,0,0,0.4)";
 
   return (
@@ -869,7 +849,7 @@ export default function GraphCard({
           onMouseLeave={() => setHov(false)}
           style={{
             position: "relative",
-            borderRadius: 14,
+            borderRadius: 10,
             overflow: "hidden",
             display: "flex",
             flexDirection: "column",
@@ -912,12 +892,12 @@ export default function GraphCard({
                 >
                   <path
                     d="M8 22L14 10L20 18L24 13"
-                    stroke="#06b6d4"
+                    stroke="#E8FF5A"
                     strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-                  <circle cx="24" cy="13" r="2" fill="#06b6d4" />
+                  <circle cx="24" cy="13" r="2" fill="#E8FF5A" />
                 </svg>
               </div>
             )}
@@ -933,7 +913,6 @@ export default function GraphCard({
                 alignItems: "center",
                 gap: 5,
                 background: "rgba(0,0,0,0.6)",
-                backdropFilter: "blur(8px)",
                 border: `1px solid ${typeClr}30`,
                 borderRadius: 6,
                 padding: "3px 8px",
@@ -951,11 +930,11 @@ export default function GraphCard({
               />
               <span
                 style={{
-                  fontSize: 9,
-                  fontWeight: 700,
+                  fontSize: 11,
+                  fontWeight: 500,
                   color: typeClr,
                   letterSpacing: "0.08em",
-                  fontFamily: "'DM Mono', monospace",
+                  fontFamily: "var(--gx-mono)",
                 }}
               >
                 {chartLabel}
@@ -969,7 +948,7 @@ export default function GraphCard({
                   position: "absolute",
                   top: 10,
                   right: 10,
-                  color: "#fbbf24",
+                  color: "#E8FF5A",
                 }}
               >
                 <svg
@@ -1134,8 +1113,7 @@ export default function GraphCard({
                 style={{
                   position: "absolute",
                   inset: 0,
-                  background: "rgba(10,8,12,0.92)",
-                  backdropFilter: "blur(6px)",
+                  background: "rgba(12,12,10,0.92)",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
@@ -1151,8 +1129,8 @@ export default function GraphCard({
                     style={{
                       margin: "0 0 4px",
                       fontSize: 13,
-                      fontWeight: 700,
-                      color: "#fff",
+                      fontWeight: 500,
+                      color: "#F2F1EC",
                     }}
                   >
                     Delete this chart?
@@ -1172,11 +1150,11 @@ export default function GraphCard({
                     onClick={() => setShowDeleteConf(false)}
                     style={{
                       fontSize: 11,
-                      fontWeight: 600,
+                      fontWeight: 500,
                       color: "rgba(255,255,255,0.6)",
                       background: "rgba(255,255,255,0.07)",
                       border: "1px solid rgba(255,255,255,0.12)",
-                      borderRadius: 8,
+                      borderRadius: 6,
                       padding: "6px 14px",
                       cursor: "pointer",
                     }}
@@ -1187,11 +1165,11 @@ export default function GraphCard({
                     onClick={confirmDelete}
                     style={{
                       fontSize: 11,
-                      fontWeight: 700,
-                      color: "#fff",
-                      background: "#dc2626",
+                      fontWeight: 500,
+                      color: "#F2F1EC",
+                      background: "#FF6B8A",
                       border: "none",
-                      borderRadius: 8,
+                      borderRadius: 6,
                       padding: "6px 14px",
                       cursor: "pointer",
                     }}
@@ -1208,7 +1186,6 @@ export default function GraphCard({
             style={{
               padding: "12px 14px 13px",
               background: "rgba(0,0,0,0.35)",
-              backdropFilter: "blur(12px)",
               borderTop: "1px solid rgba(255,255,255,0.06)",
               flex: 1,
               display: "flex",
@@ -1220,8 +1197,8 @@ export default function GraphCard({
               style={{
                 margin: 0,
                 fontSize: 13,
-                fontWeight: 700,
-                color: hov ? "#fff" : "rgba(255,255,255,0.85)",
+                fontWeight: 500,
+                color: hov ? "#F2F1EC" : "rgba(255,255,255,0.85)",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -1241,11 +1218,11 @@ export default function GraphCard({
                 {graph.trend && (
                   <span
                     style={{
-                      fontSize: 10,
+                      fontSize: 12,
                       color: graph.trend.startsWith("+")
-                        ? "#10b981"
-                        : "#f87171",
-                      fontFamily: "'DM Mono',monospace",
+                        ? "#9BE564"
+                        : "#FF6B8A",
+                      fontFamily: "var(--gx-mono)",
                     }}
                   >
                     {graph.trend}
@@ -1254,9 +1231,9 @@ export default function GraphCard({
               </div>
               <span
                 style={{
-                  fontSize: 10,
+                  fontSize: 12,
                   color: "rgba(255,255,255,0.18)",
-                  fontFamily: "'DM Mono',monospace",
+                  fontFamily: "var(--gx-mono)",
                 }}
               >
                 {graph.updated ?? ""}

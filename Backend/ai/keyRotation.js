@@ -10,15 +10,39 @@
 // The previous version funnelled all three into a 60s cooldown. With one key
 // configured that meant any 400 or 429 blocked every user for a full minute.
 
+// Both spellings are accepted. The loader used to read only GROQ_KEY_N, so a
+// .env using the (equally natural) GROQ_API_KEY_N loaded zero rotation keys
+// and silently fell back to the single GROQ_API_KEY — which looks exactly
+// like "I configured four keys and still get rate limited".
+const PLACEHOLDER = /^(your_|<|changeme|xxx|replace)/i;
+
 const KEYS = [];
+const seen = new Set();
+const addKey = (raw, source) => {
+  const k = (raw || "").trim();
+  if (!k || PLACEHOLDER.test(k)) return;
+  if (seen.has(k)) return; // same key under two names is still one quota
+  seen.add(k);
+  KEYS.push(k);
+  keySources.push(source);
+};
+
+const keySources = [];
 for (let i = 1; i <= 50; i++) {
-  const k = process.env[`GROQ_KEY_${i}`];
-  if (k) KEYS.push(k);
+  addKey(process.env[`GROQ_KEY_${i}`], `GROQ_KEY_${i}`);
+  addKey(process.env[`GROQ_API_KEY_${i}`], `GROQ_API_KEY_${i}`);
 }
-if (KEYS.length === 0 && process.env.GROQ_API_KEY) {
-  KEYS.push(process.env.GROQ_API_KEY);
+addKey(process.env.GROQ_API_KEY, "GROQ_API_KEY");
+
+console.log(
+  `Loaded ${KEYS.length} Groq API key(s): ${keySources.join(", ") || "none"}`,
+);
+if (KEYS.length === 0) {
+  console.error(
+    "[keyRotation] No Groq keys found. Set GROQ_API_KEY, or GROQ_API_KEY_1..N " +
+      "(GROQ_KEY_1..N also works) in Backend/.env",
+  );
 }
-console.log(`Loaded ${KEYS.length} Groq API key(s)`);
 if (KEYS.length === 1) {
   console.warn(
     "[keyRotation] Only one Groq key is configured. A rate limit on it has " +
@@ -41,7 +65,8 @@ export function getNextAvailableKey() {
   }
 
   for (let n = 0; n < usable.length; n++) {
-    const idx = usable[(usable.indexOf(currentKeyIndex) + n + usable.length) % usable.length];
+    const start = Math.max(0, usable.indexOf(currentKeyIndex));
+    const idx = usable[(start + n) % usable.length];
     if (!exhaustedUntil[idx] || exhaustedUntil[idx] < now) {
       currentKeyIndex = idx;
       return { key: KEYS[idx], index: idx };

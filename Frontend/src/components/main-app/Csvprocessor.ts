@@ -359,16 +359,16 @@ export function csvToPlotly(
   const dateCols = cols.filter((c) => isDateCol(c, rows));
 
   const COLORS = [
-    "#6366f1",
-    "#ec4899",
-    "#10b981",
-    "#f59e0b",
-    "#ef4444",
-    "#06b6d4",
-    "#f97316",
-    "#8b5cf6",
-    "#14b8a6",
-    "#84cc16",
+    "#E8FF5A",
+    "#FF8A5B",
+    "#6ED4C8",
+    "#B8A6F2",
+    "#FF6B8A",
+    "#9BE564",
+    "#7A8C1F",
+    "#3FA9B8",
+    "#C4562A",
+    "#6A55C4",
   ];
 
   // ── LINE ──────────────────────────────────────────────────────────────────

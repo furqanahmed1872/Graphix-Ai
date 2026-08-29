@@ -22,7 +22,7 @@ export default function StarField() {
           background:
             radial-gradient(
               ellipse 80% 60% at 50% 0%,
-              rgba(6, 182, 212, 0.045) 0%,
+              rgba(232,255,90, 0.045) 0%,
               transparent 70%
             ),
             radial-gradient(

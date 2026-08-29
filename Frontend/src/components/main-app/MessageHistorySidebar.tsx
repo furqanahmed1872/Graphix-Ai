@@ -72,7 +72,7 @@ export default function MessageHistorySidebar({
       className="flex flex-col flex-shrink-0 h-dvh transition-[width] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]"
       style={{
         width: collapsed ? 44 : 220,
-        background: "#09090b",
+        background: "#0C0C0A",
         borderLeft: "1px solid rgba(255,255,255,0.06)",
       }}
     >
@@ -84,7 +84,7 @@ export default function MessageHistorySidebar({
         {!collapsed && (
           <span
             className="text-[9px] uppercase tracking-widest font-semibold px-1 flex-1"
-            style={{ color: "rgba(255,255,255,0.25)", fontFamily: "DM Mono, monospace" }}
+            style={{ color: "rgba(255,255,255,0.25)", fontFamily: "var(--gx-mono)" }}
           >
             Charts
           </span>
@@ -93,9 +93,9 @@ export default function MessageHistorySidebar({
           <span
             className="text-[9px] px-1.5 py-0.5 rounded-full mr-1 font-bold"
             style={{
-              background: "rgba(6,182,212,0.12)",
-              color: "rgba(6,182,212,0.7)",
-              fontFamily: "DM Mono, monospace",
+              background: "rgba(232,255,90,0.12)",
+              color: "rgba(232,255,90,0.7)",
+              fontFamily: "var(--gx-mono)",
             }}
           >
             {chartMsgs.length}
@@ -134,8 +134,8 @@ export default function MessageHistorySidebar({
                     width: isSelected ? 8 : 6,
                     height: isSelected ? 8 : 6,
                     borderRadius: "50%",
-                    background: isSelected ? "#06b6d4" : "rgba(255,255,255,0.18)",
-                    boxShadow: isSelected ? "0 0 6px rgba(6,182,212,0.5)" : "none",
+                    background: isSelected ? "#E8FF5A" : "rgba(255,255,255,0.18)",
+                    boxShadow: isSelected ? "0 0 6px rgba(232,255,90,0.5)" : "none",
                     border: "none",
                     cursor: "pointer",
                     transition: "all 0.2s",
@@ -160,8 +160,8 @@ export default function MessageHistorySidebar({
                 onClick={() => onSelectAiId(m.id)}
                 className="w-full text-left px-2.5 py-2 rounded-lg transition-all"
                 style={{
-                  background: isSelected ? "rgba(6,182,212,0.09)" : "rgba(255,255,255,0.03)",
-                  border: `1px solid ${isSelected ? "rgba(6,182,212,0.25)" : "rgba(255,255,255,0.05)"}`,
+                  background: isSelected ? "rgba(232,255,90,0.09)" : "rgba(255,255,255,0.03)",
+                  border: `1px solid ${isSelected ? "rgba(232,255,90,0.25)" : "rgba(255,255,255,0.05)"}`,
                   cursor: "pointer",
                   outline: "none",
                 }}
@@ -173,14 +173,14 @@ export default function MessageHistorySidebar({
                 }}
               >
                 <div className="flex items-center gap-1.5 mb-1">
-                  <span style={{ color: isSelected ? "#06b6d4" : "rgba(255,255,255,0.25)" }}>
+                  <span style={{ color: isSelected ? "#E8FF5A" : "rgba(255,255,255,0.25)" }}>
                     <ChartTypeIcon type={typeName} />
                   </span>
                   <span
                     className="text-[9px] uppercase tracking-wider font-semibold"
                     style={{
-                      color: isSelected ? "rgba(6,182,212,0.7)" : "rgba(255,255,255,0.2)",
-                      fontFamily: "DM Mono, monospace",
+                      color: isSelected ? "rgba(232,255,90,0.7)" : "rgba(255,255,255,0.2)",
+                      fontFamily: "var(--gx-mono)",
                     }}
                   >
                     #{i + 1} · {typeName}
@@ -188,7 +188,7 @@ export default function MessageHistorySidebar({
                   {isSelected && (
                     <span
                       className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0"
-                      style={{ background: "#06b6d4", boxShadow: "0 0 4px rgba(6,182,212,0.6)" }}
+                      style={{ background: "#E8FF5A", boxShadow: "0 0 4px rgba(232,255,90,0.6)" }}
                     />
                   )}
                 </div>
@@ -212,7 +212,7 @@ export default function MessageHistorySidebar({
         {!collapsed && chartMsgs.length === 0 && (
           <p
             className="text-center pt-6 text-[10px]"
-            style={{ color: "rgba(255,255,255,0.15)", fontFamily: "DM Mono, monospace" }}
+            style={{ color: "rgba(255,255,255,0.15)", fontFamily: "var(--gx-mono)" }}
           >
             No charts yet
           </p>
@@ -225,7 +225,7 @@ export default function MessageHistorySidebar({
           className="px-3 py-2 flex-shrink-0"
           style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
         >
-          <span style={{ fontSize: 9, color: "rgba(255,255,255,0.18)", fontFamily: "DM Mono, monospace" }}>
+          <span style={{ fontSize: 9, color: "rgba(255,255,255,0.18)", fontFamily: "var(--gx-mono)" }}>
             {chartMsgs.length} chart{chartMsgs.length !== 1 ? "s" : ""} · click to view
           </span>
         </div>

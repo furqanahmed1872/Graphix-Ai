@@ -153,11 +153,11 @@ export default function WaveHero({ onSend, isLoading }: WaveHeroProps) {
           transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
         .hero-input-row:focus-within {
-          border-color: rgba(6,182,212,0.4);
-          box-shadow: 0 0 0 3px rgba(6,182,212,0.06), 0 4px 24px rgba(0,0,0,0.3);
+          border-color: rgba(232,255,90,0.4);
+          box-shadow: 0 0 0 3px rgba(232,255,90,0.06), 0 4px 24px rgba(0,0,0,0.3);
         }
         .hero-text-input::placeholder { color: rgba(255,255,255,0.2); }
-        .hero-text-input { color: rgba(255,255,255,0.85); caret-color: #06b6d4; }
+        .hero-text-input { color: rgba(255,255,255,0.85); caret-color: #E8FF5A; }
         .hero-text-input:focus { outline: none; }
 
         .chip {
@@ -173,9 +173,9 @@ export default function WaveHero({ onSend, isLoading }: WaveHeroProps) {
           flex-shrink: 0;
         }
         .chip:hover {
-          border-color: rgba(6,182,212,0.35);
-          color: rgba(6,182,212,0.85);
-          background: rgba(6,182,212,0.06);
+          border-color: rgba(232,255,90,0.35);
+          color: rgba(232,255,90,0.85);
+          background: rgba(232,255,90,0.06);
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -191,7 +191,7 @@ export default function WaveHero({ onSend, isLoading }: WaveHeroProps) {
               height: 52,
               background: "rgba(255,255,255,0.04)",
               border: "1px solid rgba(255,255,255,0.08)",
-              boxShadow: "0 0 32px rgba(6,182,212,0.08)",
+              boxShadow: "0 0 32px rgba(232,255,90,0.08)",
             }}
           >
             <img
@@ -225,7 +225,7 @@ export default function WaveHero({ onSend, isLoading }: WaveHeroProps) {
               Turn your data into{" "}
               <span
                 className={`hero-word ${visible ? "hero-word-visible" : "hero-word-hidden"}`}
-                style={{ color: "#22d3ee" }}
+                style={{ color: "#E8FF5A" }}
               >
                 {words[index]}
               </span>
@@ -240,9 +240,9 @@ export default function WaveHero({ onSend, isLoading }: WaveHeroProps) {
             <div
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs mb-2"
               style={{
-                background: "rgba(6,182,212,0.07)",
-                border: "1px solid rgba(6,182,212,0.2)",
-                color: "rgba(34,211,238,0.9)",
+                background: "rgba(232,255,90,0.07)",
+                border: "1px solid rgba(232,255,90,0.2)",
+                color: "rgba(232,255,90,0.9)",
               }}
             >
               <span style={{ fontSize: 10 }}>✦</span>
@@ -314,13 +314,13 @@ export default function WaveHero({ onSend, isLoading }: WaveHeroProps) {
                   background: "rgba(255,255,255,0.06)",
                   border: "1px solid rgba(255,255,255,0.08)",
                   color: "rgba(255,255,255,0.4)",
-                  fontFamily: "monospace",
+                  fontFamily: "var(--gx-mono)",
                 }}
               >
                 {showBanner && (
                   <span
                     style={{
-                      color: "#22d3ee",
+                      color: "#E8FF5A",
                       fontSize: 9,
                       fontWeight: 700,
                       textTransform: "uppercase",
@@ -382,9 +382,9 @@ export default function WaveHero({ onSend, isLoading }: WaveHeroProps) {
               disabled={!canSend}
               className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all"
               style={{
-                background: canSend ? "#06b6d4" : "rgba(255,255,255,0.06)",
+                background: canSend ? "#E8FF5A" : "rgba(255,255,255,0.06)",
                 color: canSend ? "#000" : "rgba(255,255,255,0.2)",
-                boxShadow: canSend ? "0 0 16px rgba(6,182,212,0.3)" : "none",
+                boxShadow: canSend ? "0 0 16px rgba(232,255,90,0.3)" : "none",
                 cursor: canSend ? "pointer" : "default",
               }}
             >

@@ -42,9 +42,9 @@ export function Chip({
 }) {
   return (
     <span
-      className={`inline-block px-2 py-[2px] text-[10px] font-bold tracking-[0.07em] uppercase rounded-[3px] border ${
+      className={`inline-block px-2 py-[2px] text-[10px] font-bold  rounded-[3px] border ${
         cyan
-          ? "bg-[rgba(0,212,200,0.18)] text-[#00d4c8] border-[rgba(0,212,200,0.35)]"
+          ? "bg-[rgba(232,255,90,0.18)] text-[#E8FF5A] border-[rgba(232,255,90,0.35)]"
           : "bg-white/[0.08] text-white/35 border-white/[0.12]"
       }`}
     >
@@ -68,7 +68,7 @@ export function Btn({
   style?: React.CSSProperties;
 }) {
   const base =
-    "inline-flex items-center gap-1.5 cursor-pointer font-bold tracking-[0.05em] uppercase rounded-[3px] border transition-all duration-150";
+    "inline-flex items-center gap-1.5 cursor-pointer font-bold tracking-[0.05em] rounded-[3px] border transition-all duration-150";
 
   const sizes = {
     sm: "text-[11px] px-[14px] py-[7px]",
@@ -76,9 +76,9 @@ export function Btn({
   };
 
   const variants = {
-    fill: "bg-[#00d4c8] text-[#111212] border-[#00d4c8] hover:opacity-90",
+    fill: "bg-[#E8FF5A] text-[#0C0C0A] border-[#E8FF5A] hover:opacity-90",
     outline:
-      "bg-transparent text-[#00d4c8] border-[rgba(0,212,200,0.35)] hover:border-[#00d4c8]",
+      "bg-transparent text-[#E8FF5A] border-[rgba(232,255,90,0.35)] hover:border-[#E8FF5A]",
     ghost:
       "bg-transparent text-white/35 border-white/[0.12] hover:text-white/60",
   };
@@ -117,7 +117,7 @@ export function FieldInput({
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       className={`w-full bg-transparent outline-none rounded-[3px] text-white text-[13px] px-[13px] py-[10px] transition-colors box-border border ${
-        focused ? "border-[#00d4c8]" : "border-white/[0.12]"
+        focused ? "border-[#E8FF5A]" : "border-white/[0.12]"
       } ${mono ? "font-mono" : "font-sans"}`}
       style={sx}
     />
@@ -150,7 +150,7 @@ export function FieldTextarea({
       onFocus={() => setFocused(true)}
       onBlur={() => setFocused(false)}
       className={`w-full bg-transparent outline-none resize-y rounded-[3px] text-white text-[13px] leading-[1.7] px-[13px] py-[10px] transition-colors box-border border ${
-        focused ? "border-[#00d4c8]" : "border-white/[0.12]"
+        focused ? "border-[#E8FF5A]" : "border-white/[0.12]"
       } ${mono ? "font-mono" : "font-sans"}`}
       style={sx}
     />
@@ -160,7 +160,7 @@ export function FieldTextarea({
 // ── FieldLabel ───────────────────────────────────────────────
 export function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <span className="text-white/35 text-[10px] font-bold tracking-[0.1em] uppercase">
+    <span className="text-white/35 text-[10px] font-bold tracking-[0.1em]">
       {children}
     </span>
   );
@@ -212,7 +212,7 @@ export function BackBtn({ onClick }: { onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 text-[#00d4c8] text-[11px] font-semibold tracking-[0.06em] uppercase mb-[22px] p-0 bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
+      className="flex items-center gap-1.5 text-[#E8FF5A] text-[11px] font-semibold tracking-[0.06em] mb-[22px] p-0 bg-transparent border-none cursor-pointer hover:opacity-75 transition-opacity"
     >
       <svg
         width={12}
@@ -234,13 +234,13 @@ export function BackBtn({ onClick }: { onClick: () => void }) {
 // ── SuccessBanner ────────────────────────────────────────────
 export function SuccessBanner({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-[9px] bg-[rgba(0,212,200,0.08)] border border-[rgba(0,212,200,0.35)] rounded-[6px] px-[15px] py-[11px]">
+    <div className="flex items-center gap-[9px] bg-[rgba(232,255,90,0.08)] border border-[rgba(232,255,90,0.35)] rounded-[6px] px-[15px] py-[11px]">
       <svg
         width={14}
         height={14}
         viewBox="0 0 24 24"
         fill="none"
-        stroke="#00d4c8"
+        stroke="#E8FF5A"
         strokeWidth={2}
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -262,7 +262,7 @@ export function DataTable({ rows }: { rows: (string | number)[][] }) {
             {rows[0].map((h, i) => (
               <th
                 key={i}
-                className={`text-left px-[14px] py-[10px] font-bold text-[#00d4c8] border-b border-white/[0.08] ${
+                className={`text-left px-[14px] py-[10px] font-bold text-[#E8FF5A] border-b border-white/[0.08] ${
                   i < rows[0].length - 1 ? "border-r border-white/[0.08]" : ""
                 }`}
               >
@@ -313,7 +313,7 @@ export function Stepper({
             <div
               className={`w-[26px] h-[26px] rounded-[4px] flex items-center justify-center text-[11px] font-extrabold transition-all duration-200 border-[1.5px] ${
                 current >= Number(n)
-                  ? "bg-[#00d4c8] border-[#00d4c8] text-[#111212]"
+                  ? "bg-[#E8FF5A] border-[#E8FF5A] text-[#0C0C0A]"
                   : "bg-transparent border-white/[0.12] text-white/35"
               }`}
             >
@@ -330,7 +330,7 @@ export function Stepper({
           {i < steps.length - 1 && (
             <div
               className={`w-9 h-[1.5px] mx-[10px] rounded-[1px] ${
-                current > i + 1 ? "bg-[#00d4c8]" : "bg-white/[0.08]"
+                current > i + 1 ? "bg-[#E8FF5A]" : "bg-white/[0.08]"
               }`}
             />
           )}
@@ -360,7 +360,7 @@ export function MiniStepper({
               <div
                 className={`w-5 h-5 rounded-[3px] flex items-center justify-center text-[10px] font-extrabold border-[1.5px] ${
                   active || past
-                    ? "bg-[#00d4c8] border-[#00d4c8] text-[#111212]"
+                    ? "bg-[#E8FF5A] border-[#E8FF5A] text-[#0C0C0A]"
                     : "bg-transparent border-white/[0.12] text-white/35"
                 }`}
               >
@@ -377,7 +377,7 @@ export function MiniStepper({
             {i < steps.length - 1 && (
               <div
                 className={`w-[22px] h-[1.5px] rounded-[1px] ${
-                  past ? "bg-[#00d4c8]" : "bg-white/[0.08]"
+                  past ? "bg-[#E8FF5A]" : "bg-white/[0.08]"
                 }`}
               />
             )}
@@ -412,7 +412,7 @@ export function ActionCard({
       onClick={onClick}
       className={`flex flex-col items-center gap-[9px] text-center rounded-[6px] px-[14px] py-5 cursor-pointer border transition-all duration-200 w-full ${
         hov && primary
-          ? "bg-[rgba(0,212,200,0.08)] border-[#00d4c8]"
+          ? "bg-[rgba(232,255,90,0.08)] border-[#E8FF5A]"
           : hov
             ? "bg-transparent border-white/20"
             : "bg-transparent border-white/[0.08]"
@@ -422,7 +422,7 @@ export function ActionCard({
       <div
         className={`w-[42px] h-[42px] rounded-[6px] flex items-center justify-center border ${
           primary
-            ? "bg-[rgba(0,212,200,0.18)] border-[rgba(0,212,200,0.35)] text-[#00d4c8]"
+            ? "bg-[rgba(232,255,90,0.18)] border-[rgba(232,255,90,0.35)] text-[#E8FF5A]"
             : "bg-white/[0.08] border-white/[0.08] text-white/55"
         }`}
       >
@@ -437,7 +437,7 @@ export function ActionCard({
 
       {/* CTA */}
       <div
-        className={`text-[#00d4c8] text-[10px] font-bold tracking-[0.07em] uppercase transition-opacity duration-150 ${
+        className={`text-[#E8FF5A] text-[10px] font-bold  transition-opacity duration-150 ${
           hov ? "opacity-100" : "opacity-0"
         }`}
       >

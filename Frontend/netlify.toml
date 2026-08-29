@@ -1,0 +1,13 @@
+# Netlify — Next.js 16 frontend.
+# The plugin handles SSR routes, middleware and image optimisation; without
+# it only the static pages would deploy and /share/[token] would 404.
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

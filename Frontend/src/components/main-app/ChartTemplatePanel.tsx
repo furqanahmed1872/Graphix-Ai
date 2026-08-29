@@ -294,7 +294,7 @@ function drawMiniChart(
     if (inner > 0) {
       ctx.beginPath();
       ctx.arc(cx, cy, inner, 0, Math.PI * 2);
-      ctx.fillStyle = "#09090b";
+      ctx.fillStyle = "#0C0C0A";
       ctx.fill();
     }
   } else if (tpl.type === "box") {
@@ -742,14 +742,14 @@ export default function ChartTemplatePanel() {
       className="flex flex-col overflow-y-auto flex-shrink-0"
       style={{
         width: 92,
-        background: "#09090b",
+        background: "#0C0C0A",
         borderRight: "1px solid rgba(255,255,255,0.06)",
         scrollbarWidth: "none",
       }}
     >
       <div
         className="px-2 pt-3 pb-1 text-center sticky top-0 z-10"
-        style={{ background: "#09090b" }}
+        style={{ background: "#0C0C0A" }}
       >
         <span
           style={{
@@ -757,7 +757,7 @@ export default function ChartTemplatePanel() {
             textTransform: "uppercase",
             letterSpacing: "0.12em",
             color: "rgba(255,255,255,0.18)",
-            fontFamily: "DM Mono,monospace",
+            fontFamily: "var(--gx-mono)",
           }}
         >
           Templates
@@ -782,7 +782,7 @@ export default function ChartTemplatePanel() {
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
                 color: group.color,
-                fontFamily: "DM Mono,monospace",
+                fontFamily: "var(--gx-mono)",
                 opacity: 0.85,
               }}
             >
@@ -846,7 +846,7 @@ export default function ChartTemplatePanel() {
                     fontSize: 8,
                     marginTop: 3,
                     color: isActive ? group.color : "rgba(255,255,255,0.3)",
-                    fontFamily: "DM Mono,monospace",
+                    fontFamily: "var(--gx-mono)",
                     letterSpacing: "0.03em",
                     whiteSpace: "nowrap",
                     overflow: "hidden",

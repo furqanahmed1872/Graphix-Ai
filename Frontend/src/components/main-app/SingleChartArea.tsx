@@ -25,7 +25,7 @@ const PALETTE = [
   "#10b981",
   "#f59e0b",
   "#ef4444",
-  "#06b6d4",
+  "#E8FF5A",
   "#f97316",
   "#8b5cf6",
 ];
@@ -39,14 +39,14 @@ const PALETTE_FULL = [
   "#10b981",
   "#f59e0b",
   "#ef4444",
-  "#06b6d4",
+  "#E8FF5A",
   "#f97316",
   "#8b5cf6",
   "#14b8a6",
   "#84cc16",
   "#fb923c",
   "#a855f7",
-  "#22d3ee",
+  "#E8FF5A",
   "#e11d48",
   "#16a34a",
   "#d97706",
@@ -697,7 +697,7 @@ const CONVERT_TYPES = [
 const PALETTES_TB = [
   {
     id: "vivid",
-    colors: ["#6366f1", "#ec4899", "#10b981", "#f59e0b", "#ef4444", "#06b6d4"],
+    colors: ["#6366f1", "#ec4899", "#10b981", "#f59e0b", "#ef4444", "#E8FF5A"],
   },
   {
     id: "neon",
@@ -705,7 +705,7 @@ const PALETTES_TB = [
   },
   {
     id: "ocean",
-    colors: ["#06b6d4", "#0ea5e9", "#38bdf8", "#0284c7", "#7dd3fc", "#bae6fd"],
+    colors: ["#E8FF5A", "#0ea5e9", "#38bdf8", "#0284c7", "#7dd3fc", "#bae6fd"],
   },
   {
     id: "fire",
@@ -756,9 +756,9 @@ function TbBtn({
         alignItems: "center",
         justifyContent: "center",
         borderRadius: 8,
-        border: `1px solid ${active ? "rgba(6,182,212,0.4)" : "rgba(255,255,255,0.07)"}`,
-        background: active ? "rgba(6,182,212,0.12)" : "rgba(255,255,255,0.03)",
-        color: active ? "#22d3ee" : "rgba(255,255,255,0.45)",
+        border: `1px solid ${active ? "rgba(232,255,90,0.4)" : "rgba(255,255,255,0.07)"}`,
+        background: active ? "rgba(232,255,90,0.12)" : "rgba(255,255,255,0.03)",
+        color: active ? "#E8FF5A" : "rgba(255,255,255,0.45)",
         cursor: "pointer",
         transition: "all 0.15s",
         flexShrink: 0,
@@ -1002,7 +1002,7 @@ function InlineToolbar({
       className=" flex md:flex-col md:flex-shrink-0  overflow-y-scroll items-center"
       style={{
        
-        background: "#09090b",
+        background: "#0C0C0A",
         borderLeft: "1px solid rgba(255,255,255,0.06)",
                padding: "10px 6px",
         gap: 4,
@@ -1018,10 +1018,10 @@ function InlineToolbar({
           alignItems: "center",
           justifyContent: "center",
           borderRadius: 8,
-          border: "1px solid rgba(6,182,212,0.35)",
+          border: "1px solid rgba(232,255,90,0.35)",
           background:
-            "linear-gradient(135deg,rgba(6,182,212,0.2),rgba(6,182,212,0.08))",
-          color: "#06b6d4",
+            "linear-gradient(135deg,rgba(232,255,90,0.2),rgba(232,255,90,0.08))",
+          color: "#E8FF5A",
           cursor: "pointer",
           flexShrink: 0,
         }}
@@ -1216,7 +1216,7 @@ function InlineToolbar({
             <span
               style={{
                 fontSize: 8,
-                fontFamily: "DM Mono,monospace",
+                fontFamily: "var(--gx-mono)",
                 fontWeight: 600,
                 letterSpacing: "0.05em",
                 textTransform: "uppercase",
@@ -1259,7 +1259,7 @@ function InlineToolbar({
             height="13"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="#22d3ee"
+            stroke="#E8FF5A"
             strokeWidth="2.5"
             strokeLinecap="round"
           >
@@ -1324,18 +1324,18 @@ function InlineToolbar({
                       gap: 3,
                       padding: "6px 4px",
                       borderRadius: 7,
-                      border: `1px solid ${activeConvert === ct.id ? "rgba(6,182,212,0.4)" : "rgba(255,255,255,0.08)"}`,
+                      border: `1px solid ${activeConvert === ct.id ? "rgba(232,255,90,0.4)" : "rgba(255,255,255,0.08)"}`,
                       background:
                         activeConvert === ct.id
-                          ? "rgba(6,182,212,0.1)"
+                          ? "rgba(232,255,90,0.1)"
                           : "rgba(255,255,255,0.03)",
                       color:
                         activeConvert === ct.id
-                          ? "#22d3ee"
+                          ? "#E8FF5A"
                           : "rgba(255,255,255,0.5)",
                       cursor: "pointer",
                       fontSize: 9,
-                      fontFamily: "DM Mono,monospace",
+                      fontFamily: "var(--gx-mono)",
                     }}
                   >
                     {ct.icon}
@@ -1356,10 +1356,10 @@ function InlineToolbar({
                       gap: 6,
                       padding: "5px 8px",
                       borderRadius: 7,
-                      border: `1px solid ${activePalette === pal.id ? "rgba(6,182,212,0.4)" : "rgba(255,255,255,0.06)"}`,
+                      border: `1px solid ${activePalette === pal.id ? "rgba(232,255,90,0.4)" : "rgba(255,255,255,0.06)"}`,
                       background:
                         activePalette === pal.id
-                          ? "rgba(6,182,212,0.08)"
+                          ? "rgba(232,255,90,0.08)"
                           : "transparent",
                       cursor: "pointer",
                     }}
@@ -1382,7 +1382,7 @@ function InlineToolbar({
                       style={{
                         fontSize: 9,
                         color: "rgba(255,255,255,0.5)",
-                        fontFamily: "DM Mono,monospace",
+                        fontFamily: "var(--gx-mono)",
                         textTransform: "capitalize",
                       }}
                     >
@@ -1392,7 +1392,7 @@ function InlineToolbar({
                       <span
                         style={{
                           marginLeft: "auto",
-                          color: "#22d3ee",
+                          color: "#E8FF5A",
                           fontSize: 10,
                         }}
                       >
@@ -1435,7 +1435,7 @@ function PremiumTooltip({
           boxShadow:
             "0 8px 32px rgba(0,0,0,0.18),0 1.5px 6px rgba(0,0,0,0.08),0 0 0 1px rgba(0,0,0,0.07)",
           overflow: "hidden",
-          fontFamily: "Inter,system-ui,sans-serif",
+          fontFamily: "var(--gx-sans)",
           animation: "ttIn 0.13s cubic-bezier(0.16,1,0.3,1) both",
         }}
       >
@@ -1928,8 +1928,8 @@ export default function SingleChartArea({
                   width: 6,
                   height: 6,
                   borderRadius: "50%",
-                  background: "#06b6d4",
-                  boxShadow: "0 0 6px rgba(6,182,212,0.5)",
+                  background: "#E8FF5A",
+                  boxShadow: "0 0 6px rgba(232,255,90,0.5)",
                 }}
               />
               <span
@@ -1984,7 +1984,7 @@ export default function SingleChartArea({
                         width: 6,
                         height: 6,
                         borderRadius: "50%",
-                        background: "rgba(6,182,212,0.6)",
+                        background: "rgba(232,255,90,0.6)",
                         animationDelay: `${i * 150}ms`,
                       }}
                     />
@@ -1994,7 +1994,7 @@ export default function SingleChartArea({
                   style={{
                     fontSize: 11,
                     color: "rgba(255,255,255,0.2)",
-                    fontFamily: "monospace",
+                    fontFamily: "var(--gx-mono)",
                   }}
                 >
                   Generating…
@@ -2093,10 +2093,10 @@ export default function SingleChartArea({
             transform: "translateX(-50%)",
             zIndex: 99999,
             background: "#0f172a",
-            border: "1px solid rgba(6,182,212,0.35)",
+            border: "1px solid rgba(232,255,90,0.35)",
             borderRadius: 14,
             boxShadow:
-              "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(6,182,212,0.08)",
+              "0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(232,255,90,0.08)",
             padding: "12px 18px",
             display: "flex",
             alignItems: "center",
@@ -2112,8 +2112,8 @@ export default function SingleChartArea({
               height: 32,
               borderRadius: "50%",
               flexShrink: 0,
-              background: "rgba(6,182,212,0.12)",
-              border: "1px solid rgba(6,182,212,0.3)",
+              background: "rgba(232,255,90,0.12)",
+              border: "1px solid rgba(232,255,90,0.3)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -2124,7 +2124,7 @@ export default function SingleChartArea({
               height="14"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="#06b6d4"
+              stroke="#E8FF5A"
               strokeWidth={2.5}
               strokeLinecap="round"
             >
@@ -2146,7 +2146,7 @@ export default function SingleChartArea({
               <a
                 href="/dashboard"
                 style={{
-                  color: "#06b6d4",
+                  color: "#E8FF5A",
                   textDecoration: "none",
                   fontWeight: 600,
                 }}

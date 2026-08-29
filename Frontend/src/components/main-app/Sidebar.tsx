@@ -68,7 +68,7 @@ const handleDelete = (id: string) => {
           ${collapsed ? "collapsed w-[60px] min-w-[60px]" : "w-[248px] min-w-[248px]"}
         `}
         style={{
-          background: "#09090b",
+          background: "#0C0C0A",
           borderRight: "1px solid rgba(255,255,255,0.06)",
         }}
       >
@@ -80,7 +80,7 @@ const handleDelete = (id: string) => {
           className="absolute top-0 right-0 bottom-0 w-px pointer-events-none z-0"
           style={{
             background:
-              "linear-gradient(180deg, transparent, rgba(6,182,212,0.12) 40%, rgba(6,182,212,0.06) 70%, transparent)",
+              "linear-gradient(180deg, transparent, rgba(232,255,90,0.12) 40%, rgba(232,255,90,0.06) 70%, transparent)",
           }}
         />
 
@@ -93,8 +93,8 @@ const handleDelete = (id: string) => {
             bg-[#18181b] border border-white/10
             flex items-center justify-center cursor-pointer z-20
             transition-colors duration-150
-            hover:bg-[#06b6d4] hover:border-[#06b6d4] hover:text-black
-            hover:shadow-[0_0_12px_rgba(6,182,212,0.4)]
+            hover:bg-[#E8FF5A] hover:border-[#E8FF5A] hover:text-black
+            hover:shadow-[0_0_12px_rgba(232,255,90,0.4)]
             text-white/35
           `}
           onClick={() => {
@@ -136,9 +136,9 @@ const handleDelete = (id: string) => {
                     width: 36,
                     height: 36,
                     background: "linear-gradient(135deg, #0e0e10, #18181b)",
-                    border: "1px solid rgba(6,182,212,0.2)",
+                    border: "1px solid rgba(232,255,90,0.2)",
                     boxShadow:
-                      "0 0 16px rgba(6,182,212,0.1), inset 0 1px 0 rgba(255,255,255,0.04)",
+                      "0 0 16px rgba(232,255,90,0.1), inset 0 1px 0 rgba(255,255,255,0.04)",
                   }}
                 >
                   <img
@@ -152,7 +152,7 @@ const handleDelete = (id: string) => {
                   <p
                     className="text-[15px] font-extrabold leading-none mb-[3px] text-white"
                     style={{
-                      fontFamily: "'Bricolage Grotesque', sans-serif",
+                      fontFamily: "var(--gx-display)",
                       letterSpacing: "-0.04em",
                     }}
                   >
@@ -160,7 +160,7 @@ const handleDelete = (id: string) => {
                   </p>
                   <span
                     className="text-[9px] uppercase tracking-[0.1em] text-white/22 block"
-                    style={{ fontFamily: "'DM Mono', monospace" }}
+                    style={{ fontFamily: "var(--gx-mono)" }}
                   >
                     v2.0 · Studio
                   </span>
@@ -211,9 +211,9 @@ const handleDelete = (id: string) => {
                   ${collapsed ? "justify-center gap-0 px-0" : "justify-start gap-[9px] px-[10px]"}
                 `}
                 style={{
-                  background: "rgba(6,182,212,0.06)",
-                  border: "1px solid rgba(6,182,212,0.18)",
-                  color: "#22d3ee",
+                  background: "rgba(232,255,90,0.06)",
+                  border: "1px solid rgba(232,255,90,0.18)",
+                  color: "#E8FF5A",
                 }}
               >
                 <span className="flex items-center justify-center flex-shrink-0 w-5 h-5">
@@ -233,7 +233,7 @@ const handleDelete = (id: string) => {
 
                 <span
                   className="sb-label text-[11px] font-semibold tracking-[0.02em]"
-                  style={{ fontFamily: "'DM Mono', monospace" }}
+                  style={{ fontFamily: "var(--gx-mono)" }}
                 >
                   New conversation
                 </span>
@@ -249,7 +249,7 @@ const handleDelete = (id: string) => {
                     strokeWidth="2.5"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    style={{ color: "rgba(34,211,238,0.4)" }}
+                    style={{ color: "rgba(232,255,90,0.4)" }}
                   >
                     <path d="M5 12h14M12 5l7 7-7 7" />
                   </svg>
@@ -265,7 +265,7 @@ const handleDelete = (id: string) => {
                 <span className="flex-1 h-px bg-white/[0.05]" />
                 <span
                   className="text-[9px] uppercase tracking-[0.12em] text-white/[0.18]"
-                  style={{ fontFamily: "'DM Mono', monospace" }}
+                  style={{ fontFamily: "var(--gx-mono)" }}
                 >
                   Recent
                 </span>
@@ -301,11 +301,11 @@ const handleDelete = (id: string) => {
         `}
                     style={{
                       background: isActive
-                        ? "rgba(6,182,212,0.07)"
+                        ? "rgba(232,255,90,0.07)"
                         : "transparent",
-                      border: `1px solid ${isActive ? "rgba(6,182,212,0.18)" : "transparent"}`,
+                      border: `1px solid ${isActive ? "rgba(232,255,90,0.18)" : "transparent"}`,
                       boxShadow: isActive
-                        ? "0 0 16px rgba(6,182,212,0.06)"
+                        ? "0 0 16px rgba(232,255,90,0.06)"
                         : "none",
                     }}
                   >
@@ -313,8 +313,8 @@ const handleDelete = (id: string) => {
                       <div
                         className="absolute left-0 top-[20%] bottom-[20%] w-0.5 rounded-[2px]"
                         style={{
-                          background: "#06b6d4",
-                          boxShadow: "0 0 8px rgba(6,182,212,0.6)",
+                          background: "#E8FF5A",
+                          boxShadow: "0 0 8px rgba(232,255,90,0.6)",
                         }}
                       />
                     )}
@@ -323,12 +323,12 @@ const handleDelete = (id: string) => {
                       <span
                         className="w-[26px] h-[26px] rounded-[7px] flex items-center justify-center flex-shrink-0 text-[9px] font-bold tracking-[0.03em]"
                         style={{
-                          fontFamily: "'DM Mono', monospace",
+                          fontFamily: "var(--gx-mono)",
                           background: isActive
-                            ? "rgba(6,182,212,0.15)"
+                            ? "rgba(232,255,90,0.15)"
                             : "rgba(255,255,255,0.05)",
-                          border: `1px solid ${isActive ? "rgba(6,182,212,0.3)" : "rgba(255,255,255,0.06)"}`,
-                          color: isActive ? "#22d3ee" : "rgba(255,255,255,0.3)",
+                          border: `1px solid ${isActive ? "rgba(232,255,90,0.3)" : "rgba(255,255,255,0.06)"}`,
+                          color: isActive ? "#E8FF5A" : "rgba(255,255,255,0.3)",
                         }}
                       >
                         {initials || String(i + 1).padStart(2, "0")}
@@ -339,7 +339,7 @@ const handleDelete = (id: string) => {
                           className={`w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors ${isActive ? "dot-glow" : ""}`}
                           style={{
                             background: isActive
-                              ? "#06b6d4"
+                              ? "#E8FF5A"
                               : "rgba(255,255,255,0.15)",
                           }}
                         />
@@ -357,7 +357,7 @@ const handleDelete = (id: string) => {
                         </span>
                         <span
                           className="text-[9px] text-white/[0.12] flex-shrink-0"
-                          style={{ fontFamily: "'DM Mono', monospace" }}
+                          style={{ fontFamily: "var(--gx-mono)" }}
                         >
                           {String(i + 1).padStart(2, "0")}
                         </span>
@@ -433,14 +433,14 @@ const handleDelete = (id: string) => {
                 </span>
                 <span
                   className="block text-[9px] uppercase tracking-[0.1em] text-white/20"
-                  style={{ fontFamily: "'DM Mono', monospace" }}
+                  style={{ fontFamily: "var(--gx-mono)" }}
                 >
                   Free plan
                 </span>
               </div>
 
               {!collapsed && (
-                <div className="ml-auto flex-shrink-0 sb-label w-[7px] h-[7px] rounded-full bg-[#06b6d4] shadow-[0_0_0_3px_rgba(6,182,212,0.15),0_0_8px_rgba(6,182,212,0.4)]" />
+                <div className="ml-auto flex-shrink-0 sb-label w-[7px] h-[7px] rounded-full bg-[#E8FF5A] shadow-[0_0_0_3px_rgba(232,255,90,0.15),0_0_8px_rgba(232,255,90,0.4)]" />
               )}
             </div>
           </div>

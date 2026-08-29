@@ -20,6 +20,10 @@ interface Message {
   status?: "loading" | "success" | "error";
   hasFile?: boolean;
   fileName?: string;
+  /* Chart spec returned by the server for data-backed charts. Editing sends
+     this back instead of the whole figure, which keeps a follow-up at a few
+     hundred tokens no matter how large the dataset is. */
+  spec?: any;
 }
 
 interface Conversation {
@@ -29,6 +33,48 @@ interface Conversation {
 }
 
 const STORAGE_KEY = "graphix_conversations_v2";
+const DATASET_KEY = (convId: string) => `graphix_dataset_${convId}`;
+/* localStorage is ~5MB total. Datasets live under their own key and are
+   skipped past this size, so a huge CSV degrades to "can't edit after a
+   reload" instead of wiping the conversation history. */
+const MAX_PERSISTED_DATASET = 2_000_000;
+
+/* In-memory first: always correct for the current session. */
+const datasetCache = new Map<string, string>();
+
+function setDataset(convId: string, csv: string) {
+  datasetCache.set(convId, csv);
+  try {
+    if (csv.length <= MAX_PERSISTED_DATASET) {
+      localStorage.setItem(DATASET_KEY(convId), csv);
+    } else {
+      localStorage.removeItem(DATASET_KEY(convId));
+    }
+  } catch {
+    /* quota exceeded — the in-memory copy still serves this session */
+  }
+}
+
+function getDataset(convId: string): string | null {
+  const hit = datasetCache.get(convId);
+  if (hit) return hit;
+  try {
+    const stored = localStorage.getItem(DATASET_KEY(convId));
+    if (stored) datasetCache.set(convId, stored);
+    return stored;
+  } catch {
+    return null;
+  }
+}
+
+function clearDataset(convId: string) {
+  datasetCache.delete(convId);
+  try {
+    localStorage.removeItem(DATASET_KEY(convId));
+  } catch {
+    /* nothing to do */
+  }
+}
 
 function loadFromStorage(): {
   conversations: Conversation[];
@@ -155,6 +201,9 @@ export default function GraphApp() {
   };
 
   const confirmDeleteConversation = (id: string) => {
+    // Datasets live under their own localStorage key, so they have to be
+    // removed explicitly or they leak and eat the quota.
+    clearDataset(id);
     setConversations((prev) => {
       const filtered = prev.filter((c) => c.id !== id);
       if (id === activeId) {
@@ -235,6 +284,14 @@ export default function GraphApp() {
     const contextMsg =
       aiMessages.find((m) => m.id === contextAiId) ?? aiMessages.at(-1) ?? null;
 
+    // A fresh upload becomes the conversation's dataset; otherwise reuse
+    // whatever this conversation already has so edits can rebind server-side.
+    if (fileContent) setDataset(convId, fileContent);
+    const dataset = fileContent || getDataset(convId);
+
+    // The spec of the chart being edited. Present only for data-backed charts.
+    const previousSpec = fileContent ? null : (contextMsg?.spec ?? null);
+
     let previousChart: { data: any[]; layout: any } | null = null;
 
     if (contextMsg) {
@@ -276,8 +333,14 @@ export default function GraphApp() {
         
         body: JSON.stringify({
           prompt: augmentedPrompt,
-          fileContent,
-          previousChart,
+          // Only sent on the turn the file is attached; the server keeps
+          // nothing, so `dataset` carries it on later turns.
+          fileContent: fileContent || undefined,
+          dataset: dataset || undefined,
+          previousSpec: previousSpec || undefined,
+          // Freeform (no dataset) charts still round-trip the figure, but
+          // those are model-invented and small.
+          previousChart: dataset ? undefined : previousChart,
         }),
       });
 
@@ -313,6 +376,7 @@ export default function GraphApp() {
               ? {
                   ...m,
                   content: { data: config.data, layout: config.layout },
+                  spec: config.spec ?? m.spec,
                   status: "success" as const,
                 }
               : m,
@@ -331,6 +395,7 @@ export default function GraphApp() {
               ? {
                   ...m,
                   content: { data: config.data, layout: config.layout },
+                  spec: config.spec,
                   status: "success" as const,
                 }
               : m,
@@ -457,7 +522,7 @@ export default function GraphApp() {
           <div
             className="flex items-center gap-2 px-3 sm:px-4 py-2.5 flex-shrink-0"
             style={{
-              background: "rgba(9,9,15,0.85)",
+              background: "rgba(12,12,10,0.85)",
               backdropFilter: "blur(12px)",
               borderBottom: "1px solid rgba(255,255,255,0.06)",
               height: 48,
@@ -508,11 +573,11 @@ export default function GraphApp() {
                   className="flex items-center justify-center w-8 h-8 rounded-lg transition-all"
                   style={{
                     color: mobileTemplatesOpen
-                      ? "#06b6d4"
+                      ? "#E8FF5A"
                       : "rgba(255,255,255,0.4)",
-                    border: `1px solid ${mobileTemplatesOpen ? "rgba(6,182,212,0.35)" : "rgba(255,255,255,0.07)"}`,
+                    border: `1px solid ${mobileTemplatesOpen ? "rgba(232,255,90,0.35)" : "rgba(255,255,255,0.07)"}`,
                     background: mobileTemplatesOpen
-                      ? "rgba(6,182,212,0.1)"
+                      ? "rgba(232,255,90,0.1)"
                       : "transparent",
                   }}
                   aria-label="Templates"
@@ -542,11 +607,11 @@ export default function GraphApp() {
                   className="relative flex items-center justify-center w-8 h-8 rounded-lg transition-all"
                   style={{
                     color: mobileHistoryOpen
-                      ? "#06b6d4"
+                      ? "#E8FF5A"
                       : "rgba(255,255,255,0.4)",
-                    border: `1px solid ${mobileHistoryOpen ? "rgba(6,182,212,0.35)" : "rgba(255,255,255,0.07)"}`,
+                    border: `1px solid ${mobileHistoryOpen ? "rgba(232,255,90,0.35)" : "rgba(255,255,255,0.07)"}`,
                     background: mobileHistoryOpen
-                      ? "rgba(6,182,212,0.1)"
+                      ? "rgba(232,255,90,0.1)"
                       : "transparent",
                   }}
                   aria-label="Chart history"
@@ -568,7 +633,7 @@ export default function GraphApp() {
                       style={{
                         width: 14,
                         height: 14,
-                        background: "#06b6d4",
+                        background: "#E8FF5A",
                         color: "#000",
                       }}
                     >

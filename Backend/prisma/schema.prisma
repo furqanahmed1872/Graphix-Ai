@@ -8,7 +8,7 @@ datasource db {
 
 // ── Users ─────────────────────────────────────────────────────
 model User {
-  id           String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   email        String   @unique
   passwordHash String?  @map("password_hash")       // nullable — Google OAuth users have no password
   firstName    String   @default("") @map("first_name")
@@ -27,7 +27,7 @@ model User {
 
 // ── Subscriptions ─────────────────────────────────────────────
 model Subscription {
-  id        String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId    String    @map("user_id") @db.Uuid
   plan      String    @default("free")    // 'free' | 'pro' | 'enterprise'
   status    String    @default("active")  // 'active' | 'cancelled' | 'expired'
@@ -43,7 +43,7 @@ model Subscription {
 
 // ── Saved Charts ──────────────────────────────────────────────
 model SavedChart {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId      String   @map("user_id") @db.Uuid
   title       String   @default("Untitled Chart")
   prompt      String   @default("")
@@ -74,7 +74,7 @@ model SavedChart {
 
 // ── Activity Log ──────────────────────────────────────────────
 model ActivityLog {
-  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId     String   @map("user_id") @db.Uuid
   action     String   // 'Created' | 'Edited' | 'Shared' | 'Starred' | 'Deleted'
   chartId    String?  @map("chart_id") @db.Uuid
@@ -91,7 +91,7 @@ model ActivityLog {
 
 // ── Graph Templates (global) ──────────────────────────────────
 model GraphTemplate {
-  id          String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   title       String
   category    String   @default("General")
   description String   @default("")
@@ -108,7 +108,7 @@ model GraphTemplate {
 
 // ── Feedbacks (global) ────────────────────────────────────────
 model Feedback {
-  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   userId     String?  @map("user_id") @db.Uuid   // nullable — seeded rows have no user
   authorName String   @default("Anonymous") @map("author_name")
   message    String

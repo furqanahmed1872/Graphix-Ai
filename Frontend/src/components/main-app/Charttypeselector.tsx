@@ -493,7 +493,7 @@ const CHART_GROUPS: ChartGroup[] = [
     id: "heatmap-contour",
     label: "Heatmap & Contour",
     icon: Icons.heatmap,
-    color: "#06b6d4",
+    color: "#E8FF5A",
     description: "Density, intensity, 2D patterns",
     subtypes: [
       { label: "AI Choice", prompt: null },
@@ -654,7 +654,7 @@ const CHART_GROUPS: ChartGroup[] = [
     id: "scientific",
     label: "Scientific",
     icon: Icons.scientific,
-    color: "#22d3ee",
+    color: "#E8FF5A",
     description: "Ternary, parallel coords, log scales, SPLOM",
     subtypes: [
       { label: "AI Choice", prompt: null },
@@ -819,9 +819,9 @@ export default function ChartTypeSelector({
         style={
           selected
             ? {
-                background: "rgba(6,182,212,0.1)",
-                border: "1px solid rgba(6,182,212,0.25)",
-                color: "#22d3ee",
+                background: "rgba(232,255,90,0.1)",
+                border: "1px solid rgba(232,255,90,0.25)",
+                color: "#E8FF5A",
               }
             : {
                 background: "rgba(255,255,255,0.04)",
@@ -848,7 +848,7 @@ export default function ChartTypeSelector({
       >
         {selected ? (
           <>
-            <span style={{ color: selectedGroup?.color || "#22d3ee" }}>
+            <span style={{ color: selectedGroup?.color || "#E8FF5A" }}>
               {selectedGroup?.icon}
             </span>
             <span
@@ -1009,9 +1009,9 @@ export default function ChartTypeSelector({
                         style={
                           sub.prompt === null
                             ? {
-                                background: "rgba(6,182,212,0.07)",
-                                border: "1px solid rgba(6,182,212,0.18)",
-                                color: "#22d3ee",
+                                background: "rgba(232,255,90,0.07)",
+                                border: "1px solid rgba(232,255,90,0.18)",
+                                color: "#E8FF5A",
                                 fontWeight: 600,
                               }
                             : {
@@ -1023,7 +1023,7 @@ export default function ChartTypeSelector({
                       >
                         {sub.prompt === null ? (
                           <div className="flex items-center gap-2">
-                            <span style={{ color: "#06b6d4" }}>✦</span>Let AI
+                            <span style={{ color: "#E8FF5A" }}>✦</span>Let AI
                             choose
                           </div>
                         ) : (
@@ -1122,7 +1122,7 @@ export default function ChartTypeSelector({
               className="text-[10px]"
               style={{
                 color: "rgba(255,255,255,0.2)",
-                fontFamily: "monospace",
+                fontFamily: "var(--gx-mono)",
               }}
             >
               {CHART_GROUPS.length} categories · {totalTypes} types
@@ -1185,7 +1185,7 @@ export default function ChartTypeSelector({
                           className="text-[9px]"
                           style={{
                             color: "rgba(255,255,255,0.18)",
-                            fontFamily: "monospace",
+                            fontFamily: "var(--gx-mono)",
                           }}
                         >
                           {
@@ -1274,9 +1274,9 @@ export default function ChartTypeSelector({
                         style={
                           sub.prompt === null
                             ? {
-                                background: "rgba(6,182,212,0.07)",
-                                border: "1px solid rgba(6,182,212,0.16)",
-                                color: "#22d3ee",
+                                background: "rgba(232,255,90,0.07)",
+                                border: "1px solid rgba(232,255,90,0.16)",
+                                color: "#E8FF5A",
                                 fontWeight: 500,
                               }
                             : {
@@ -1308,7 +1308,7 @@ export default function ChartTypeSelector({
                       >
                         {sub.prompt === null ? (
                           <div className="flex items-center gap-2">
-                            <span style={{ color: "#06b6d4" }}>✦</span>Let AI
+                            <span style={{ color: "#E8FF5A" }}>✦</span>Let AI
                             choose the best {displayGroup.label}
                           </div>
                         ) : (
@@ -1337,7 +1337,7 @@ export default function ChartTypeSelector({
               className="text-[10px]"
               style={{
                 color: "rgba(255,255,255,0.18)",
-                fontFamily: "monospace",
+                fontFamily: "var(--gx-mono)",
               }}
             >
               hover category → pick type → AI generates it

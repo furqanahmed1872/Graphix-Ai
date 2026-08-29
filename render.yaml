@@ -1,0 +1,40 @@
+# Render blueprint — Backend only. The frontend goes to Netlify.
+#
+#   Render dashboard -> New -> Blueprint -> point at this repo.
+#
+# Secrets are declared with `sync: false`, which means Render prompts for
+# them and never stores them in git.
+services:
+  - type: web
+    name: graphix-api
+    runtime: node
+    plan: free
+    rootDir: Backend
+    buildCommand: npm ci && npx prisma generate
+    startCommand: npm start
+    healthCheckPath: /api/status
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000            # Render injects its own; index.js reads PORT
+      - key: CLIENT_URL         # https://<your-site>.netlify.app — CORS origin
+        sync: false
+      - key: DATABASE_URL       # Supabase POOLER, port 6543
+        sync: false
+      - key: DIRECT_URL         # Supabase DIRECT, port 5432 (migrations only)
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: GROQ_MODEL
+        value: openai/gpt-oss-120b
+      - key: GROQ_API_KEY_1
+        sync: false
+      - key: GROQ_API_KEY_2
+        sync: false
+      - key: GROQ_API_KEY_3
+        sync: false
+      - key: GROQ_API_KEY_4
+        sync: false

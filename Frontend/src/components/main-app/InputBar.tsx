@@ -131,15 +131,15 @@ export default function InputBar({ onSend, isLoading }: InputBarProps) {
           transition: border-color 0.15s ease, box-shadow 0.15s ease;
         }
         .ib-row.ib-focused {
-          border-color: rgba(6,182,212,0.35);
-          box-shadow: 0 0 0 3px rgba(6,182,212,0.05);
+          border-color: rgba(232,255,90,0.35);
+          box-shadow: 0 0 0 3px rgba(232,255,90,0.05);
         }
         .ib-input-field {
           color: rgba(255,255,255,0.82);
           background: transparent;
           border: none;
           outline: none;
-          caret-color: #06b6d4;
+          caret-color: #E8FF5A;
         }
         .ib-input-field::placeholder { color: rgba(255,255,255,0.2); }
       `}</style>
@@ -147,7 +147,7 @@ export default function InputBar({ onSend, isLoading }: InputBarProps) {
       <div
         className="flex-shrink-0 px-3 sm:px-4 md:px-6 pt-2 pb-3"
         style={{
-          background: "rgba(9,9,15,0.9)",
+          background: "rgba(12,12,10,0.9)",
           backdropFilter: "blur(12px)",
           borderTop: "1px solid rgba(255,255,255,0.06)",
           paddingBottom: "max(12px, env(safe-area-inset-bottom))",
@@ -159,9 +159,9 @@ export default function InputBar({ onSend, isLoading }: InputBarProps) {
             <div
               className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs"
               style={{
-                background: "rgba(6,182,212,0.07)",
-                border: "1px solid rgba(6,182,212,0.2)",
-                color: "rgba(34,211,238,0.9)",
+                background: "rgba(232,255,90,0.07)",
+                border: "1px solid rgba(232,255,90,0.2)",
+                color: "rgba(232,255,90,0.9)",
               }}
             >
               <span style={{ fontSize: 10 }}>✦</span>
@@ -239,13 +239,13 @@ export default function InputBar({ onSend, isLoading }: InputBarProps) {
                   background: "rgba(255,255,255,0.05)",
                   border: "1px solid rgba(255,255,255,0.08)",
                   color: "rgba(255,255,255,0.38)",
-                  fontFamily: "monospace",
+                  fontFamily: "var(--gx-mono)",
                 }}
               >
                 {showBanner && (
                   <span
                     style={{
-                      color: "#22d3ee",
+                      color: "#E8FF5A",
                       fontSize: 9,
                       fontWeight: 700,
                       textTransform: "uppercase",
@@ -307,9 +307,9 @@ export default function InputBar({ onSend, isLoading }: InputBarProps) {
               disabled={!canSend}
               className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 transition-all"
               style={{
-                background: canSend ? "#06b6d4" : "rgba(255,255,255,0.05)",
+                background: canSend ? "#E8FF5A" : "rgba(255,255,255,0.05)",
                 color: canSend ? "#000" : "rgba(255,255,255,0.18)",
-                boxShadow: canSend ? "0 0 14px rgba(6,182,212,0.25)" : "none",
+                boxShadow: canSend ? "0 0 14px rgba(232,255,90,0.25)" : "none",
                 cursor: canSend ? "pointer" : "default",
               }}
             >
