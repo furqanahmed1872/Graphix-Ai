@@ -1,0 +1,649 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+/* ═══════════════════════════════════════════════════════════════
+   GRAPHIX — landing system
+   Two colours and nothing else: a saturated blue field and a
+   near-black field, alternating full-bleed. White hairline
+   line-art. Oversized light grotesque headlines pinned to the
+   corners of each band, mono micro-labels, square arrow buttons.
+   Scoped under `.gxl` so the dark app shell is untouched.
+   ═══════════════════════════════════════════════════════════════ */
+
+body:has(.gxl) {
+  background: #0b0b0c !important;
+}
+
+.gxl {
+  --blue: #0b4cc4;
+  --blue-lift: #1259dd;
+  --blue-sunk: #093c9c;
+  --black: #0c0c0d;
+  --black-lift: #151517;
+  --white: #ffffff;
+  --hair: rgba(255, 255, 255, 0.28);
+  --hair-soft: rgba(255, 255, 255, 0.14);
+  --dim: rgba(255, 255, 255, 0.66);
+
+  --sans: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+
+  --page: 1560px;
+  --pad: 20px;
+
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--sans);
+  font-size: 10px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.gxl-page {
+  max-width: var(--page);
+  margin: 0 auto;
+  padding: 0 var(--pad);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Full-bleed alternating fields. */
+.gxl-blue {
+  background: var(--blue);
+}
+.gxl-dark {
+  background: var(--black);
+}
+
+/* ── Type ───────────────────────────────────────────────────── */
+.gxl h1,
+.gxl h2,
+.gxl h3 {
+  margin: 0;
+  font-weight: 300;
+  letter-spacing: -0.028em;
+  line-height: 0.98;
+}
+
+/* The headline scale is the loudest thing on the page. */
+.gxl-d1 {
+  font-size: clamp(2.35rem, 3.55vw, 4.35rem);
+}
+.gxl-d2 {
+  font-size: clamp(2.4rem, 5.6vw, 5.4rem);
+}
+.gxl-d3 {
+  font-size: clamp(1.6rem, 2.6vw, 2.6rem);
+  font-weight: 300;
+  line-height: 1.06;
+}
+
+.gxl-body {
+  font-size: 0.97rem;
+  line-height: 1.62;
+  color: var(--dim);
+  margin: 0;
+  max-width: 46ch;
+}
+.gxl-body--tight {
+  font-size: 0.9rem;
+}
+
+/* Mono micro-label. Every band is tagged with one. */
+.gxl-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.72);
+}
+.gxl-tag::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+  flex: none;
+}
+.gxl-tag--bare::before {
+  display: none;
+}
+
+.gxl-mono {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* ── Buttons: rectangle + detached square arrow box ─────────── */
+.gxl-btn {
+  display: inline-flex;
+  align-items: stretch;
+  height: 52px;
+  text-decoration: none;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--sans);
+}
+.gxl-btn__label {
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
+  background: var(--white);
+  color: var(--black);
+  font-size: 0.97rem;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.gxl-btn__box {
+  width: 52px;
+  display: grid;
+  place-items: center;
+  background: var(--blue);
+  color: var(--white);
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+/* On the blue field the box would be blue-on-blue and vanish. */
+.gxl-blue .gxl-btn__box {
+  background: var(--blue-sunk);
+}
+.gxl-blue .gxl-btn:hover .gxl-btn__box {
+  background: #072e7a;
+}
+.gxl-btn:hover .gxl-btn__label {
+  background: rgba(255, 255, 255, 0.86);
+}
+.gxl-btn:hover .gxl-btn__box {
+  background: var(--blue-lift);
+}
+.gxl-btn--ghost .gxl-btn__label {
+  background: transparent;
+  color: var(--white);
+  border: 1px solid var(--hair);
+  border-right: none;
+}
+.gxl-btn--ghost .gxl-btn__box {
+  background: transparent;
+  border: 1px solid var(--hair);
+}
+.gxl-btn--ghost:hover .gxl-btn__label {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ── Nav ────────────────────────────────────────────────────── */
+/* Fixed, not sticky, so the hero's blue runs underneath it and the bar
+   takes the colour of whatever band is behind — blue at the top, black
+   further down. A sticky bar sat below the hero instead of over it, which
+   is why it read as a black slab dropped onto the blue. */
+.gxl-nav {
+  position: sticky;
+  top: 0;
+  z-index: 80;
+  /* Fully transparent at rest, so the top of the hero shows no seam. The
+     tint only appears once content starts passing underneath. */
+  background: transparent;
+  transition: background 0.25s ease, backdrop-filter 0.25s ease;
+}
+.gxl-nav--lifted {
+  background: rgba(4, 10, 26, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.gxl-nav__in {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  height: 68px;
+  gap: 20px;
+}
+.gxl-nav__in > :first-child {
+  justify-self: start;
+}
+.gxl-navgroup {
+  justify-self: center;
+}
+.gxl-nav__right {
+  justify-self: end;
+}
+.gxl-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--white);
+}
+.gxl-brand__mark {
+  display: block;
+}
+.gxl-brand__name {
+  font-family: var(--mono);
+  font-size: 1.02rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+.gxl-navgroup {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 5px;
+  gap: 2px;
+}
+.gxl-navlink {
+  padding: 8px 15px;
+  font-size: 0.89rem;
+  color: rgba(255, 255, 255, 0.72);
+  border-radius: 2px;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+  white-space: nowrap;
+  font-size: 0.70rem;
+}
+.gxl-navlink:hover {
+  color: var(--white);
+}
+.gxl-navlink--on {
+  background: var(--white);
+  color: var(--black);
+}
+.gxl-navlink--on:hover {
+  color: var(--black);
+}
+.gxl-nav__right {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px;
+  gap: 2px;
+}
+.gxl-nav .gxl-btn {
+  height: 38px;
+}
+.gxl-nav .gxl-btn__label {
+  padding: 0 15px;
+  font-size: 0.87rem;
+}
+.gxl-nav .gxl-btn__box {
+  width: 38px;
+}
+.gxl-burger {
+  display: none;
+  width: 42px;
+  height: 38px;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.3);
+  border: none;
+  color: var(--white);
+  cursor: pointer;
+}
+
+/* ── Hero ───────────────────────────────────────────────────── */
+.gxl-hero {
+  position: relative;
+  /* Pulled up under the sticky bar so the blue runs behind it. */
+  margin-top: -68px;
+  min-height: 100vh;
+  padding-top: 68px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+/* Measured against the reference: the figure there is ~29% of viewport
+   width and ~63% of its height. At min(60vh, 34vw) ours rendered nearer
+   19% and floated with dead space on every side. */
+.gxl-hero__field {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(74vh, 44vw);
+  height: min(74vh, 44vw);
+  pointer-events: none;
+}
+.gxl-field {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+/* Labels are placed on a ring just outside the figure, so they read as
+   annotations of it rather than text floating at the screen edges. */
+.gxl-hero__label {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.6);
+  z-index: 1;
+  pointer-events: none;
+}
+
+@media (max-width: 1100px) {
+  .gxl-hero__field {
+    width: min(52vh, 54vw);
+    height: min(52vh, 54vw);
+    top: 40%;
+  }
+}
+.gxl-hero__foot {
+  position: relative;
+  z-index: 2;
+  padding: 0 0 46px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 30px;
+}
+/* 21ch lands the headline on two lines, as in the reference. At 13ch it
+   ran to four and collided with the figure. */
+.gxl-hero__h {
+  max-width: 20ch;
+  margin-bottom: 30px;
+}
+.gxl-hero__scroll {
+  padding-bottom: 6px;
+}
+
+/* ── Band scaffolding ───────────────────────────────────────── */
+.gxl-band {
+  padding: 104px 0 112px;
+  position: relative;
+  overflow: hidden;
+}
+.gxl-band__head {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+/* Headline top-left, supporting copy dropped to the lower right —
+   the asymmetry the reference uses to avoid a stack of centred rows. */
+.gxl-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 60px;
+  align-items: end;
+}
+.gxl-split--top {
+  align-items: start;
+}
+
+/* ── Cards ──────────────────────────────────────────────────── */
+.gxl-rail {
+  display: flex;
+  gap: 26px;
+  overflow-x: auto;
+  padding: 8px 0 24px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+.gxl-rail::-webkit-scrollbar {
+  display: none;
+}
+.gxl-card {
+  flex: 0 0 clamp(280px, 30vw, 430px);
+  scroll-snap-align: start;
+  background: var(--blue);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--white);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+.gxl-card:hover {
+  background: var(--blue-lift);
+  transform: translateY(-3px);
+}
+/* Staggered offsets, so the rail is not a flat row of equal boxes. */
+.gxl-card:nth-child(even) {
+  margin-top: 52px;
+}
+.gxl-card__art {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  padding: 16px;
+}
+.gxl-card__chip {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.16);
+  padding: 5px 9px;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.gxl-card__go {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  background: var(--white);
+  color: var(--blue);
+}
+.gxl-card__body {
+  padding: 4px 20px 26px;
+}
+.gxl-card__t {
+  font-size: 1.32rem;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  margin: 0 0 9px;
+}
+.gxl-card__d {
+  font-size: 0.87rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.78);
+  margin: 0;
+}
+
+/* ── Numbered rows ──────────────────────────────────────────── */
+.gxl-rows {
+  border-top: 1px solid var(--hair-soft);
+}
+.gxl-row {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 4fr) minmax(0, 6fr);
+  gap: 32px;
+  padding: 30px 0;
+  border-bottom: 1px solid var(--hair-soft);
+  align-items: start;
+}
+.gxl-row__n {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.44);
+  padding-top: 6px;
+}
+.gxl-row__t {
+  font-size: 1.42rem;
+  font-weight: 300;
+  letter-spacing: -0.022em;
+}
+
+/* ── Ledger table ───────────────────────────────────────────── */
+.gxl-tab {
+  width: 100%;
+  border-collapse: collapse;
+}
+.gxl-tab td {
+  padding: 15px 0;
+  border-bottom: 1px solid var(--hair-soft);
+  font-size: 0.95rem;
+}
+.gxl-tab td:last-child {
+  text-align: right;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+/* ── Form ───────────────────────────────────────────────────── */
+.gxl-in,
+.gxl-ta {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0;
+  color: var(--white);
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  padding: 13px 15px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.gxl-in::placeholder,
+.gxl-ta::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
+.gxl-in:focus,
+.gxl-ta:focus {
+  border-color: var(--white);
+  background: rgba(255, 255, 255, 0.11);
+}
+.gxl-ta {
+  min-height: 132px;
+  resize: vertical;
+}
+.gxl-lab {
+  display: block;
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 8px;
+}
+.gxl-err {
+  display: block;
+  margin-top: 7px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: #ffd2c4;
+}
+
+/* ── Footer ─────────────────────────────────────────────────── */
+.gxl-foot {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr));
+  gap: 44px;
+  padding: 84px 0 40px;
+}
+.gxl-foot__h {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.44);
+  margin-bottom: 16px;
+}
+.gxl-foot__l {
+  display: block;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+  padding: 5px 0;
+}
+.gxl-foot__l:hover {
+  color: var(--white);
+}
+.gxl-foot__bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 22px 0 44px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── Line-art helpers ───────────────────────────────────────── */
+.gxl-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Responsive ─────────────────────────────────────────────── */
+@media (max-width: 1080px) {
+  .gxl {
+    --pad: 26px;
+  }
+  .gxl-split {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .gxl-band {
+    padding: 76px 0 82px;
+  }
+  .gxl-row {
+    grid-template-columns: 54px 1fr;
+  }
+  .gxl-row__t {
+    grid-column: 2;
+  }
+  .gxl-row p {
+    grid-column: 2;
+  }
+  .gxl-foot {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .gxl {
+    --pad: 20px;
+  }
+  .gxl-navgroup,
+  .gxl-nav__right .gxl-navlink {
+    display: none;
+  }
+  .gxl-burger {
+    display: grid;
+  }
+  .gxl-hero__foot {
+    flex-direction: column;
+    align-items: flex-start;
+    padding-bottom: 34px;
+  }
+  .gxl-hero__scroll {
+    display: none;
+  }
+  .gxl-hero__h {
+    max-width: 100%;
+  }
+  .gxl-card:nth-child(even) {
+    margin-top: 0;
+  }
+  .gxl-card {
+    flex-basis: 82vw;
+  }
+}
+
+/* Hero micro-labels are decorative; drop them where they would crowd. */
+@media (max-width: 900px) {
+  .gxl-hero__label {
+    display: none;
+  }
+}
+
+/* The nav is fixed, so in-page anchors would land 68px underneath it. */
+.gxl [id] {
+  scroll-margin-top: 84px;
+}

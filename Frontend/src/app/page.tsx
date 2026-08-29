@@ -1,14 +1,13 @@
 "use client";
+
 import dynamic from "next/dynamic";
 import Hero from "@/components/landing/Hero";
-import { use, useEffect } from "react";
+import "@/components/landing/system.css";
 
 const LiveDemoSection = dynamic(() => import("@/components/landing/Section"), {
   ssr: false,
 });
-const HowItWorks = dynamic(() => import("@/components/landing/HowitWorks"), {
-  ssr: false,
-});
+const HowItWorks = dynamic(() => import("@/components/landing/HowitWorks"));
 const FeaturesSection = dynamic(() => import("@/components/landing/Features"));
 const Feedback = dynamic(() => import("@/components/landing/Feedback"));
 const PricingSection = dynamic(() => import("@/components/landing/Pricing"));
@@ -16,28 +15,15 @@ const CTA = dynamic(() => import("@/components/landing/CTA"));
 const Footer = dynamic(() => import("@/components/landing/Footer"));
 
 export default function Home() {
-
-  useEffect(() => {
-    console.log("Home page loaded");
-   }, []);
-
+  // `gxl` scopes the landing system so the dark app shell is untouched.
   return (
-    // NO mx-20, NO border-x on mobile. On desktop only: side margins + borders.
-    <div
-      style={{
-        background: "#111212",
-        position: "relative",
-        overflowX: "hidden",
-        width: "100%",
-        maxWidth: "100vw",
-      }}
-    >
+    <div className="gxl">
       <Hero />
-      <LiveDemoSection />
       <HowItWorks />
       <FeaturesSection />
-      <Feedback />
+      <LiveDemoSection />
       <PricingSection />
+      <Feedback />
       <CTA />
       <Footer />
     </div>
