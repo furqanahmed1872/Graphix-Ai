@@ -7,7 +7,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main className="bg-[#111212] border-b border-x border-white/20">
+    <main style={{ background: "var(--gx-bg)" }}>
       <NavBar />
       {children}
       <Footer />

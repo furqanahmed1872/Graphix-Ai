@@ -5,6 +5,7 @@ import * as THREE from "three";
 import Navbar from "../NavBar";
 import Link from "next/link";
 import { useAppStore } from "@/store/appStore";
+import { SERIES_DARK, hexInt } from "@/lib/chartTheme";
 type ChartMode = "bar" | "line" | "scatter";
 interface BarPair {
   a: THREE.Mesh;
@@ -25,16 +26,17 @@ const MORPH = 150;
 const CYCLE: ChartMode[] = ["bar", "line", "scatter"];
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
 
+/* Series A is always the site accent; B is the coral companion. */
 const C = {
-  barA: new THREE.Color(0x44ee99),
-  barB: new THREE.Color(0x55ddee),
-  lineA: new THREE.Color(0xee33bb),
-  lineB: new THREE.Color(0xffaa33),
-  scatterA: new THREE.Color(0x44ee99),
-  scatterB: new THREE.Color(0xff5577),
-  axis: new THREE.Color(0x888899),
-  grid: new THREE.Color(0x444455),
-  cage: new THREE.Color(0xbbbbcc),
+  barA: new THREE.Color(hexInt(SERIES_DARK[0])),
+  barB: new THREE.Color(hexInt(SERIES_DARK[2])),
+  lineA: new THREE.Color(hexInt(SERIES_DARK[0])),
+  lineB: new THREE.Color(hexInt(SERIES_DARK[1])),
+  scatterA: new THREE.Color(hexInt(SERIES_DARK[0])),
+  scatterB: new THREE.Color(hexInt(SERIES_DARK[1])),
+  axis: new THREE.Color(0xF2F1EC).multiplyScalar(0.42),
+  grid: new THREE.Color(0xF2F1EC).multiplyScalar(0.14),
+  cage: new THREE.Color(0xF2F1EC).multiplyScalar(0.40),
 };
 
 // ─── ThreeCube ───────────────────────────────────────────────────────────────
@@ -594,20 +596,21 @@ function ThreeCube() {
 
 /* ─── Static data ──────────────────────────────────────────── */
 const TRUST = [
-  { num: "140+", label: "Chart types" },
-  { num: "3s", label: "Avg generation" },
-  { num: "Free", label: "During beta" },
-  { num: "No code", label: "Required" },
+  { num: "140+", label: "chart types" },
+  { num: "16", label: "chart categories" },
+  { num: "Free", label: "while in beta" },
 ];
 const WORDS = [
   "Where",
-  "natural",
-  "language",
-  "meets",
-  "stunning",
-  "data",
-  "visualization.",
+  "plain",
+  "English",
+  "becomes",
+  "a",
+  "working",
+  "chart.",
 ];
+/* the one word set in italic serif — the only emphasis in the headline */
+const ACCENT_WORD = "working";
 const CHART_TYPES = [
   "Bar Charts",
   "Line Charts",
@@ -628,7 +631,7 @@ const CSS = `
   @keyframes gxh-word   { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
   @keyframes gxh-fade   { from{opacity:0} to{opacity:1} }
   @keyframes gxh-up     { from{opacity:0;transform:translateY(14px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes gxh-bar    { from{width:0} to{width:220px} }
+  @keyframes gxh-bar    { from{width:0} to{width:64px} }
   @keyframes gxh-pulse  { 0%,100%{opacity:.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.3)} }
   @keyframes gxh-marquee{ from{transform:translateX(0)} to{transform:translateX(-50%)} }
 
@@ -654,17 +657,17 @@ const CSS = `
   .gxh-gridbg {
     position: absolute; inset: 0; pointer-events: none; z-index: 0;
     background-image:
-      linear-gradient(rgba(6,182,212,0.045) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(6,182,212,0.045) 1px, transparent 1px);
+      linear-gradient(rgba(255,255,255,0.028) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.028) 1px, transparent 1px);
     background-size: 44px 44px;
     -webkit-mask-image: radial-gradient(ellipse 70% 80% at 20% 50%, black 40%, transparent 100%);
     mask-image: radial-gradient(ellipse 70% 80% at 20% 50%, black 40%, transparent 100%);
   }
-  /* cyan dots at intersections */
+  /* faint dots at intersections — neutral, not tinted */
   .gxh-gridbg::after {
     content: "";
     position: absolute; inset: 0;
-    background-image: radial-gradient(circle, rgba(34,211,238,0.22) 1.2px, transparent 1.2px);
+    background-image: radial-gradient(circle, rgba(255,255,255,0.10) 1px, transparent 1px);
     background-size: 44px 44px;
     -webkit-mask-image: radial-gradient(ellipse 70% 80% at 20% 50%, black 40%, transparent 100%);
     mask-image: radial-gradient(ellipse 70% 80% at 20% 50%, black 40%, transparent 100%);
@@ -672,9 +675,9 @@ const CSS = `
 
   /* ── Accent bar ── */
   .gxh-accent-bar {
-    height: 2px;
-    background: linear-gradient(90deg, #06b6d4, transparent);
-    margin-bottom: 20px;
+    height: 1px;
+    background: var(--gx-accent);
+    margin-bottom: 34px;
     width: 0;
   }
 
@@ -682,8 +685,9 @@ const CSS = `
   .gxh-btn-primary {
     display: inline-flex; align-items: center; gap: 8px;
     height: 48px; padding: 0 28px;
-    font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-    color: #111; background: #06b6d4; text-decoration: none;
+    font-family: var(--gx-sans);
+    font-size: 14px; font-weight: 500; letter-spacing: 0;
+    color: var(--gx-accent-ink); background: var(--gx-accent); text-decoration: none;
     position: relative; overflow: hidden; transition: color .3s; flex-shrink: 0;
   }
   .gxh-btn-primary::before {
@@ -696,18 +700,19 @@ const CSS = `
   .gxh-btn-ghost {
     display: inline-flex; align-items: center; gap: 6px;
     height: 48px; padding: 0 24px;
-    font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
-    color: rgba(255,255,255,.5); text-decoration: none;
-    border: 1px solid rgba(255,255,255,.12);
+    font-family: var(--gx-sans);
+    font-size: 14px; font-weight: 400; letter-spacing: 0;
+    color: var(--gx-fg-muted); text-decoration: none;
+    border: 1px solid var(--gx-line);
     transition: color .2s, border-color .2s; flex-shrink: 0;
   }
-  .gxh-btn-ghost:hover { color: #fff; border-color: rgba(255,255,255,.3); }
+  .gxh-btn-ghost:hover { color: var(--gx-fg); border-color: var(--gx-line-strong); }
 
   /* ── Layout ── */
   .gxh-inner {
     display: flex; flex-direction: row;
     padding: 56px 32px 64px; gap: 32px;
-    min-height: calc(100vh - 56px);
+    min-height: calc(100vh - 68px);
     align-items: center; box-sizing: border-box; width: 100%;
   }
   .gxh-left  { flex: 0 0 50%; position: relative; min-width: 0; }
@@ -731,7 +736,7 @@ const CSS = `
     .gxh-cube   { display: none; }
     .gxh-gridbg { -webkit-mask-image: radial-gradient(ellipse 100% 60% at 50% 30%, black 40%, transparent 100%); mask-image: radial-gradient(ellipse 100% 60% at 50% 30%, black 40%, transparent 100%); }
     .gxh-gridbg::after { -webkit-mask-image: radial-gradient(ellipse 100% 60% at 50% 30%, black 40%, transparent 100%); mask-image: radial-gradient(ellipse 100% 60% at 50% 30%, black 40%, transparent 100%); }
-    .gxh-accent-bar { max-width: 160px; }
+    .gxh-accent-bar { max-width: 64px; }
     .gxh-tbar   { flex-wrap: wrap; gap: 20px; padding-top: 20px; }
     .gxh-titem  { padding-right: 0; margin-right: 0; border-right: none !important; min-width: calc(50% - 10px); }
     .gxh-crow   { flex-wrap: wrap; margin-bottom: 32px; }
@@ -767,64 +772,29 @@ export default function Hero() {
             <div className="gxh-gridbg" />
 
             <div style={{ position: "relative", zIndex: 1 }}>
-              {/* Live indicator badge */}
-              <div
-                data-a="sub"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "5px 12px",
-                  borderRadius: 999,
-                  border: "1px solid rgba(6,182,212,0.25)",
-                  background: "rgba(6,182,212,0.06)",
-                  marginBottom: 28,
-                }}
-              >
-                <span
-                  style={{
-                    width: 6,
-                    height: 6,
-                    borderRadius: "50%",
-                    background: "#06b6d4",
-                    animation: "gxh-pulse 2s ease infinite",
-                  }}
-                />
-                <span
-                  style={{
-                    fontFamily: "monospace",
-                    fontSize: 10,
-                    color: "rgba(6,182,212,0.8)",
-                    letterSpacing: "0.15em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  AI-powered chart generation
-                </span>
-              </div>
-
-              {/* Cyan accent bar */}
+              {/* Accent rule */}
               <div data-a="bar" className="gxh-accent-bar" />
 
               {/* Headline — word by word animation */}
               <h1
                 style={{
-                  fontSize: "clamp(2rem,5vw,3.6rem)",
-                  fontWeight: 900,
-                  lineHeight: 1.05,
-                  letterSpacing: "-0.03em",
-                  color: "#fff",
-                  marginBottom: 20,
+                  fontFamily: "var(--gx-display)",
+                  fontSize: "clamp(2.4rem,5.2vw,4.2rem)",
+                  fontWeight: 400,
+                  lineHeight: 1.06,
+                  letterSpacing: "-0.015em",
+                  color: "var(--gx-fg)",
+                  marginBottom: 24,
                 }}
               >
                 {WORDS.map((word, i) => (
                   <span
                     key={i}
                     data-a={`w${i}`}
-                    style={{ display: "inline-block", marginRight: "0.25em" }}
+                    style={{ display: "inline-block", marginRight: "0.22em" }}
                   >
-                    {word === "stunning" ? (
-                      <span style={{ color: "#06b6d4" }}>{word}</span>
+                    {word === ACCENT_WORD ? (
+                      <span style={{ fontStyle: "italic" }}>{word}</span>
                     ) : (
                       word
                     )}
@@ -836,16 +806,15 @@ export default function Hero() {
               <p
                 data-a="body"
                 style={{
-                  fontSize: 15,
-                  color: "rgba(255,255,255,0.45)",
-                  lineHeight: 1.75,
-                  maxWidth: 420,
-                  marginBottom: 36,
+                  fontSize: 16,
+                  color: "var(--gx-fg-muted)",
+                  lineHeight: 1.6,
+                  maxWidth: 440,
+                  marginBottom: 40,
                 }}
               >
-                Describe the insight you need — or upload a CSV. Graphix
-                generates beautiful, interactive charts in seconds. No code, no
-                setup, no limits.
+                Upload a CSV or just describe the insight you're after. Graphix
+                returns an interactive chart in about three seconds.
               </p>
 
               {/* CTA buttons */}
@@ -873,16 +842,17 @@ export default function Hero() {
                     style={{
                       borderRight:
                         i < TRUST.length - 1
-                          ? "1px solid rgba(255,255,255,0.08)"
+                          ? "1px solid var(--gx-line)"
                           : "none",
                     }}
                   >
                     <div
                       style={{
-                        fontSize: 20,
-                        fontWeight: 900,
-                        color: "#fff",
-                        letterSpacing: "-0.02em",
+                        fontFamily: "var(--gx-display)",
+                        fontSize: 26,
+                        fontWeight: 400,
+                        color: "var(--gx-fg)",
+                        letterSpacing: "-0.01em",
                         lineHeight: 1,
                       }}
                     >
@@ -890,12 +860,11 @@ export default function Hero() {
                     </div>
                     <div
                       style={{
-                        fontSize: 10,
-                        color: "rgba(255,255,255,0.3)",
-                        marginTop: 3,
-                        fontFamily: "monospace",
-                        textTransform: "uppercase",
-                        letterSpacing: "0.08em",
+                        fontSize: 12,
+                        color: "var(--gx-fg-faint)",
+                        marginTop: 6,
+                        fontFamily: "var(--gx-mono)",
+                        letterSpacing: 0,
                       }}
                     >
                       {label}
@@ -915,8 +884,8 @@ export default function Hero() {
         {/* ── Bottom marquee strip ── */}
         <div
           style={{
-            borderTop: "1px solid rgba(255,255,255,0.06)",
-            background: "rgba(255,255,255,0.02)",
+            borderTop: "1px solid var(--gx-line)",
+            background: "transparent",
             padding: "12px 0",
             overflow: "hidden",
             display: "flex",
@@ -934,15 +903,13 @@ export default function Hero() {
               <span
                 key={i}
                 style={{
-                  fontSize: 10,
-                  fontFamily: "monospace",
-                  fontWeight: 700,
-                  letterSpacing: "0.15em",
-                  textTransform: "uppercase",
-                  color: i % 3 === 0 ? "#06b6d4" : "rgba(255,255,255,0.2)",
+                  fontSize: 12,
+                  fontFamily: "var(--gx-mono)",
+                  fontWeight: 400,
+                  letterSpacing: 0,
+                  color: "var(--gx-fg-faint)",
                 }}
               >
-                {i % 4 === 0 ? "✦ " : ""}
                 {t}
               </span>
             ))}

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useAppStore } from "@/store/appStore";
 import Plotly from "plotly.js-dist-min";
 import { getApiUrl } from "@/lib/api";
+import { SERIES_DARK, CHROME_DARK, CHART_FONT } from "@/lib/chartTheme";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface ChartType {
@@ -54,6 +55,9 @@ const CHART_TYPES: ChartType[] = [
 ];
 
 const PALETTES: Record<string, string[]> = {
+  /* Matches the site accent, so a chart made with defaults looks like it
+     belongs to Graphix rather than to whatever was first in the list. */
+  graphix: [...SERIES_DARK, "#7A8C1F", "#3FA9B8"],
   neon: [
     "#00f5ff",
     "#bf5fff",
@@ -95,12 +99,12 @@ const PALETTES: Record<string, string[]> = {
     "#f5a4c7",
   ],
   mono: [
-    "#ffffff",
-    "#d4d4d4",
+    "#FBFAF4",
+    "rgba(26,26,22,0.20)",
     "#a3a3a3",
     "#737373",
     "#525252",
-    "#404040",
+    "#4A4A42",
     "#262626",
     "#171717",
   ],
@@ -188,7 +192,7 @@ const DataChartEditor: React.FC = () => {
   const [history, setHistory] = useState<History[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [chartTitle, setChartTitle] = useState("Monthly Sales Performance");
-  const [palette, setPalette] = useState("neon");
+  const [palette, setPalette] = useState("graphix");
   const [activeTab, setActiveTab] = useState<
     "data" | "style" | "annotations" | "stats"
   >("data");
@@ -656,10 +660,10 @@ const DataChartEditor: React.FC = () => {
       return;
     }
 
-    const colors = PALETTES[palette] || PALETTES.neon;
-    const bg = "#111111",
-      gridC = "#222222",
-      textC = "#888888";
+    const colors = PALETTES[palette] || PALETTES.graphix;
+    const bg = "#14150F",
+      gridC = CHROME_DARK.grid,
+      textC = CHROME_DARK.tick;
     const xVals = rows.map((r) => r[0]);
     const numericSeries = (seriesIdx: number) =>
       rows.map((r) => {
@@ -672,16 +676,16 @@ const DataChartEditor: React.FC = () => {
         ? {
             text: chartTitle,
             font: {
-              color: "#e2e8f0",
+              color: "#F2F1EC",
               size: 15,
-              family: "'DM Mono', monospace",
+              family: CHART_FONT.family,
             },
             x: 0.5,
           }
         : undefined,
       paper_bgcolor: bg,
       plot_bgcolor: bg,
-      font: { family: "'DM Mono', monospace", color: textC, size: 11 },
+      font: { family: CHART_FONT.family, color: textC, size: CHART_FONT.size },
       margin: {
         t: chartTitle ? 50 : 20,
         r: 20,
@@ -707,7 +711,7 @@ const DataChartEditor: React.FC = () => {
       legend: {
         font: { color: textC },
         bgcolor: "rgba(0,0,0,0.5)",
-        bordercolor: "#333",
+        bordercolor: "#2E2E27",
       },
     } as any;
 
@@ -839,7 +843,7 @@ const DataChartEditor: React.FC = () => {
             type: "pie",
             hole: 0,
             marker: { colors, line: { color: bg, width: 2 } },
-            textfont: { color: "#fff", size: 11 },
+            textfont: { color: "#F2F1EC", size: 11 },
             hoverinfo: "label+percent+value" as any,
           },
         ];
@@ -853,7 +857,7 @@ const DataChartEditor: React.FC = () => {
             type: "pie",
             hole: 0.55,
             marker: { colors, line: { color: bg, width: 2 } },
-            textfont: { color: "#fff", size: 11 },
+            textfont: { color: "#F2F1EC", size: 11 },
             hoverinfo: "label+percent+value" as any,
           },
         ];
@@ -915,7 +919,7 @@ const DataChartEditor: React.FC = () => {
             type: "heatmap",
             colorscale: [
               [0, bg],
-              [0.25, "#222"],
+              [0.25, "#22221C"],
               [0.5, colors[0]],
               [0.75, colors[1]],
               [1, colors[2]],
@@ -971,7 +975,7 @@ const DataChartEditor: React.FC = () => {
             y: xVals,
             x: numericSeries(0),
             marker: { color: colors.slice(0, xVals.length) },
-            textfont: { color: "#fff" },
+            textfont: { color: "#F2F1EC" },
           },
         ];
         break;
@@ -983,11 +987,11 @@ const DataChartEditor: React.FC = () => {
             x: xVals,
             y: numericSeries(0),
             name: headers[1] || "Value",
-            connector: { line: { color: "#333" } },
+            connector: { line: { color: "#2E2E27" } },
             increasing: { marker: { color: colors[3] } },
             decreasing: { marker: { color: colors[4] } },
             totals: { marker: { color: colors[0] } },
-            textfont: { color: "#fff" },
+            textfont: { color: "#F2F1EC" },
           } as any,
         ];
         break;
@@ -1000,7 +1004,7 @@ const DataChartEditor: React.FC = () => {
             parents: xVals.map(() => ""),
             values: numericSeries(0),
             marker: { colors: colors.slice(0, xVals.length) },
-            textfont: { color: "#fff" },
+            textfont: { color: "#F2F1EC" },
           },
         ];
         delete (layout as any).xaxis;
@@ -1015,7 +1019,7 @@ const DataChartEditor: React.FC = () => {
             parents: xVals.map(() => ""),
             values: numericSeries(0),
             marker: { colors: colors.slice(0, xVals.length) },
-            textfont: { color: "#fff" },
+            textfont: { color: "#F2F1EC" },
           },
         ];
         delete (layout as any).xaxis;
@@ -1121,7 +1125,7 @@ const DataChartEditor: React.FC = () => {
         display: "flex",
         flexDirection: "column",
         height: "100vh",
-        background: "#f0f0f0",
+        background: "#E5E1D4",
         fontFamily: "'DM Mono', monospace",
         fontSize: "12px",
         overflow: "hidden",
@@ -1129,36 +1133,35 @@ const DataChartEditor: React.FC = () => {
       }}
     >
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap');
         * { box-sizing:border-box }
         .left-panel ::-webkit-scrollbar { width:5px; height:5px }
-        .left-panel ::-webkit-scrollbar-track { background:#f4f4f4 }
-        .left-panel ::-webkit-scrollbar-thumb { background:#d4d4d4; border-radius:3px }
-        .left-panel ::-webkit-scrollbar-thumb:hover { background:#b8b8b8 }
+        .left-panel ::-webkit-scrollbar-track { background:#EAE7DA }
+        .left-panel ::-webkit-scrollbar-thumb { background:rgba(26,26,22,0.20); border-radius:3px }
+        .left-panel ::-webkit-scrollbar-thumb:hover { background:rgba(26,26,22,0.32) }
         .right-panel ::-webkit-scrollbar { width:5px; height:5px }
         .chart-type-bar::-webkit-scrollbar { display:none }
         .chart-type-bar { scrollbar-width:none; -ms-overflow-style:none }
-        .right-panel ::-webkit-scrollbar-track { background:#181818 }
-        .right-panel ::-webkit-scrollbar-thumb { background:#2e2e2e; border-radius:3px }
-        .right-panel ::-webkit-scrollbar-thumb:hover { background:#404040 }
+        .right-panel ::-webkit-scrollbar-track { background:#14150F }
+        .right-panel ::-webkit-scrollbar-thumb { background:#2A2A22; border-radius:3px }
+        .right-panel ::-webkit-scrollbar-thumb:hover { background:#4A4A42 }
         .cell-input { transition:background 0.12s }
         .cell-input:focus { outline:none }
         .chart-btn { transition:all 0.13s cubic-bezier(.4,0,.2,1) }
-        .chart-btn:hover { background:#2a2a2a !important; color:#fff !important }
-        .tab-btn { transition:all 0.13s; border-bottom:2px solid transparent; padding:0 10px; height:100%; background:transparent; border-top:none; border-left:none; border-right:none; cursor:pointer; font-family:inherit; font-size:10px; color:#888; letter-spacing:0.05em; text-transform:uppercase }
-        .tab-btn.active { border-bottom-color:#1a1a1a; color:#1a1a1a }
-        .lbtn:hover { background:#ebebeb !important }
+        .chart-btn:hover { background:#26261F !important; color:#FBFAF4 !important }
+        .tab-btn { transition:all 0.13s; border-bottom:2px solid transparent; padding:0 10px; height:100%; background:transparent; border-top:none; border-left:none; border-right:none; cursor:pointer; font-family:inherit; font-size:13px; color:#7A7A6E; letter-spacing:0 }
+        .tab-btn.active { border-bottom-color:#1A1A16; color:#1A1A16; font-weight:500 }
+        .lbtn:hover { background:#E5E1D4 !important }
         @keyframes fadeSlideIn { from{opacity:0;transform:translateY(-5px)} to{opacity:1;transform:none} }
         .toast { animation:fadeSlideIn 0.18s ease }
-        input[type=range] { accent-color:#333 }
-        input[type=checkbox] { accent-color:#333 }
+        input[type=range] { accent-color:#2E2E27 }
+        input[type=checkbox] { accent-color:#2E2E27 }
       `}</style>
 
       {/* ── Top Bar ── */}
       <div
         style={{
-          background: "#ffffff",
-          borderBottom: "1px solid #e2e2e2",
+          background: "#FBFAF4",
+          borderBottom: "1px solid rgba(26,26,22,0.13)",
           padding: "0 12px",
           display: "flex",
           alignItems: "center",
@@ -1177,9 +1180,9 @@ const DataChartEditor: React.FC = () => {
             gap: 5,
             padding: "4px 10px",
             borderRadius: 6,
-            border: "1px solid #e0e0e0",
-            background: "#fafafa",
-            color: "#555",
+            border: "1px solid rgba(26,26,22,0.14)",
+            background: "#F4F2EA",
+            color: "#4E4E45",
             fontFamily: "inherit",
             fontSize: 11,
             cursor: "pointer",
@@ -1187,8 +1190,8 @@ const DataChartEditor: React.FC = () => {
             flexShrink: 0,
             transition: "background 0.12s",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#f0f0f0")}
-          onMouseLeave={(e) => (e.currentTarget.style.background = "#fafafa")}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "#E5E1D4")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "#F4F2EA")}
         >
           <svg
             width="11"
@@ -1205,7 +1208,7 @@ const DataChartEditor: React.FC = () => {
         </button>
 
         <div
-          style={{ width: 1, height: 20, background: "#e0e0e0", flexShrink: 0 }}
+          style={{ width: 1, height: 20, background: "rgba(26,26,22,0.14)", flexShrink: 0 }}
         />
 
         {/* App identity */}
@@ -1221,8 +1224,8 @@ const DataChartEditor: React.FC = () => {
             style={{
               width: 22,
               height: 22,
-              borderRadius: 5,
-              background: "linear-gradient(135deg,#1a1a1a,#333)",
+              borderRadius: 6,
+              background: "linear-gradient(135deg,#1A1A16,#2E2E27)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -1234,7 +1237,7 @@ const DataChartEditor: React.FC = () => {
             style={{
               fontSize: 13,
               fontWeight: 700,
-              color: "#1a1a1a",
+              color: "#1A1A16",
               letterSpacing: "-0.02em",
             }}
           >
@@ -1243,7 +1246,7 @@ const DataChartEditor: React.FC = () => {
         </div>
 
         <div
-          style={{ width: 1, height: 20, background: "#e0e0e0", flexShrink: 0 }}
+          style={{ width: 1, height: 20, background: "rgba(26,26,22,0.14)", flexShrink: 0 }}
         />
 
         {/* Editable chart title */}
@@ -1252,14 +1255,14 @@ const DataChartEditor: React.FC = () => {
           onChange={(e) => setChartTitle(e.target.value)}
           style={{
             flex: 1,
-            border: "1px solid #e0e0e0",
-            borderRadius: 5,
+            border: "1px solid rgba(26,26,22,0.14)",
+            borderRadius: 6,
             padding: "3px 8px",
             fontSize: 11,
             fontFamily: "inherit",
-            color: "#333",
+            color: "#2E2E27",
             outline: "none",
-            background: "#fafafa",
+            background: "#F4F2EA",
             minWidth: 0,
           }}
           placeholder="Chart title…"
@@ -1280,10 +1283,10 @@ const DataChartEditor: React.FC = () => {
             disabled={dis}
             style={{
               padding: "3px 8px",
-              border: "1px solid #ddd",
-              borderRadius: 5,
-              background: "#fafafa",
-              color: dis ? "#ccc" : "#555",
+              border: "1px solid rgba(26,26,22,0.16)",
+              borderRadius: 6,
+              background: "#F4F2EA",
+              color: dis ? "rgba(26,26,22,0.28)" : "#4E4E45",
               fontFamily: "inherit",
               fontSize: 12,
               cursor: dis ? "not-allowed" : "pointer",
@@ -1299,10 +1302,10 @@ const DataChartEditor: React.FC = () => {
             onClick={() => setShowHelp((h) => !h)}
             style={{
               padding: "3px 10px",
-              border: "1px solid #ddd",
-              borderRadius: 5,
-              background: "#fafafa",
-              color: "#555",
+              border: "1px solid rgba(26,26,22,0.16)",
+              borderRadius: 6,
+              background: "#F4F2EA",
+              color: "#4E4E45",
               fontFamily: "inherit",
               fontSize: 11,
               cursor: "pointer",
@@ -1317,9 +1320,9 @@ const DataChartEditor: React.FC = () => {
                 top: "100%",
                 right: 0,
                 zIndex: 200,
-                background: "#fff",
-                border: "1px solid #e0e0e0",
-                borderRadius: 7,
+                background: "#FBFAF4",
+                border: "1px solid rgba(26,26,22,0.14)",
+                borderRadius: 6,
                 boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
                 padding: 6,
                 minWidth: 160,
@@ -1340,14 +1343,14 @@ const DataChartEditor: React.FC = () => {
                     padding: "6px 10px",
                     border: "none",
                     background: "transparent",
-                    color: "#444",
+                    color: "#3E3E36",
                     cursor: "pointer",
                     fontFamily: "inherit",
                     fontSize: 11,
-                    borderRadius: 5,
+                    borderRadius: 6,
                   }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "#f5f5f5")
+                    (e.currentTarget.style.background = "#EAE7DA")
                   }
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.background = "transparent")
@@ -1374,8 +1377,8 @@ const DataChartEditor: React.FC = () => {
                   ? "#10b981"
                   : saveStatus === "error"
                     ? "#ef4444"
-                    : "#1a1a1a",
-              color: "#fff",
+                    : "#1A1A16",
+              color: "#F2F1EC",
               fontFamily: "inherit",
               fontSize: 11,
               fontWeight: 600,
@@ -1403,10 +1406,10 @@ const DataChartEditor: React.FC = () => {
             onClick={() => setExportMenu((m) => !m)}
             style={{
               padding: "4px 10px",
-              border: "1px solid #ddd",
-              borderRadius: 5,
-              background: "#fafafa",
-              color: "#555",
+              border: "1px solid rgba(26,26,22,0.16)",
+              borderRadius: 6,
+              background: "#F4F2EA",
+              color: "#4E4E45",
               fontFamily: "inherit",
               fontSize: 11,
               cursor: "pointer",
@@ -1424,9 +1427,9 @@ const DataChartEditor: React.FC = () => {
                 top: "100%",
                 right: 0,
                 zIndex: 200,
-                background: "#fff",
-                border: "1px solid #e0e0e0",
-                borderRadius: 7,
+                background: "#FBFAF4",
+                border: "1px solid rgba(26,26,22,0.14)",
+                borderRadius: 6,
                 boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
                 padding: 6,
                 minWidth: 130,
@@ -1455,14 +1458,14 @@ const DataChartEditor: React.FC = () => {
                     padding: "6px 10px",
                     border: "none",
                     background: "transparent",
-                    color: "#444",
+                    color: "#3E3E36",
                     cursor: "pointer",
                     fontFamily: "inherit",
                     fontSize: 11,
-                    borderRadius: 5,
+                    borderRadius: 6,
                   }}
                   onMouseEnter={(e) =>
-                    (e.currentTarget.style.background = "#f5f5f5")
+                    (e.currentTarget.style.background = "#EAE7DA")
                   }
                   onMouseLeave={(e) =>
                     (e.currentTarget.style.background = "transparent")
@@ -1475,7 +1478,7 @@ const DataChartEditor: React.FC = () => {
                 style={{
                   margin: "4px 0",
                   border: "none",
-                  borderTop: "1px solid #eee",
+                  borderTop: "1px solid rgba(26,26,22,0.11)",
                 }}
               />
               <button
@@ -1490,14 +1493,14 @@ const DataChartEditor: React.FC = () => {
                   padding: "6px 10px",
                   border: "none",
                   background: "transparent",
-                  color: "#444",
+                  color: "#3E3E36",
                   cursor: "pointer",
                   fontFamily: "inherit",
                   fontSize: 11,
-                  borderRadius: 5,
+                  borderRadius: 6,
                 }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#f5f5f5")
+                  (e.currentTarget.style.background = "#EAE7DA")
                 }
                 onMouseLeave={(e) =>
                   (e.currentTarget.style.background = "transparent")
@@ -1517,14 +1520,14 @@ const DataChartEditor: React.FC = () => {
                   padding: "6px 10px",
                   border: "none",
                   background: "transparent",
-                  color: "#444",
+                  color: "#3E3E36",
                   cursor: "pointer",
                   fontFamily: "inherit",
                   fontSize: 11,
-                  borderRadius: 5,
+                  borderRadius: 6,
                 }}
                 onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#f5f5f5")
+                  (e.currentTarget.style.background = "#EAE7DA")
                 }
                 onMouseLeave={(e) =>
                   (e.currentTarget.style.background = "transparent")
@@ -1548,8 +1551,8 @@ const DataChartEditor: React.FC = () => {
       {/* ── Formula Bar ── */}
       <div
         style={{
-          background: "#fafafa",
-          borderBottom: "1px solid #e2e2e2",
+          background: "#F4F2EA",
+          borderBottom: "1px solid rgba(26,26,22,0.13)",
           padding: "4px 16px",
           display: "flex",
           alignItems: "center",
@@ -1561,7 +1564,7 @@ const DataChartEditor: React.FC = () => {
         <span
           style={{
             color: "#aaa",
-            fontSize: 10,
+            fontSize: 12,
             letterSpacing: "0.1em",
             minWidth: 28,
           }}
@@ -1570,7 +1573,7 @@ const DataChartEditor: React.FC = () => {
             ? `${colLabel(selectedCell.col)}${selectedCell.row + 1}`
             : "—"}
         </span>
-        <div style={{ width: 1, height: 16, background: "#e0e0e0" }} />
+        <div style={{ width: 1, height: 16, background: "rgba(26,26,22,0.14)" }} />
         <span style={{ color: "#aaa", fontSize: 11 }}>ƒx</span>
         <input
           ref={formulaInputRef}
@@ -1585,7 +1588,7 @@ const DataChartEditor: React.FC = () => {
             background: "transparent",
             border: "none",
             outline: "none",
-            color: "#1a1a1a",
+            color: "#1A1A16",
             fontFamily: "inherit",
             fontSize: 11,
           }}
@@ -1594,31 +1597,31 @@ const DataChartEditor: React.FC = () => {
           <button
             onClick={commitFormula}
             style={{
-              background: "#1a1a1a",
-              border: "1px solid #1a1a1a",
-              color: "#fff",
-              borderRadius: 4,
+              background: "#1A1A16",
+              border: "1px solid #1A1A16",
+              color: "#F2F1EC",
+              borderRadius: 6,
               padding: "2px 10px",
               cursor: "pointer",
               fontFamily: "inherit",
-              fontSize: 10,
+              fontSize: 12,
             }}
           >
             Apply
           </button>
         )}
-        <div style={{ width: 1, height: 16, background: "#e0e0e0" }} />
+        <div style={{ width: 1, height: 16, background: "rgba(26,26,22,0.14)" }} />
         <input
           id="search-input"
           value={searchCell}
           onChange={(e) => setSearchCell(e.target.value)}
           placeholder="⌕ Search cells"
           style={{
-            background: "#fff",
-            border: "1px solid #ddd",
-            borderRadius: 5,
+            background: "#FBFAF4",
+            border: "1px solid rgba(26,26,22,0.16)",
+            borderRadius: 6,
             padding: "2px 10px",
-            color: "#555",
+            color: "#4E4E45",
             fontFamily: "inherit",
             fontSize: 11,
             outline: "none",
@@ -1639,16 +1642,16 @@ const DataChartEditor: React.FC = () => {
             display: "flex",
             flexDirection: "column",
             width: `${leftWidth}%`,
-            borderRight: "1px solid #e0e0e0",
+            borderRight: "1px solid rgba(26,26,22,0.14)",
             overflow: "hidden",
-            background: "#fff",
+            background: "#FBFAF4",
           }}
         >
           {/* Tab bar */}
           <div
             style={{
-              background: "#fafafa",
-              borderBottom: "1px solid #e8e8e8",
+              background: "#F4F2EA",
+              borderBottom: "1px solid rgba(26,26,22,0.12)",
               padding: "0 12px",
               display: "flex",
               alignItems: "center",
@@ -1672,12 +1675,12 @@ const DataChartEditor: React.FC = () => {
               className="lbtn"
               style={{
                 padding: "2px 8px",
-                border: "1px solid #e0e0e0",
-                borderRadius: 4,
-                background: "#fafafa",
-                color: "#555",
+                border: "1px solid rgba(26,26,22,0.14)",
+                borderRadius: 6,
+                background: "#F4F2EA",
+                color: "#4E4E45",
                 fontFamily: "inherit",
-                fontSize: 10,
+                fontSize: 12,
                 cursor: "pointer",
               }}
             >
@@ -1688,12 +1691,12 @@ const DataChartEditor: React.FC = () => {
               className="lbtn"
               style={{
                 padding: "2px 8px",
-                border: "1px solid #e0e0e0",
-                borderRadius: 4,
-                background: "#fafafa",
-                color: "#555",
+                border: "1px solid rgba(26,26,22,0.14)",
+                borderRadius: 6,
+                background: "#F4F2EA",
+                color: "#4E4E45",
                 fontFamily: "inherit",
-                fontSize: 10,
+                fontSize: 12,
                 cursor: "pointer",
                 marginLeft: 4,
               }}
@@ -1715,7 +1718,7 @@ const DataChartEditor: React.FC = () => {
                 <thead>
                   <tr
                     style={{
-                      background: "#f5f5f5",
+                      background: "#EAE7DA",
                       position: "sticky",
                       top: 0,
                       zIndex: 10,
@@ -1726,10 +1729,10 @@ const DataChartEditor: React.FC = () => {
                         width: 32,
                         padding: "6px 0",
                         textAlign: "center",
-                        color: "#bbb",
-                        fontSize: 9,
-                        borderBottom: "1px solid #e8e8e8",
-                        borderRight: "1px solid #e8e8e8",
+                        color: "rgba(26,26,22,0.35)",
+                        fontSize: 11,
+                        borderBottom: "1px solid rgba(26,26,22,0.12)",
+                        borderRight: "1px solid rgba(26,26,22,0.12)",
                       }}
                     >
                       #
@@ -1740,11 +1743,11 @@ const DataChartEditor: React.FC = () => {
                         style={{
                           padding: "4px 6px",
                           textAlign: "left",
-                          fontSize: 10,
+                          fontSize: 12,
                           fontWeight: 600,
-                          color: "#777",
-                          borderBottom: "1px solid #e8e8e8",
-                          borderRight: "1px solid #ececec",
+                          color: "#6E6E62",
+                          borderBottom: "1px solid rgba(26,26,22,0.12)",
+                          borderRight: "1px solid rgba(26,26,22,0.10)",
                           minWidth: 100,
                           position: "relative",
                         }}
@@ -1763,8 +1766,8 @@ const DataChartEditor: React.FC = () => {
                               border: "none",
                               background: "transparent",
                               cursor: "pointer",
-                              color: "#ccc",
-                              fontSize: 9,
+                              color: "rgba(26,26,22,0.28)",
+                              fontSize: 11,
                               padding: 0,
                             }}
                           >
@@ -1777,8 +1780,8 @@ const DataChartEditor: React.FC = () => {
                                 border: "none",
                                 background: "transparent",
                                 cursor: "pointer",
-                                color: "#ccc",
-                                fontSize: 9,
+                                color: "rgba(26,26,22,0.28)",
+                                fontSize: 11,
                                 padding: 0,
                               }}
                             >
@@ -1794,16 +1797,16 @@ const DataChartEditor: React.FC = () => {
                   {data.map((row, ri) => (
                     <tr
                       key={ri}
-                      style={{ background: ri % 2 === 0 ? "#fff" : "#fafafa" }}
+                      style={{ background: ri % 2 === 0 ? "#FBFAF4" : "#F4F2EA" }}
                     >
                       <td
                         style={{
                           textAlign: "center",
-                          color: "#ccc",
-                          fontSize: 9,
+                          color: "rgba(26,26,22,0.28)",
+                          fontSize: 11,
                           padding: "0 4px",
-                          borderRight: "1px solid #e8e8e8",
-                          borderBottom: "1px solid #f0f0f0",
+                          borderRight: "1px solid rgba(26,26,22,0.12)",
+                          borderBottom: "1px solid #E5E1D4",
                           verticalAlign: "middle",
                         }}
                       >
@@ -1814,8 +1817,8 @@ const DataChartEditor: React.FC = () => {
                               border: "none",
                               background: "transparent",
                               cursor: "pointer",
-                              color: "#ddd",
-                              fontSize: 8,
+                              color: "rgba(26,26,22,0.16)",
+                              fontSize: 11,
                               padding: 0,
                               display: "block",
                               margin: "0 auto",
@@ -1837,11 +1840,11 @@ const DataChartEditor: React.FC = () => {
                             key={ci}
                             style={{
                               padding: 0,
-                              borderRight: "1px solid #ececec",
-                              borderBottom: "1px solid #f0f0f0",
+                              borderRight: "1px solid rgba(26,26,22,0.10)",
+                              borderBottom: "1px solid #E5E1D4",
                               background: isSearch ? "#fff3cd" : cellBg,
                               outline: isSelected
-                                ? "2px solid #1a1a1a"
+                                ? "2px solid #1A1A16"
                                 : "none",
                               outlineOffset: "-2px",
                             }}
@@ -1875,7 +1878,7 @@ const DataChartEditor: React.FC = () => {
                                 background: "transparent",
                                 border: "none",
                                 outline: "none",
-                                color: ri === 0 ? "#1a1a1a" : "#444",
+                                color: ri === 0 ? "#1A1A16" : "#3E3E36",
                                 fontFamily: "inherit",
                                 fontSize: 11,
                                 fontWeight: ri === 0 ? 600 : 400,
@@ -1901,8 +1904,8 @@ const DataChartEditor: React.FC = () => {
                       key={key}
                       onClick={() => setPalette(key)}
                       style={{
-                        background: palette === key ? "#f0f0f0" : "#fff",
-                        border: `1px solid ${palette === key ? "#1a1a1a" : "#ddd"}`,
+                        background: palette === key ? "#E5E1D4" : "#FBFAF4",
+                        border: `1px solid ${palette === key ? "#1A1A16" : "rgba(26,26,22,0.16)"}`,
                         borderRadius: 6,
                         padding: "5px 8px",
                         cursor: "pointer",
@@ -1924,7 +1927,7 @@ const DataChartEditor: React.FC = () => {
                         />
                       ))}
                       <span
-                        style={{ fontSize: 10, color: "#555", marginLeft: 4 }}
+                        style={{ fontSize: 12, color: "#4E4E45", marginLeft: 4 }}
                       >
                         {key}
                       </span>
@@ -1968,7 +1971,7 @@ const DataChartEditor: React.FC = () => {
                   onChange={(e) => setMarkerSize(+e.target.value)}
                   style={{ width: "100%" }}
                 />
-                <span style={{ fontSize: 10, color: "#888" }}>
+                <span style={{ fontSize: 12, color: "#7A7A6E" }}>
                   {markerSize}px
                 </span>
               </LSection>
@@ -1982,7 +1985,7 @@ const DataChartEditor: React.FC = () => {
                   onChange={(e) => setOpacity(+e.target.value)}
                   style={{ width: "100%" }}
                 />
-                <span style={{ fontSize: 10, color: "#888" }}>
+                <span style={{ fontSize: 12, color: "#7A7A6E" }}>
                   {Math.round(opacity * 100)}%
                 </span>
               </LSection>
@@ -2022,8 +2025,8 @@ const DataChartEditor: React.FC = () => {
                   style={{
                     width: "100%",
                     padding: "4px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 4,
+                    border: "1px solid rgba(26,26,22,0.16)",
+                    borderRadius: 6,
                     fontFamily: "inherit",
                     fontSize: 11,
                     marginBottom: 6,
@@ -2037,8 +2040,8 @@ const DataChartEditor: React.FC = () => {
                   style={{
                     width: "100%",
                     padding: "4px 8px",
-                    border: "1px solid #ddd",
-                    borderRadius: 4,
+                    border: "1px solid rgba(26,26,22,0.16)",
+                    borderRadius: 6,
                     fontFamily: "inherit",
                     fontSize: 11,
                     outline: "none",
@@ -2063,8 +2066,8 @@ const DataChartEditor: React.FC = () => {
                     placeholder="X value (e.g. Jan)"
                     style={{
                       padding: "4px 8px",
-                      border: "1px solid #ddd",
-                      borderRadius: 4,
+                      border: "1px solid rgba(26,26,22,0.16)",
+                      borderRadius: 6,
                       fontFamily: "inherit",
                       fontSize: 11,
                       outline: "none",
@@ -2079,8 +2082,8 @@ const DataChartEditor: React.FC = () => {
                     type="number"
                     style={{
                       padding: "4px 8px",
-                      border: "1px solid #ddd",
-                      borderRadius: 4,
+                      border: "1px solid rgba(26,26,22,0.16)",
+                      borderRadius: 6,
                       fontFamily: "inherit",
                       fontSize: 11,
                       outline: "none",
@@ -2094,8 +2097,8 @@ const DataChartEditor: React.FC = () => {
                     placeholder="Annotation text"
                     style={{
                       padding: "4px 8px",
-                      border: "1px solid #ddd",
-                      borderRadius: 4,
+                      border: "1px solid rgba(26,26,22,0.16)",
+                      borderRadius: 6,
                       fontFamily: "inherit",
                       fontSize: 11,
                       outline: "none",
@@ -2117,10 +2120,10 @@ const DataChartEditor: React.FC = () => {
                     }}
                     style={{
                       padding: "5px",
-                      border: "1px solid #1a1a1a",
-                      borderRadius: 5,
-                      background: "#1a1a1a",
-                      color: "#fff",
+                      border: "1px solid #1A1A16",
+                      borderRadius: 6,
+                      background: "#1A1A16",
+                      color: "#E8FF5A",
                       cursor: "pointer",
                       fontFamily: "inherit",
                       fontSize: 11,
@@ -2140,12 +2143,12 @@ const DataChartEditor: React.FC = () => {
                         alignItems: "center",
                         justifyContent: "space-between",
                         padding: "5px 8px",
-                        background: "#f5f5f5",
-                        borderRadius: 5,
+                        background: "#EAE7DA",
+                        borderRadius: 6,
                         marginBottom: 5,
                       }}
                     >
-                      <span style={{ fontSize: 11, color: "#444" }}>
+                      <span style={{ fontSize: 11, color: "#3E3E36" }}>
                         {a.x} → {a.text}
                       </span>
                       <button
@@ -2157,7 +2160,7 @@ const DataChartEditor: React.FC = () => {
                         style={{
                           border: "none",
                           background: "transparent",
-                          color: "#ccc",
+                          color: "rgba(26,26,22,0.28)",
                           cursor: "pointer",
                           fontSize: 12,
                         }}
@@ -2179,8 +2182,8 @@ const DataChartEditor: React.FC = () => {
                     }
                     style={{
                       padding: "3px 6px",
-                      border: "1px solid #ddd",
-                      borderRadius: 4,
+                      border: "1px solid rgba(26,26,22,0.16)",
+                      borderRadius: 6,
                       fontFamily: "inherit",
                       fontSize: 11,
                     }}
@@ -2200,8 +2203,8 @@ const DataChartEditor: React.FC = () => {
                       style={{
                         flex: 1,
                         padding: "3px 6px",
-                        border: "1px solid #ddd",
-                        borderRadius: 4,
+                        border: "1px solid rgba(26,26,22,0.16)",
+                        borderRadius: 6,
                         fontFamily: "inherit",
                         fontSize: 11,
                       }}
@@ -2221,8 +2224,8 @@ const DataChartEditor: React.FC = () => {
                       style={{
                         flex: 2,
                         padding: "3px 6px",
-                        border: "1px solid #ddd",
-                        borderRadius: 4,
+                        border: "1px solid rgba(26,26,22,0.16)",
+                        borderRadius: 6,
                         fontFamily: "inherit",
                         fontSize: 11,
                       }}
@@ -2236,8 +2239,8 @@ const DataChartEditor: React.FC = () => {
                       style={{
                         width: 32,
                         height: 28,
-                        border: "1px solid #ddd",
-                        borderRadius: 4,
+                        border: "1px solid rgba(26,26,22,0.16)",
+                        borderRadius: 6,
                         cursor: "pointer",
                       }}
                     />
@@ -2249,10 +2252,10 @@ const DataChartEditor: React.FC = () => {
                     }}
                     style={{
                       padding: "4px",
-                      border: "1px solid #1a1a1a",
-                      borderRadius: 5,
-                      background: "#1a1a1a",
-                      color: "#fff",
+                      border: "1px solid #1A1A16",
+                      borderRadius: 6,
+                      background: "#1A1A16",
+                      color: "#E8FF5A",
                       cursor: "pointer",
                       fontFamily: "inherit",
                       fontSize: 11,
@@ -2267,12 +2270,12 @@ const DataChartEditor: React.FC = () => {
                     style={{
                       marginTop: 8,
                       padding: "3px 8px",
-                      border: "1px solid #ddd",
-                      borderRadius: 4,
+                      border: "1px solid rgba(26,26,22,0.16)",
+                      borderRadius: 6,
                       background: "transparent",
-                      color: "#888",
+                      color: "#7A7A6E",
                       cursor: "pointer",
-                      fontSize: 10,
+                      fontSize: 12,
                     }}
                   >
                     Clear all rules
@@ -2292,16 +2295,16 @@ const DataChartEditor: React.FC = () => {
                     style={{
                       marginBottom: 14,
                       padding: "10px 12px",
-                      background: "#f8f8f8",
-                      borderRadius: 7,
-                      border: "1px solid #eee",
+                      background: "#F0EDE2",
+                      borderRadius: 6,
+                      border: "1px solid rgba(26,26,22,0.11)",
                     }}
                   >
                     <div
                       style={{
                         fontSize: 11,
                         fontWeight: 600,
-                        color: "#1a1a1a",
+                        color: "#1A1A16",
                         marginBottom: 8,
                       }}
                     >
@@ -2328,14 +2331,14 @@ const DataChartEditor: React.FC = () => {
                             justifyContent: "space-between",
                           }}
                         >
-                          <span style={{ fontSize: 10, color: "#888" }}>
+                          <span style={{ fontSize: 12, color: "#7A7A6E" }}>
                             {l}
                           </span>
                           <span
                             style={{
-                              fontSize: 10,
+                              fontSize: 12,
                               fontWeight: 600,
-                              color: "#333",
+                              color: "#2E2E27",
                             }}
                           >
                             {v}
@@ -2356,13 +2359,13 @@ const DataChartEditor: React.FC = () => {
           style={{
             width: 4,
             cursor: "col-resize",
-            background: "#e0e0e0",
+            background: "rgba(26,26,22,0.14)",
             flexShrink: 0,
             transition: "background 0.15s",
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = "#ccc")}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(26,26,22,0.28)")}
           onMouseLeave={(e) => {
-            if (!isDragging) e.currentTarget.style.background = "#e0e0e0";
+            if (!isDragging) e.currentTarget.style.background = "rgba(26,26,22,0.14)";
           }}
         />
 
@@ -2373,7 +2376,7 @@ const DataChartEditor: React.FC = () => {
             flex: 1,
             display: "flex",
             flexDirection: "column",
-            background: "#111111",
+            background: "#14150F",
             overflow: "hidden",
           }}
         >
@@ -2385,8 +2388,8 @@ const DataChartEditor: React.FC = () => {
               alignItems: "center",
               gap: 4,
               padding: "6px 10px",
-              background: "#1a1a1a",
-              borderBottom: "1px solid #2a2a2a",
+              background: "#1A1A16",
+              borderBottom: "1px solid #26261F",
               overflowX: "auto",
               flexShrink: 0,
             }}
@@ -2397,14 +2400,14 @@ const DataChartEditor: React.FC = () => {
                 className={`chart-btn ${chartType === ct.id ? "active" : ""}`}
                 onClick={() => setChartType(ct.id)}
                 style={{
-                  background: chartType === ct.id ? "#2a2a2a" : "transparent",
-                  border: `1px solid ${chartType === ct.id ? "#404040" : "#222"}`,
-                  color: chartType === ct.id ? "#fff" : "#666",
-                  borderRadius: 5,
+                  background: chartType === ct.id ? "#26261F" : "transparent",
+                  border: `1px solid ${chartType === ct.id ? "#4A4A42" : "#22221C"}`,
+                  color: chartType === ct.id ? "#FBFAF4" : "#5C5C52",
+                  borderRadius: 6,
                   padding: "3px 8px",
                   cursor: "pointer",
                   fontFamily: "inherit",
-                  fontSize: 10,
+                  fontSize: 12,
                   whiteSpace: "nowrap",
                   display: "flex",
                   alignItems: "center",
@@ -2419,7 +2422,7 @@ const DataChartEditor: React.FC = () => {
           </div>
 
           {/* Chart canvas */}
-          <div style={{ flex: 1, background: "#111111", position: "relative" }}>
+          <div style={{ flex: 1, background: "#14150F", position: "relative" }}>
             <div
               id="chart-container"
               style={{ width: "100%", height: "100%" }}
@@ -2437,10 +2440,10 @@ const DataChartEditor: React.FC = () => {
             bottom: 24,
             left: "50%",
             transform: "translateX(-50%)",
-            background: "#1a1a1a",
-            border: "1px solid #333",
-            color: "#fff",
-            borderRadius: 8,
+            background: "#1A1A16",
+            border: "1px solid #2E2E27",
+            color: "#F2F1EC",
+            borderRadius: 6,
             padding: "8px 20px",
             fontSize: 11,
             zIndex: 9999,
@@ -2476,12 +2479,12 @@ const LSection: React.FC<{ title: string; children: React.ReactNode }> = ({
   <div style={{ marginBottom: 20 }}>
     <div
       style={{
-        fontSize: 9,
-        letterSpacing: "0.15em",
-        textTransform: "uppercase",
-        color: "#bbb",
+        fontFamily: "var(--gx-mono)",
+        fontSize: 12,
+        letterSpacing: 0,
+        color: "rgba(26,26,22,0.42)",
         marginBottom: 10,
-        fontWeight: 500,
+        fontWeight: 400,
       }}
     >
       {title}
@@ -2510,8 +2513,8 @@ const LToggle: React.FC<{
         width: 32,
         height: 17,
         borderRadius: 9,
-        background: value ? "#1a1a1a" : "#e8e8e8",
-        border: `1px solid ${value ? "#1a1a1a" : "#d0d0d0"}`,
+        background: value ? "#1A1A16" : "rgba(26,26,22,0.12)",
+        border: `1px solid ${value ? "#1A1A16" : "#d0d0d0"}`,
         position: "relative",
         cursor: "pointer",
         flexShrink: 0,
@@ -2526,13 +2529,13 @@ const LToggle: React.FC<{
           width: 12,
           height: 12,
           borderRadius: "50%",
-          background: value ? "#fff" : "#aaa",
+          background: value ? "#FBFAF4" : "#aaa",
           transition: "left 0.2s",
           boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
         }}
       />
     </div>
-    <span style={{ fontSize: 11, color: "#555" }}>{label}</span>
+    <span style={{ fontSize: 11, color: "#4E4E45" }}>{label}</span>
   </label>
 );
 

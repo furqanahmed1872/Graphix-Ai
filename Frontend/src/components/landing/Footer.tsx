@@ -29,9 +29,9 @@ export default function Footer() {
   return (
     <footer
       style={{
-        background: "#111212",
+        background: "#0C0C0A",
         borderTop: "1px solid rgba(255,255,255,0.06)",
-        fontFamily: "monospace",
+        fontFamily: "var(--gx-sans)",
       }}
     >
       <style>{`
@@ -64,7 +64,6 @@ export default function Footer() {
           font-weight: 700;
           color: rgba(255,255,255,0.35);
           letter-spacing: 0.15em;
-          text-transform: uppercase;
           margin-bottom: 16px;
         }
         .gx-footer-link {
@@ -88,7 +87,7 @@ export default function Footer() {
           letter-spacing: 0.15em;
           transition: color 0.15s;
         }
-        .gx-footer-legal-link:hover { color: #06b6d4; }
+        .gx-footer-legal-link:hover { color: var(--gx-accent); }
 
         @media (max-width: 767px) {
           .gx-footer-grid {
@@ -137,16 +136,16 @@ export default function Footer() {
                 width: 8,
                 height: 8,
                 borderRadius: "50%",
-                background: "#06b6d4",
-                boxShadow: "0 0 8px #06b6d4",
+                background: "var(--gx-accent)",
+                
               }}
             />
             <span
               style={{
                 fontSize: 16,
-                fontWeight: 800,
+                fontWeight: 500,
                 color: "#fff",
-                letterSpacing: "-0.02em",
+                letterSpacing: "-0.01em",
               }}
             >
               Graphix
@@ -173,10 +172,10 @@ export default function Footer() {
                   fontSize: 9,
                   color: "rgba(6,182,212,0.7)",
                   padding: "2px 7px",
-                  borderRadius: 4,
+                  borderRadius: 0,
                   background: "rgba(6,182,212,0.08)",
                   border: "1px solid rgba(6,182,212,0.15)",
-                  letterSpacing: "0.05em",
+                  letterSpacing: 0,
                 }}
               >
                 {p}
@@ -206,7 +205,7 @@ export default function Footer() {
           style={{
             fontSize: 10,
             color: "rgba(255,255,255,0.2)",
-            letterSpacing: "0.15em",
+            letterSpacing: 0,
           }}
         >
           © 2025 GRAPHIX · ALL RIGHTS RESERVED

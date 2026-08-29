@@ -3,37 +3,23 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { SERIES_PAPER, RAMP_PAPER, hexInt } from "@/lib/chartTheme";
 
 // ─── Colors ───────────────────────────────────────────────────────────────────
-const GREY_AXIS = new THREE.Color(0x888899);
-const GREY_GRID = new THREE.Color(0x444455);
-const GREY_CAGE = new THREE.Color(0xaaaabb);
+/* This cube sits on the paper ground, so it uses the darkened series. */
+const GREY_AXIS = new THREE.Color(0x1a1a16).lerp(new THREE.Color(0xf4f2ea), 0.58);
+const GREY_GRID = new THREE.Color(0x1a1a16).lerp(new THREE.Color(0xf4f2ea), 0.86);
+const GREY_CAGE = new THREE.Color(0x1a1a16).lerp(new THREE.Color(0xf4f2ea), 0.72);
 
-const PIE_C = [
-  new THREE.Color(0x4e79a7),
-  new THREE.Color(0xf28e2b),
-  new THREE.Color(0xe15759),
-  new THREE.Color(0x76b7b2),
-  new THREE.Color(0x59a14f),
-];
-const ERR_LINE = new THREE.Color(0x4e79a7);
-const ERR_BAND = new THREE.Color(0x4e79a7);
-const ERR_BARS = new THREE.Color(0xf28e2b);
-const ERR_DOTS = new THREE.Color(0xe15759);
-const CONT_STOPS: [number, THREE.Color][] = [
-  [0.0, new THREE.Color(0x440154)],
-  [0.25, new THREE.Color(0x3b528b)],
-  [0.5, new THREE.Color(0x21918c)],
-  [0.75, new THREE.Color(0x5ec962)],
-  [1.0, new THREE.Color(0xfde725)],
-];
-const ISO_COLORS = [
-  new THREE.Color(0x3b528b),
-  new THREE.Color(0x21918c),
-  new THREE.Color(0x5ec962),
-  new THREE.Color(0xfde725),
-  new THREE.Color(0xff7f0e),
-];
+const PIE_C = SERIES_PAPER.map((c) => new THREE.Color(hexInt(c)));
+const ERR_LINE = new THREE.Color(hexInt(SERIES_PAPER[0]));
+const ERR_BAND = new THREE.Color(hexInt(SERIES_PAPER[0]));
+const ERR_BARS = new THREE.Color(hexInt(SERIES_PAPER[1]));
+const ERR_DOTS = new THREE.Color(hexInt(SERIES_PAPER[2]));
+const CONT_STOPS: [number, THREE.Color][] = RAMP_PAPER.map(
+  ([t, c]) => [t, new THREE.Color(hexInt(c))] as [number, THREE.Color],
+);
+const ISO_COLORS = RAMP_PAPER.slice(1).map(([, c]) => new THREE.Color(hexInt(c)));
 
 const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
 const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
@@ -220,7 +206,7 @@ function ThreeCubeFooter() {
         new THREE.LineSegments(
           new THREE.EdgesGeometry(geo),
           new THREE.LineBasicMaterial({
-            color: new THREE.Color(0x111111),
+            color: new THREE.Color(0x1a1a16),
             transparent: true,
             opacity: 0.3,
           }),
@@ -579,7 +565,9 @@ function CountUp({ target, suffix }: { target: number; suffix: string }) {
   );
 }
 
-const CLOSING_WORDS = "The last chart tool you'll ever need.".split(" ");
+const CLOSING_WORDS = "Start with your first spreadsheet.".split(" ");
+/* the one word set in italic serif */
+const CTA_ACCENT_WORD = "first";
 
 // ─── CtaSection ──────────────────────────────────────────────────────────────
 export default function CTA() {
@@ -607,14 +595,13 @@ export default function CTA() {
         @keyframes ctaW  { from{opacity:0;transform:translateY(22px)}  to{opacity:1;transform:translateY(0)} }
         @keyframes ctaSI { from{opacity:0;transform:scale(0.93) translateY(20px)} to{opacity:1;transform:scale(1) translateY(0)} }
         @keyframes ctaBlink { 0%,100%{opacity:1} 50%{opacity:0} }
-        .cta-cursor { display:inline-block; width:3px; height:0.85em; background:#0891b2; margin-left:3px; vertical-align:text-bottom; animation:ctaBlink 1.1s step-end infinite; }
-        .cta-btn { background:#0891b2; color:#fff; padding:12px 28px; font-size:13px; letter-spacing:0.15em; font-weight:700; border:none; cursor:pointer; transition:filter .15s,transform .15s; text-transform:uppercase; }
-        .cta-btn:hover { filter:brightness(1.25); transform:translateY(-1px); }
-        .cta-ghost { background:transparent; color:#fff; padding:12px 28px; font-size:13px; letter-spacing:0.15em; border:1px solid rgba(255,255,255,0.35); cursor:pointer; transition:background .15s,color .15s; text-transform:uppercase; }
-        .cta-ghost:hover { background:#fff; color:#111; }
-        .cta-stat-val { font-size:2.2rem; font-weight:800; letter-spacing:-0.04em; line-height:1; }
-        .cta-stat-label { font-size:10px; letter-spacing:0.18em; color:#888899; margin-top:4px; }
-        .cta-grid-bg { position:absolute; inset:0; pointer-events:none; background-image:linear-gradient(rgba(255,255,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.04) 1px,transparent 1px); background-size:40px 40px; }
+        .cta-btn { background:var(--gx-accent-ink); color:var(--gx-accent); padding:13px 26px; font-size:14px; letter-spacing:0; font-weight:500; border:none; cursor:pointer; transition:opacity .15s; text-decoration:none; display:inline-flex; align-items:center; }
+        .cta-btn:hover { opacity:0.85; }
+        .cta-ghost { background:transparent; color:#1A1A16; padding:13px 26px; font-size:14px; letter-spacing:0; font-weight:400; border:1px solid rgba(26,26,22,0.22); cursor:pointer; transition:border-color .15s; text-decoration:none; display:inline-flex; align-items:center; }
+        .cta-ghost:hover { border-color:rgba(26,26,22,0.55); }
+        .cta-stat-val { font-family:var(--gx-display); font-size:2.6rem; font-weight:400; letter-spacing:-0.015em; line-height:1; }
+        .cta-stat-label { font-family:var(--gx-mono); font-size:12px; letter-spacing:0; color:#6E6E64; margin-top:6px; }
+        .cta-grid-bg { position:absolute; inset:0; pointer-events:none; background-image:linear-gradient(rgba(26,26,22,0.045) 1px,transparent 1px),linear-gradient(90deg,rgba(26,26,22,0.045) 1px,transparent 1px); background-size:40px 40px; }
 
         /* ── RESPONSIVE ── */
         .cta-flex-row { display: flex; flex-wrap: wrap; }
@@ -638,7 +625,11 @@ export default function CTA() {
 
       <div
         className={`cta-root${ready ? " cta-ready" : ""}`}
-        style={{ background: "white", color: "black", fontFamily: "monospace" }}
+        style={{
+          background: "#F4F2EA",
+          color: "#1A1A16",
+          fontFamily: "var(--gx-sans)",
+        }}
       >
         <div className="cta-flex-row">
           {/* LEFT: 3D cube */}
@@ -650,16 +641,25 @@ export default function CTA() {
           <div className="cta-copy-col">
             <div className="cta-grid-bg" />
             <div style={{ position: "relative", zIndex: 1 }}>
-              <div data-anim="bar" style={{ background: "white" }} />
+              <div
+                data-anim="bar"
+                style={{
+                  height: 1,
+                  width: 64,
+                  background: "var(--gx-accent-ink)",
+                  marginBottom: 30,
+                }}
+              />
 
               <h2
                 style={{
-                  fontSize: "clamp(2rem,4vw,3.5rem)",
-                  fontWeight: 800,
-                  lineHeight: 1.05,
-                  letterSpacing: "-0.04em",
-                  marginBottom: 20,
-                  color: "black",
+                  fontFamily: "var(--gx-display)",
+                  fontSize: "clamp(2.2rem,4.2vw,3.8rem)",
+                  fontWeight: 400,
+                  lineHeight: 1.06,
+                  letterSpacing: "-0.015em",
+                  marginBottom: 22,
+                  color: "#1A1A16",
                 }}
               >
                 {CLOSING_WORDS.map((word, i) => (
@@ -668,28 +668,26 @@ export default function CTA() {
                     data-anim={`word-${i}`}
                     style={{ display: "inline-block", marginRight: "0.28em" }}
                   >
-                    {word === "last" ? (
-                      <span style={{ color: "#06b6d4" }}>{word}</span>
+                    {word === CTA_ACCENT_WORD ? (
+                      <span style={{ fontStyle: "italic" }}>{word}</span>
                     ) : (
                       word
                     )}
                   </span>
                 ))}
-                <span className="cta-cursor" />
               </h2>
 
               <p
                 data-anim="sub"
                 style={{
-                  color: "#666",
-                  lineHeight: 1.7,
-                  marginBottom: 32,
-                  maxWidth: 380,
-                  fontSize: 15,
+                  color: "#5C5C52",
+                  lineHeight: 1.6,
+                  marginBottom: 36,
+                  maxWidth: 400,
+                  fontSize: 16,
                 }}
               >
-                You've seen what Graphix can do. Now make it yours — free during
-                beta, no card required, cancel whenever you want (you won't).
+                Free while Graphix is in beta. No card, no seat minimum.
               </p>
 
               <div data-anim="stats" className="cta-stats-row">
@@ -697,20 +695,20 @@ export default function CTA() {
                   {
                     val: 140,
                     suffix: "+",
-                    label: "CHART TYPES",
-                    color: "black",
+                    label: "chart types",
+                    color: "#1A1A16",
                   },
                   {
-                    val: 12847,
+                    val: 16,
                     suffix: "",
-                    label: "CHARTS TODAY",
-                    color: "black",
+                    label: "chart categories",
+                    color: "#1A1A16",
                   },
                   {
                     val: null,
                     suffix: "",
-                    label: "COST · BETA",
-                    color: "#06b6d4",
+                    label: "cost during beta",
+                    color: "#1A1A16",
                     override: "$0",
                   },
                 ].map((s) => (
@@ -734,30 +732,25 @@ export default function CTA() {
                   alignItems: "center",
                 }}
               >
-                <Link
-                  className="bg-cyan-600 text-white font-bold px-6 py-3 hover:bg-cyan-700 cursor-pointer text-sm tracking-widest uppercase"
-                  href="/dashboard"
-                >
-                  Try Now
+                <Link className="cta-btn" href="/dashboard">
+                  Start for free
                 </Link>
-                <Link
-                  className="font-bold px-6 py-3 border border-black hover:bg-black hover:text-white transition-colors text-sm tracking-widest uppercase"
-                  href="/about"
-                >
-                  About Us
+                <Link className="cta-ghost" href="/about">
+                  About us
                 </Link>
               </div>
 
               <p
                 data-anim="legal"
                 style={{
-                  marginTop: 20,
-                  fontSize: 10,
-                  color: "#444455",
-                  letterSpacing: "0.14em",
+                  marginTop: 22,
+                  fontFamily: "var(--gx-mono)",
+                  fontSize: 12,
+                  color: "#8A8A7C",
+                  letterSpacing: 0,
                 }}
               >
-                FREE BETA · NO CREDIT CARD · SSL ENCRYPTED · GDPR COMPLIANT
+                No credit card required.
               </p>
             </div>
           </div>

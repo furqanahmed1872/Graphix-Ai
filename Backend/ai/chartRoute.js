@@ -7,9 +7,10 @@ import {
 } from "./prompts.js";
 import {
   KEYS,
-  exhaustedUntil,
   getNextAvailableKey,
   markKeyExhausted,
+  markKeyInvalid,
+  keyReport,
 } from "./keyRotation.js";
 
 // llama-3.3-70b-versatile was decommissioned by Groq. Override with GROQ_MODEL
@@ -34,7 +35,9 @@ router.post("/", requireAuth, upload.single("file"), async (req, res) => {
     });
   }
 
-  const hasContext = !!previousChart;
+  // A newly attached file means "chart this data", not "edit what's on screen".
+  // Sending both made the prompt carry two full datasets.
+  const hasContext = !!previousChart && !fileContent;
   const systemPrompt = hasContext
     ? SYSTEM_PROMPT_WITH_CONTEXT
     : SYSTEM_PROMPT_NO_CONTEXT;
@@ -52,13 +55,25 @@ router.post("/", requireAuth, upload.single("file"), async (req, res) => {
       : prompt;
   }
 
+  let lastError = null;
+
   for (let attempt = 0; attempt < KEYS.length; attempt++) {
-    const { key, index, allExhausted } = getNextAvailableKey();
+    const { key, index, allExhausted, allInvalid, retryAfterMs } =
+      getNextAvailableKey();
+
+    if (allInvalid) {
+      return res.status(503).json({
+        error:
+          "Chart generation is unavailable: no valid API key is configured.",
+      });
+    }
 
     if (allExhausted) {
+      const secs = Math.ceil((retryAfterMs || 20000) / 1000);
       return res.status(429).json({
-        error:
-          "All API keys are temporarily exhausted. Please wait a minute and try again.",
+        error: `Rate limited upstream. Try again in about ${secs}s.`,
+        retryAfterSeconds: secs,
+        ...(lastError ? { detail: lastError.detail } : {}),
       });
     }
 
@@ -87,18 +102,43 @@ router.post("/", requireAuth, upload.single("file"), async (req, res) => {
         },
       );
     } catch (fetchErr) {
+      // A DNS hiccup or socket timeout says nothing about the key. Cooling it
+      // down here meant one transient blip took a single-key deployment
+      // offline. Record it and move on; if this was the only key the loop
+      // simply ends and we report a network fault, not a rate limit.
       console.warn(`Key #${index + 1} fetch failed: ${fetchErr.message}`);
-      markKeyExhausted(index);
+      lastError = { status: 0, detail: `Network error: ${fetchErr.message}` };
       continue;
     }
 
-    if (
-      response.status === 429 ||
-      response.status === 401 ||
-      response.status === 400
-    ) {
-      markKeyExhausted(index);
+    // 401/403 — the key is bad. Rotating past it is right, but a cooldown
+    // would let it come back and fail again a minute later.
+    if (response.status === 401 || response.status === 403) {
+      markKeyInvalid(index);
       continue;
+    }
+
+    // 429 — a real rate limit. Respect Groq's Retry-After when present.
+    if (response.status === 429) {
+      const ra = parseFloat(response.headers.get("retry-after") || "");
+      markKeyExhausted(index, Number.isFinite(ra) ? ra * 1000 : undefined);
+      const body = await response.text().catch(() => "");
+      lastError = { status: 429, detail: body.slice(0, 500) };
+      continue;
+    }
+
+    // 400 — the REQUEST was rejected (usually context length), not the key.
+    // The old code marked the key exhausted here, which took the whole
+    // service offline for 60s because of one oversized prompt.
+    if (response.status === 400) {
+      const body = await response.text().catch(() => "");
+      console.error(`Groq rejected the request (400): ${body.slice(0, 500)}`);
+      return res.status(400).json({
+        error:
+          "That request was too large for the model to process. Try a smaller " +
+          "dataset, or start a new chart instead of editing this one.",
+        detail: body.slice(0, 500),
+      });
     }
 
     if (!response.ok) {
@@ -153,9 +193,20 @@ router.post("/", requireAuth, upload.single("file"), async (req, res) => {
     });
   }
 
-  return res
-    .status(429)
-    .json({ error: "All API keys exhausted. Try again in a minute." });
+  if (lastError && lastError.status === 0) {
+    return res.status(502).json({
+      error: "Could not reach the chart service. Please try again.",
+      detail: lastError.detail,
+    });
+  }
+
+  return res.status(429).json({
+    error:
+      KEYS.length === 1
+        ? "The API key is rate limited. Try again shortly."
+        : "All API keys are rate limited. Try again shortly.",
+    ...(lastError ? { detail: lastError.detail } : {}),
+  });
 });
 
 // ── GET /api/status ───────────────────────────────────────────
@@ -163,21 +214,7 @@ router.post("/", requireAuth, upload.single("file"), async (req, res) => {
 // Docker:  http://localhost:5080/api/status
 // Vercel:  https://your-app.vercel.app/api/status
 router.get("/status", (req, res) => {
-  const now = Date.now();
-  res.json({
-    totalKeys: KEYS.length,
-    keys: KEYS.map((_, i) => ({
-      key: `Key #${i + 1}`,
-      status:
-        exhaustedUntil[i] && exhaustedUntil[i] > now
-          ? "exhausted"
-          : "available",
-      resetsIn:
-        exhaustedUntil[i] && exhaustedUntil[i] > now
-          ? `${Math.ceil((exhaustedUntil[i] - now) / 1000)}s`
-          : "ready",
-    })),
-  });
+  res.json({ totalKeys: KEYS.length, model: GROQ_MODEL, keys: keyReport() });
 });
 
 export default router;

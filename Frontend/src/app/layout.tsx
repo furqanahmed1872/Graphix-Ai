@@ -23,7 +23,7 @@ export default function RootLayout({
         style={{
           margin: 0,
           padding: 0,
-          background: "#111212",
+          background: "#0C0C0A",
           overflowX: "hidden",
         }}
       >

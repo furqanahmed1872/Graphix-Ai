@@ -1,10 +1,9 @@
-import NavBar from "@/components/NavBar";
 import FeedbackForm from "@/components/feedback/FeedbackForm";
 
 export const metadata = {
   title: "Feedback — Graphix",
   description:
-    "Your voice shapes what we build next. Share your honest feedback with the Graphix team.",
+    "Tell us what Graphix gets wrong. Bugs, missing chart types, anything that made you give up halfway.",
 };
 
 export default function FeedbackPage() {

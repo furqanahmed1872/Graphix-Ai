@@ -59,7 +59,7 @@ export default function PricingSection() {
       <section
         id="pricing"
         className="relative overflow-hidden"
-        style={{ background: "#111212" }}
+        style={{ background: "#0C0C0A" }}
       >
         {/* Subtle grid */}
         <div
@@ -67,7 +67,7 @@ export default function PricingSection() {
             position: "absolute",
             inset: 0,
             backgroundImage:
-              "linear-gradient(rgba(148,163,184,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,0.04) 1px,transparent 1px)",
+              "linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px)",
             backgroundSize: "60px 60px",
             pointerEvents: "none",
           }}
@@ -86,75 +86,65 @@ export default function PricingSection() {
           <div style={{ textAlign: "center", marginBottom: 60 }}>
             <div
               style={{
-                display: "inline-flex",
+                display: "flex",
                 alignItems: "center",
-                gap: 8,
-                padding: "5px 14px",
-                borderRadius: 999,
-                border: "1px solid rgba(6,182,212,0.2)",
-                background: "rgba(6,182,212,0.05)",
-                marginBottom: 18,
+                justifyContent: "center",
+                gap: 12,
+                marginBottom: 24,
               }}
             >
               <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: "#06b6d4",
-                  display: "inline-block",
-                }}
+                style={{ height: 1, width: 32, background: "var(--gx-line-strong)" }}
               />
               <span
                 style={{
-                  fontFamily: "monospace",
-                  fontSize: 10,
-                  color: "rgba(6,182,212,0.8)",
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
+                  fontFamily: "var(--gx-mono)",
+                  fontSize: 12,
+                  color: "var(--gx-fg-faint)",
                 }}
               >
-                Pricing
+                04 / pricing
               </span>
+              <span
+                style={{ height: 1, width: 32, background: "var(--gx-line-strong)" }}
+              />
             </div>
             <h2
               style={{
-                fontSize: "clamp(2rem, 4.5vw, 3.2rem)",
-                fontWeight: 900,
-                color: "#fff",
-                letterSpacing: "-0.03em",
-                lineHeight: 1.1,
-                margin: "0 0 14px",
+                fontFamily: "var(--gx-display)",
+                fontSize: "clamp(2.4rem, 4.8vw, 3.8rem)",
+                fontWeight: 400,
+                color: "var(--gx-fg)",
+                letterSpacing: "-0.015em",
+                lineHeight: 1.08,
+                margin: "0 0 18px",
               }}
             >
-              Everything free.
+              Everything is free
               <br />
-              <span style={{ color: "rgba(6,182,212,0.7)" }}>
-                No catches. No limits.
-              </span>
+              <span style={{ fontStyle: "italic" }}>while we're in beta.</span>
             </h2>
             <p
               style={{
-                fontSize: 14,
-                color: "rgba(255,255,255,0.35)",
-                maxWidth: 400,
+                fontSize: 16,
+                color: "var(--gx-fg-muted)",
+                maxWidth: 420,
                 margin: "0 auto",
-                lineHeight: 1.7,
-                fontFamily: "monospace",
+                lineHeight: 1.6,
               }}
             >
-              We're in beta. Every single feature is unlocked for every user,
-              free.
+              Every feature is unlocked for every account. We'll tell you well
+              before that changes.
             </p>
           </div>
 
           {/* Main pricing card */}
           <div
             style={{
-              background: "#fff",
-              borderRadius: 16,
+              background: "#F4F2EA",
+              borderRadius: 0,
               overflow: "hidden",
-              boxShadow: "0 32px 80px rgba(0,0,0,0.4)",
+              boxShadow: "none",
               maxWidth: 900,
               margin: "0 auto",
             }}
@@ -188,9 +178,9 @@ export default function PricingSection() {
                 <div
                   style={{
                     padding: "3px 16px",
-                    borderRadius: 6,
-                    background: "#fff",
-                    border: "1px solid rgba(0,0,0,0.1)",
+                    borderRadius: 0,
+                    background: "#FBFAF4",
+                    border: "1px solid rgba(26,26,22,0.14)",
                     display: "flex",
                     alignItems: "center",
                     gap: 8,
@@ -198,9 +188,9 @@ export default function PricingSection() {
                 >
                   <span
                     style={{
-                      fontFamily: "monospace",
-                      fontSize: 10,
-                      color: "#9ca3af",
+                      fontFamily: "var(--gx-mono)",
+                      fontSize: 12,
+                      color: "#8A8A7C",
                     }}
                   >
                     graphix.ai/pricing
@@ -214,7 +204,7 @@ export default function PricingSection() {
                   alignItems: "center",
                   gap: 6,
                   padding: "4px 10px",
-                  borderRadius: 999,
+                  borderRadius: 0,
                   background: "rgba(6,182,212,0.08)",
                   border: "1px solid rgba(6,182,212,0.2)",
                 }}
@@ -224,19 +214,18 @@ export default function PricingSection() {
                     width: 6,
                     height: 6,
                     borderRadius: "50%",
-                    background: "#06b6d4",
+                    background: "var(--gx-accent)",
                     display: "inline-block",
                     animation: "blink-cursor 1.5s step-end infinite",
                   }}
                 />
                 <span
                   style={{
-                    fontFamily: "monospace",
-                    fontSize: 9,
+                    fontFamily: "var(--gx-mono)",
+                    fontSize: 12,
                     color: "#0891b2",
                     fontWeight: 700,
-                    letterSpacing: "0.1em",
-                    textTransform: "uppercase",
+                    letterSpacing: 0,
                   }}
                 >
                   Beta — Everything Free
@@ -268,11 +257,10 @@ export default function PricingSection() {
                   <div>
                     <p
                       style={{
-                        fontFamily: "monospace",
-                        fontSize: 10,
-                        color: "#9ca3af",
-                        letterSpacing: "0.15em",
-                        textTransform: "uppercase",
+                        fontFamily: "var(--gx-mono)",
+                        fontSize: 12,
+                        color: "#8A8A7C",
+                        letterSpacing: 0,
                         marginBottom: 4,
                       }}
                     >
@@ -280,7 +268,7 @@ export default function PricingSection() {
                     </p>
                     <p
                       style={{
-                        fontFamily: "monospace",
+                        fontFamily: "var(--gx-mono)",
                         fontSize: 14,
                         fontWeight: 700,
                         color: "#111",
@@ -291,16 +279,16 @@ export default function PricingSection() {
                   </div>
                   <div
                     style={{
-                      fontFamily: "monospace",
-                      fontSize: 9,
-                      color: "#9ca3af",
+                      fontFamily: "var(--gx-mono)",
+                      fontSize: 12,
+                      color: "#8A8A7C",
                       textAlign: "right",
                     }}
                   >
                     <div>100%</div>
                     <div
                       style={{
-                        color: "#06b6d4",
+                        color: "var(--gx-accent-ink)",
                         fontWeight: 700,
                         marginTop: 2,
                       }}
@@ -330,7 +318,7 @@ export default function PricingSection() {
                       >
                         <span
                           style={{
-                            fontFamily: "monospace",
+                            fontFamily: "var(--gx-mono)",
                             fontSize: 11,
                             color: hovered === i ? "#111" : "#6b7280",
                             transition: "color 0.15s",
@@ -347,10 +335,10 @@ export default function PricingSection() {
                         >
                           <span
                             style={{
-                              fontFamily: "monospace",
+                              fontFamily: "var(--gx-mono)",
                               fontSize: 11,
                               fontWeight: 700,
-                              color: hovered === i ? "#06b6d4" : "#111",
+                              color: hovered === i ? "#1A1A16" : "#57574F",
                               transition: "color 0.15s",
                             }}
                           >
@@ -358,9 +346,9 @@ export default function PricingSection() {
                           </span>
                           <span
                             style={{
-                              fontFamily: "monospace",
-                              fontSize: 9,
-                              color: "#9ca3af",
+                              fontFamily: "var(--gx-mono)",
+                              fontSize: 12,
+                              color: "#8A8A7C",
                             }}
                           >
                             {f.unit}
@@ -371,20 +359,20 @@ export default function PricingSection() {
                         style={{
                           height: 5,
                           background: "rgba(0,0,0,0.06)",
-                          borderRadius: 999,
+                          borderRadius: 0,
                           overflow: "hidden",
                         }}
                       >
                         <div
                           style={{
                             height: "100%",
-                            borderRadius: 999,
+                            borderRadius: 0,
                             width: animated ? `${f.pct}%` : "0%",
                             transition: `width 0.8s cubic-bezier(.22,1,.36,1) ${0.05 + i * 0.06}s`,
                             background:
                               hovered === i
-                                ? "#06b6d4"
-                                : "linear-gradient(90deg, #06b6d4, #0891b2)",
+                                ? "var(--gx-accent)"
+                                : "var(--gx-accent)",
                           }}
                         />
                       </div>
@@ -404,7 +392,7 @@ export default function PricingSection() {
                     <span
                       key={l}
                       style={{
-                        fontFamily: "monospace",
+                        fontFamily: "var(--gx-mono)",
                         fontSize: 8,
                         color: "#d1d5db",
                       }}
@@ -446,7 +434,7 @@ export default function PricingSection() {
                       position: "absolute",
                       inset: 0,
                       borderRadius: "50%",
-                      border: "3px solid #06b6d4",
+                      border: "2px solid var(--gx-accent-ink)",
                       opacity: 0.3,
                     }}
                   />
@@ -461,11 +449,10 @@ export default function PricingSection() {
                   <div style={{ textAlign: "center" }}>
                     <div
                       style={{
-                        fontFamily: "monospace",
+                        fontFamily: "var(--gx-mono)",
                         fontSize: 11,
-                        color: "#06b6d4",
-                        letterSpacing: "0.2em",
-                        textTransform: "uppercase",
+                        color: "var(--gx-accent-ink)",
+                        letterSpacing: 0,
                         marginBottom: 2,
                       }}
                     >
@@ -473,20 +460,21 @@ export default function PricingSection() {
                     </div>
                     <div
                       style={{
-                        fontSize: 36,
-                        fontWeight: 900,
-                        color: "#111",
+                        fontFamily: "var(--gx-display)",
+                        fontSize: 46,
+                        fontWeight: 400,
+                        color: "#1A1A16",
                         lineHeight: 1,
-                        letterSpacing: "-0.04em",
+                        letterSpacing: "-0.015em",
                       }}
                     >
                       $0
                     </div>
                     <div
                       style={{
-                        fontFamily: "monospace",
-                        fontSize: 9,
-                        color: "#9ca3af",
+                        fontFamily: "var(--gx-mono)",
+                        fontSize: 12,
+                        color: "#8A8A7C",
                         marginTop: 2,
                       }}
                     >
@@ -502,7 +490,8 @@ export default function PricingSection() {
                   ].map((cls, i) => (
                     <div
                       key={i}
-                      className={`absolute w-3 h-3 ${cls} border-cyan-400/30`}
+                      className={`absolute w-3 h-3 ${cls}`}
+                      style={{ borderColor: "rgba(26,26,22,0.18)" }}
                     />
                   ))}
                 </div>
@@ -514,20 +503,20 @@ export default function PricingSection() {
                     background: "#0f0f0f",
                     borderRadius: 8,
                     padding: "10px 12px",
-                    fontFamily: "monospace",
-                    fontSize: 10,
+                    fontFamily: "var(--gx-mono)",
+                    fontSize: 12,
                     lineHeight: 1.7,
                     border: "1px solid rgba(6,182,212,0.15)",
                   }}
                 >
                   <div style={{ color: "#6b7280" }}>$ graphix --plan beta</div>
-                  <div style={{ color: "#06b6d4" }}>
+                  <div style={{ color: "var(--gx-accent-ink)" }}>
                     ✓ price: <span style={{ color: "#fff" }}>$0.00/mo</span>
                   </div>
-                  <div style={{ color: "#06b6d4" }}>
+                  <div style={{ color: "var(--gx-accent-ink)" }}>
                     ✓ charts: <span style={{ color: "#fff" }}>unlimited</span>
                   </div>
-                  <div style={{ color: "#06b6d4" }}>
+                  <div style={{ color: "var(--gx-accent-ink)" }}>
                     ✓ exports:{" "}
                     <span style={{ color: "#fff" }}>all formats</span>
                   </div>
@@ -545,7 +534,7 @@ export default function PricingSection() {
                         display: "inline-block",
                         width: 6,
                         height: 11,
-                        background: "#06b6d4",
+                        background: "var(--gx-accent)",
                         verticalAlign: "middle",
                         animation: "blink-cursor 1s step-end infinite",
                       }}
@@ -561,14 +550,14 @@ export default function PricingSection() {
                     display: "block",
                     textAlign: "center",
                     padding: "12px 0",
-                    background: "linear-gradient(135deg, #06b6d4, #0891b2)",
-                    color: "#fff",
-                    fontFamily: "monospace",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    letterSpacing: "0.1em",
+                    background: "var(--gx-accent-ink)",
+                    color: "var(--gx-accent)",
+                    fontFamily: "var(--gx-sans)",
+                    fontSize: 14,
+                    fontWeight: 500,
+                    letterSpacing: 0,
                     textDecoration: "none",
-                    borderRadius: 8,
+                    borderRadius: 0,
                     transition: "filter 0.2s",
                   }}
                   onMouseEnter={(e) =>
@@ -576,13 +565,13 @@ export default function PricingSection() {
                   }
                   onMouseLeave={(e) => (e.currentTarget.style.filter = "none")}
                 >
-                  Start free →
+                  Start free
                 </Link>
                 <p
                   style={{
-                    fontFamily: "monospace",
-                    fontSize: 9,
-                    color: "#9ca3af",
+                    fontFamily: "var(--gx-mono)",
+                    fontSize: 12,
+                    color: "#8A8A7C",
                     textAlign: "center",
                   }}
                 >
@@ -614,7 +603,7 @@ export default function PricingSection() {
                 <span
                   key={i}
                   style={{
-                    fontFamily: "monospace",
+                    fontFamily: "var(--gx-mono)",
                     fontSize: 11,
                     color: "rgba(6,182,212,0.7)",
                     letterSpacing: "0.15em",
@@ -634,9 +623,9 @@ export default function PricingSection() {
 
           <p
             style={{
-              fontFamily: "monospace",
+              fontFamily: "var(--gx-mono)",
               textAlign: "center",
-              fontSize: 10,
+              fontSize: 12,
               marginTop: 20,
               color: "rgba(255,255,255,0.2)",
               letterSpacing: "0.12em",

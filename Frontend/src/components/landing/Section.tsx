@@ -2,29 +2,28 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { SERIES_DARK, RAMP_DARK, CHROME_DARK, CHART_FONT } from "@/lib/chartTheme";
 
 interface ChartDef {
   query: string;
   badge: string;
-  accentClass: string;
   accentHex: string;
   build: (Plotly: any, el: HTMLDivElement) => Promise<void>;
 }
 
 /* ─── Shared layout helpers ─── */
-const FONT = { family: "'JetBrains Mono', 'Fira Code', monospace", size: 11 };
+const FONT = CHART_FONT;
 const TRANSPARENT = "rgba(0,0,0,0)";
-const GRID = "rgba(255,255,255,0.06)";
-const TICK = { color: "rgba(255,255,255,0.4)", size: 10, family: FONT.family };
+const GRID = CHROME_DARK.grid;
+const TICK = { color: CHROME_DARK.tick, size: 11, family: FONT.family };
 const NO_BAR = { displayModeBar: false, responsive: true };
 
 const CHARTS: ChartDef[] = [
   /* ── 1. 3-D SURFACE ─────────────────────────────────────────────── */
   {
     query: "3D revenue landscape across product lines and quarters",
-    badge: "3D SURFACE",
-    accentClass: "text-violet-400 border-violet-500/40 bg-violet-500/10",
-    accentHex: "#a78bfa",
+    badge: "3d surface",
+    accentHex: SERIES_DARK[0],
     build: async (Plotly, el) => {
       const size = 30;
       const z: number[][] = Array.from({ length: size }, (_, i) =>
@@ -46,21 +45,14 @@ const CHARTS: ChartDef[] = [
           {
             type: "surface",
             z,
-            colorscale: [
-              [0, "#1e1b4b"],
-              [0.25, "#4c1d95"],
-              [0.5, "#7c3aed"],
-              [0.7, "#a78bfa"],
-              [0.85, "#c4b5fd"],
-              [1, "#ede9fe"],
-            ],
+            colorscale: RAMP_DARK,
             showscale: false,
             opacity: 0.95,
             contours: {
               z: {
                 show: true,
                 usecolormap: true,
-                highlightcolor: "#c4b5fd",
+                highlightcolor: SERIES_DARK[0],
                 project: { z: true },
                 width: 1,
               },
@@ -117,10 +109,9 @@ const CHARTS: ChartDef[] = [
 
   /* ── 2. SANKEY FLOW ──────────────────────────────────────────────── */
   {
-    query: "Customer journey funnel — sessions to revenue flow",
-    badge: "SANKEY FLOW",
-    accentClass: "text-cyan-400 border-cyan-500/40 bg-cyan-500/10",
-    accentHex: "#22d3ee",
+    query: "Customer journey funnel, sessions through to revenue",
+    badge: "sankey flow",
+    accentHex: SERIES_DARK[0],
     build: async (Plotly, el) => {
       await Plotly.react(
         el,
@@ -145,15 +136,15 @@ const CHARTS: ChartDef[] = [
                 "Revenue",
               ],
               color: [
-                "#22d3ee",
-                "#06b6d4",
-                "#0891b2",
-                "#0e7490",
-                "#a78bfa",
-                "#7c3aed",
-                "#34d399",
-                "#10b981",
-                "#f59e0b",
+                SERIES_DARK[2],
+                SERIES_DARK[2],
+                SERIES_DARK[3],
+                SERIES_DARK[3],
+                SERIES_DARK[1],
+                SERIES_DARK[1],
+                SERIES_DARK[5],
+                SERIES_DARK[5],
+                SERIES_DARK[0],
               ],
               x: [0.01, 0.01, 0.01, 0.01, 0.28, 0.28, 0.55, 0.55, 0.99],
               y: [0.1, 0.35, 0.6, 0.85, 0.2, 0.65, 0.3, 0.7, 0.5],
@@ -195,9 +186,8 @@ const CHARTS: ChartDef[] = [
   /* ── 3. CANDLESTICK + VOLUME ─────────────────────────────────────── */
   {
     query: "60-day OHLC candlestick with volume overlay",
-    badge: "CANDLESTICK",
-    accentClass: "text-emerald-400 border-emerald-500/40 bg-emerald-500/10",
-    accentHex: "#34d399",
+    badge: "candlestick",
+    accentHex: SERIES_DARK[0],
     build: async (Plotly, el) => {
       const days = 60;
       let price = 142;
@@ -235,12 +225,12 @@ const CHARTS: ChartDef[] = [
             close,
             name: "GRFX",
             increasing: {
-              line: { color: "#34d399", width: 1.5 },
-              fillcolor: "#34d399",
+              line: { color: SERIES_DARK[0], width: 1.5 },
+              fillcolor: SERIES_DARK[0],
             },
             decreasing: {
-              line: { color: "#f87171", width: 1.5 },
-              fillcolor: "#f87171",
+              line: { color: SERIES_DARK[4], width: 1.5 },
+              fillcolor: SERIES_DARK[4],
             },
             whiskerwidth: 0.3,
             xaxis: "x",
@@ -301,9 +291,8 @@ const CHARTS: ChartDef[] = [
   /* ── 4. RADAR / SPIDER ──────────────────────────────────────────── */
   {
     query: "Competitive benchmarking across 7 product dimensions",
-    badge: "RADAR",
-    accentClass: "text-amber-400 border-amber-500/40 bg-amber-500/10",
-    accentHex: "#fbbf24",
+    badge: "radar",
+    accentHex: SERIES_DARK[0],
     build: async (Plotly, el) => {
       const dims = [
         "Performance",
@@ -323,30 +312,30 @@ const CHARTS: ChartDef[] = [
             r: closeArr([92, 78, 88, 95, 80, 70, 65]),
             theta: closeArr(dims),
             fill: "toself",
-            fillcolor: "rgba(251,191,36,0.12)",
-            line: { color: "#fbbf24", width: 2.5 },
+            fillcolor: "rgba(232,255,90,0.12)",
+            line: { color: SERIES_DARK[0], width: 2.5 },
             name: "Graphix",
-            marker: { color: "#fbbf24", size: 6 },
+            marker: { color: SERIES_DARK[0], size: 6 },
           },
           {
             type: "scatterpolar",
             r: closeArr([70, 85, 60, 72, 88, 90, 75]),
             theta: closeArr(dims),
             fill: "toself",
-            fillcolor: "rgba(99,102,241,0.12)",
-            line: { color: "#818cf8", width: 2, dash: "dot" },
+            fillcolor: "rgba(110,212,200,0.12)",
+            line: { color: SERIES_DARK[2], width: 2, dash: "dot" },
             name: "Competitor A",
-            marker: { color: "#818cf8", size: 5 },
+            marker: { color: SERIES_DARK[2], size: 5 },
           },
           {
             type: "scatterpolar",
             r: closeArr([58, 65, 80, 60, 70, 55, 90]),
             theta: closeArr(dims),
             fill: "toself",
-            fillcolor: "rgba(236,72,153,0.1)",
-            line: { color: "#f472b6", width: 2, dash: "dash" },
+            fillcolor: "rgba(255,138,91,0.1)",
+            line: { color: SERIES_DARK[1], width: 2, dash: "dash" },
             name: "Competitor B",
-            marker: { color: "#f472b6", size: 5 },
+            marker: { color: SERIES_DARK[1], size: 5 },
           },
         ],
         {
@@ -381,10 +370,9 @@ const CHARTS: ChartDef[] = [
 
   /* ── 5. ANIMATED SCATTER BUBBLE ─────────────────────────────────── */
   {
-    query: "Market bubble map — size = ARR, color = growth rate",
-    badge: "BUBBLE MAP",
-    accentClass: "text-rose-400 border-rose-500/40 bg-rose-500/10",
-    accentHex: "#fb7185",
+    query: "Market map sized by ARR, coloured by growth rate",
+    badge: "bubble map",
+    accentHex: SERIES_DARK[0],
     build: async (Plotly, el) => {
       const n = 55;
       const rand = (a: number, b: number) => a + Math.random() * (b - a);
@@ -413,11 +401,11 @@ const CHARTS: ChartDef[] = [
               sizemode: "diameter",
               color,
               colorscale: [
-                [0, "#dc2626"],
-                [0.35, "#f97316"],
-                [0.6, "#facc15"],
-                [0.8, "#34d399"],
-                [1, "#22d3ee"],
+                [0, "#33451F"],
+                [0.35, "#5E7A2C"],
+                [0.6, "#9DBE3C"],
+                [0.8, "#C8EE4A"],
+                [1, "#E8FF5A"],
               ],
               showscale: true,
               colorbar: {
@@ -471,6 +459,18 @@ const CHARTS: ChartDef[] = [
 ];
 
 /* ─── Plotly wrapper component ─────────────────────────────────────────── */
+
+/* Load the bundle once and reuse the resolved module. Re-importing per effect
+   meant the unmount purge resolved on its own microtask and could land AFTER
+   the next chart had already drawn, blanking the section. */
+let plotlyPromise: Promise<any> | null = null;
+const getPlotly = () => {
+  if (!plotlyPromise) {
+    plotlyPromise = import("plotly.js-dist-min").then((m) => m.default);
+  }
+  return plotlyPromise;
+};
+
 function PlotlyChart({
   chart,
   animating,
@@ -481,23 +481,41 @@ function PlotlyChart({
   const ref = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
 
+  /* Build / rebuild. Purge and build happen in the same promise chain so they
+     can never interleave with each other. */
   useEffect(() => {
-    if (!ref.current) return;
+    const el = ref.current;
+    if (!el) return;
     setReady(false);
     let cancelled = false;
-    import("plotly.js-dist-min").then(({ default: Plotly }) => {
-      if (cancelled || !ref.current) return;
-      chart.build(Plotly, ref.current).then(() => {
+
+    getPlotly()
+      .then((Plotly) => {
+        if (cancelled) return;
+        /* 3D scenes and 2D axes don't transition cleanly via react() alone */
+        Plotly.purge(el);
+        return chart.build(Plotly, el);
+      })
+      .then(() => {
+        if (!cancelled) setReady(true);
+      })
+      .catch((err) => {
+        console.error("[LiveDemo] chart build failed", err);
         if (!cancelled) setReady(true);
       });
-    });
+
     return () => {
       cancelled = true;
-      import("plotly.js-dist-min").then(({ default: Plotly }) => {
-        if (ref.current) Plotly.purge(ref.current);
-      });
     };
   }, [chart]);
+
+  /* Purge only on unmount, never between charts. */
+  useEffect(() => {
+    const el = ref.current;
+    return () => {
+      if (el) plotlyPromise?.then((Plotly) => Plotly.purge(el));
+    };
+  }, []);
 
   return (
     <div
@@ -565,7 +583,7 @@ export default function LiveDemoSection() {
     <section
       id="demo"
       ref={sectionRef}
-      className="relative overflow-hidden py-24 bg-[#111212]"
+      className="relative overflow-hidden py-24 bg-[#0C0C0A]"
     >
       {/* Noise texture overlay */}
       <div
@@ -577,8 +595,6 @@ export default function LiveDemoSection() {
       />
 
       {/* Ambient glows */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-cyan-600/10 blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-0 left-1/4 w-[400px] h-[300px] rounded-full bg-cyan-600/8 blur-[100px]" />
 
       <div className="relative max-w-6xl mx-auto px-6">
         {/* ── Header ── */}
@@ -591,22 +607,30 @@ export default function LiveDemoSection() {
               "opacity 0.7s ease, transform 0.7s cubic-bezier(.22,1,.36,1)",
           }}
         >
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/[0.08] mb-6">
-            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            <span className="font-mono text-[10px] tracking-widest uppercase text-cyan-400">
-              Live demo
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <span className="h-px w-8 bg-white/20" />
+            <span
+              className="text-[12px] text-white/40"
+              style={{ fontFamily: "var(--gx-mono)" }}
+            >
+              live demo
             </span>
+            <span className="h-px w-8 bg-white/20" />
           </div>
 
-          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4 leading-tight">
-            Charts that make people{" "}
-            <span className="bg-gradient-to-r from-sky-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
-              stop scrolling
-            </span>
+          <h2
+            className="text-4xl md:text-6xl text-white mb-5 leading-[1.08]"
+            style={{
+              fontFamily: "var(--gx-display)",
+              fontWeight: 400,
+              letterSpacing: "-0.015em",
+            }}
+          >
+            Charts people actually{" "}
+            <span style={{ fontStyle: "italic" }}>stop to read.</span>
           </h2>
-          <p className="text-white/40 text-lg max-w-xl mx-auto font-light">
-            Type a prompt. Get a publication-ready chart in seconds. Export,
-            share, embed.
+          <p className="text-white/45 text-base max-w-xl mx-auto leading-relaxed">
+            Type a prompt, get a chart you can export, share or embed.
           </p>
         </div>
 
@@ -624,11 +648,12 @@ export default function LiveDemoSection() {
             <button
               key={i}
               onClick={() => switchTo(i)}
-              className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase font-mono border transition-all duration-200 cursor-pointer ${
+              className={`px-4 py-1.5 text-[13px] border transition-all duration-200 cursor-pointer ${
                 i === activeIdx
-                  ? c.accentClass
-                  : "border-white/10 text-white/25 hover:text-white/50 hover:border-white/20"
+                  ? "border-[#E8FF5A] text-[#E8FF5A] bg-transparent"
+                  : "border-white/10 text-white/30 hover:text-white/60 hover:border-white/25"
               }`}
+              style={{ fontFamily: "var(--gx-mono)" }}
             >
               {c.badge}
             </button>
@@ -637,9 +662,9 @@ export default function LiveDemoSection() {
 
         {/* ── Main card ── */}
         <div
-          className="rounded-2xl overflow-hidden border border-white/[0.07] shadow-[0_40px_120px_rgba(0,0,0,0.7)]"
+          className="overflow-hidden border border-white/[0.09]"
           style={{
-            background: "#111212",
+            background: "#0C0C0A",
             opacity: visible ? 1 : 0,
             transform: visible
               ? "scale(1) translateY(0)"
@@ -675,21 +700,22 @@ export default function LiveDemoSection() {
           {/* Prompt bar */}
           <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.04] bg-white/[0.01]">
             <div
-              className="w-2 h-2 rounded-full flex-shrink-0 transition-colors duration-300"
-              style={{
-                background: chart.accentHex,
-                boxShadow: `0 0 8px ${chart.accentHex}80`,
-              }}
+              className="w-1.5 h-1.5 flex-shrink-0"
+              style={{ background: chart.accentHex }}
             />
             <p
-              className="font-mono text-[12px] text-white/45 flex-1 transition-opacity duration-300"
-              style={{ opacity: animating ? 0 : 1 }}
+              className="text-[13px] text-white/45 flex-1 transition-opacity duration-300"
+              style={{
+                fontFamily: "var(--gx-mono)",
+                opacity: animating ? 0 : 1,
+              }}
             >
               <span className="text-white/15">→ </span>
               {chart.query}
             </p>
             <span
-              className={`text-[9px] font-mono font-bold tracking-widest px-2.5 py-1 rounded-md border ${chart.accentClass}`}
+              className="text-[12px] text-white/35 border border-white/10 px-2.5 py-1"
+              style={{ fontFamily: "var(--gx-mono)" }}
             >
               {chart.badge}
             </span>
@@ -697,13 +723,6 @@ export default function LiveDemoSection() {
 
           {/* Chart area */}
           <div className="h-[420px] px-3 py-4 relative">
-            {/* Subtle inner glow behind chart */}
-            <div
-              className="pointer-events-none absolute inset-0 opacity-20 rounded-xl"
-              style={{
-                background: `radial-gradient(ellipse at 50% 50%, ${chart.accentHex}18, transparent 70%)`,
-              }}
-            />
             <PlotlyChart chart={chart} animating={animating} />
           </div>
 
@@ -713,7 +732,8 @@ export default function LiveDemoSection() {
               {["PNG", "SVG", "CSV", "JSON"].map((fmt) => (
                 <span
                   key={fmt}
-                  className="font-mono text-[9px] text-white/20 font-bold tracking-widest uppercase hover:text-white/50 cursor-pointer transition-colors"
+                  className="text-[12px] text-white/25 hover:text-white/60 cursor-pointer transition-colors"
+                  style={{ fontFamily: "var(--gx-mono)" }}
                 >
                   ↓ {fmt}
                 </span>
@@ -722,7 +742,8 @@ export default function LiveDemoSection() {
             <Link
               href="/app"
               // Instead of "hidden sm:flex", use:
-              className=" items-center gap-1.5 font-mono text-[11px] font-bold tracking-wide text-cyan-400 hover:text-cyan-300 transition-colors"
+              className=" items-center gap-1.5 text-[13px] text-[#E8FF5A] hover:opacity-80 transition-opacity"
+              style={{ fontFamily: "var(--gx-mono)" }}
             >
               Build yours free <span className="text-base leading-none">→</span>
             </Link>
@@ -754,15 +775,25 @@ export default function LiveDemoSection() {
           }}
         >
           {[
-            { val: "40+", label: "Chart types" },
-            { val: "<2s", label: "Render time" },
-            { val: "∞", label: "Customization" },
+            { val: "140+", label: "chart types" },
+            { val: "16", label: "chart categories" },
+            { val: "3", label: "export formats" },
           ].map(({ val, label }) => (
             <div key={label} className="group">
-              <div className="text-3xl font-bold text-white tracking-tight group-hover:text-cyan-300 transition-colors duration-300">
+              <div
+                className="text-4xl text-white"
+                style={{
+                  fontFamily: "var(--gx-display)",
+                  fontWeight: 400,
+                  letterSpacing: "-0.015em",
+                }}
+              >
                 {val}
               </div>
-              <div className="text-white/35 text-xs font-mono tracking-widest uppercase mt-1">
+              <div
+                className="text-white/30 text-[12px] mt-2"
+                style={{ fontFamily: "var(--gx-mono)" }}
+              >
                 {label}
               </div>
             </div>

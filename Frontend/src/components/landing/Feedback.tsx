@@ -6,6 +6,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { getStoredToken, submitFeedback } from "@/lib/api";
 
+/* This section used to carry six testimonials with invented names, roles and
+   five-star ratings. Graphix has no users yet, so there is nothing to quote —
+   the honest version of this section is the form and a straight explanation
+   of where the message goes. */
+
 // ── Schema ────────────────────────────────────────────────────
 const feedbackSchema = z.object({
   name: z.string().min(2, "At least 2 characters").max(60),
@@ -14,155 +19,9 @@ const feedbackSchema = z.object({
 });
 type FeedbackInput = z.infer<typeof feedbackSchema>;
 
-// ── Testimonials ──────────────────────────────────────────────
-const TESTIMONIALS = [
-  {
-    quote:
-      "I left a note about the export flow. Three weeks later it was redesigned. Never happened with any other tool.",
-    author: "Arya S.",
-    role: "Growth Lead",
-    stars: 5,
-  },
-  {
-    quote:
-      "Mentioned a missing chart type in passing. It shipped in the next update. These people actually listen.",
-    author: "James K.",
-    role: "Data Analyst",
-    stars: 5,
-  },
-  {
-    quote:
-      "Got a personal reply from the founder within a day. Your message lands directly in front of someone who cares.",
-    author: "Priya M.",
-    role: "Startup Founder",
-    stars: 5,
-  },
-  {
-    quote:
-      "The 3D charts work in the browser. No plugins, no crashes. That alone sold me.",
-    author: "Chen W.",
-    role: "Data Scientist",
-    stars: 5,
-  },
-  {
-    quote:
-      "Went from raw CSV to a board-ready chart in under 2 minutes. Nothing else comes close.",
-    author: "Sarah O.",
-    role: "Product Manager",
-    stars: 5,
-  },
-  {
-    quote:
-      "The visual editor is what makes it. I can match our brand colors without touching a config file.",
-    author: "Marcus T.",
-    role: "Marketing Lead",
-    stars: 5,
-  },
-];
+const ROSE = "#FF6B8A";
 
-function Stars({ n }: { n: number }) {
-  return (
-    <div style={{ display: "flex", gap: 3 }}>
-      {Array.from({ length: n }).map((_, i) => (
-        <span
-          key={i}
-          style={{
-            color: "#fbbf24",
-            fontSize: 12,
-            textShadow: "0 0 4px rgba(251,191,36,0.3)",
-          }}
-        >
-          ★
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function TestimonialCard({
-  t,
-  index,
-  visible,
-}: {
-  t: (typeof TESTIMONIALS)[0];
-  index: number;
-  visible: boolean;
-}) {
-  return (
-    <div
-      className="testimonial-card"
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? "translateY(0)" : "translateY(24px)",
-        transition: `opacity 0.5s ease ${index * 0.08}s, transform 0.5s ease ${index * 0.08}s`,
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.07)",
-        borderRadius: 16,
-        padding: "20px",
-        display: "flex",
-        flexDirection: "column",
-        gap: 14,
-        backdropFilter: "blur(8px)",
-      }}
-    >
-      <Stars n={t.stars} />
-      <p
-        style={{
-          fontSize: 13,
-          color: "rgba(255,255,255,0.7)",
-          lineHeight: 1.65,
-          margin: 0,
-          flex: 1,
-        }}
-      >
-        "{t.quote}"
-      </p>
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-        <div
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: "50%",
-            background:
-              "linear-gradient(135deg, rgba(6,182,212,0.3), rgba(168,85,247,0.3))",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 12,
-            fontWeight: 700,
-            color: "#fff",
-            flexShrink: 0,
-          }}
-        >
-          {t.author[0]}
-        </div>
-        <div>
-          <div
-            style={{
-              fontSize: 13,
-              fontWeight: 600,
-              color: "#fff",
-              letterSpacing: "-0.2px",
-            }}
-          >
-            {t.author}
-          </div>
-          <div
-            style={{
-              fontSize: 10,
-              color: "rgba(255,255,255,0.4)",
-              fontFamily: "monospace",
-            }}
-          >
-            {t.role}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ── Feedback Form ──────────────────────────────────────────────
+// ── Form ──────────────────────────────────────────────────────
 function FeedbackForm() {
   const [submitted, setSubmitted] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -191,253 +50,95 @@ function FeedbackForm() {
     }
   };
 
-  const fieldStyle = (hasErr: boolean): React.CSSProperties => ({
-    width: "100%",
-    background: "#0a0b0b",
-    border: `1.5px solid ${hasErr ? "rgba(239,68,68,0.6)" : "rgba(255,255,255,0.08)"}`,
-    borderRadius: 12,
-    color: "#fff",
-    fontSize: 13,
-    padding: "12px 16px",
-    outline: "none",
-    fontFamily: "inherit",
-    transition: "all 0.2s ease",
-    boxSizing: "border-box",
-  });
-
   if (submitted) {
     return (
-      <div style={{ textAlign: "center", padding: "48px 24px" }}>
-        <div
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: "50%",
-            background:
-              "linear-gradient(135deg, rgba(6,182,212,0.15), rgba(6,182,212,0.05))",
-            border: "1px solid rgba(6,182,212,0.4)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 20px",
-            animation: "checkPulse 0.6s ease-out",
-          }}
-        >
-          <svg
-            width="28"
-            height="28"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#06b6d4"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-        </div>
-        <h3
-          style={{
-            fontSize: 22,
-            fontWeight: 800,
-            color: "#fff",
-            marginBottom: 10,
-            letterSpacing: "-0.3px",
-          }}
-        >
-          Thank you.
-        </h3>
-        <p
-          style={{
-            fontSize: 14,
-            color: "rgba(255,255,255,0.4)",
-            lineHeight: 1.6,
-            maxWidth: 280,
-            margin: "0 auto",
-          }}
-        >
-          Your feedback just landed in front of someone who genuinely cares.
-          We'll read every word.
+      <div className="fb-done">
+        <h3 className="fb-done-title">Thank you.</h3>
+        <p className="fb-done-body">
+          That went straight to the team. If you left an email we&apos;ll reply
+          to it ourselves.
         </p>
       </div>
     );
   }
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      noValidate
-      style={{ display: "flex", flexDirection: "column", gap: 16 }}
-    >
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="fb-form">
       {serverError && (
-        <div
-          style={{
-            padding: "10px 14px",
-            background: "rgba(239,68,68,0.1)",
-            border: "1px solid rgba(239,68,68,0.3)",
-            borderRadius: 8,
-            fontSize: 13,
-            color: "#f87171",
-          }}
-        >
-          {serverError}
-        </div>
+        <div className="fb-servererr">{serverError}</div>
       )}
-      <div
-        style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}
-        className="fb-name-email-grid"
-      >
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <label
-            style={{
-              fontSize: 10,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: "rgba(255,255,255,0.35)",
-              fontFamily: "monospace",
-            }}
-          >
+
+      <div className="fb-row">
+        <div className="fb-field">
+          <label className="fb-label" htmlFor="fb-name">
             Name
           </label>
           <input
-            type="text"
-            placeholder="Alex Chen"
-            autoComplete="name"
-            style={fieldStyle(!!errors.name)}
+            id="fb-name"
+            className={`fb-input${errors.name ? " err" : ""}`}
+            placeholder="Your name"
             {...register("name")}
           />
-          {errors.name && (
-            <p style={{ fontSize: 11, color: "#f87171", margin: 0 }}>
-              {errors.name.message}
-            </p>
-          )}
+          {errors.name && <span className="fb-err">{errors.name.message}</span>}
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <label
-            style={{
-              fontSize: 10,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: "rgba(255,255,255,0.35)",
-              fontFamily: "monospace",
-            }}
-          >
+
+        <div className="fb-field">
+          <label className="fb-label" htmlFor="fb-email">
             Email
           </label>
           <input
-            type="email"
+            id="fb-email"
+            className={`fb-input${errors.email ? " err" : ""}`}
             placeholder="you@company.com"
-            autoComplete="email"
-            style={fieldStyle(!!errors.email)}
             {...register("email")}
           />
           {errors.email && (
-            <p style={{ fontSize: 11, color: "#f87171", margin: 0 }}>
-              {errors.email.message}
-            </p>
+            <span className="fb-err">{errors.email.message}</span>
           )}
         </div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <label
-            style={{
-              fontSize: 10,
-              textTransform: "uppercase",
-              letterSpacing: "0.1em",
-              color: "rgba(255,255,255,0.35)",
-              fontFamily: "monospace",
-            }}
-          >
-            Your Thoughts
+
+      <div className="fb-field">
+        <div className="fb-label-row">
+          <label className="fb-label" htmlFor="fb-thoughts">
+            What&apos;s on your mind
           </label>
-          <span
-            style={{
-              fontSize: 10,
-              color: "rgba(255,255,255,0.2)",
-              fontFamily: "monospace",
-            }}
-          >
-            {thoughts.length} / 1000
-          </span>
+          <span className="fb-count">{thoughts.length}/1000</span>
         </div>
         <textarea
-          rows={5}
-          maxLength={1000}
-          placeholder="What's working? What isn't? Be as specific or vague as you like — every word helps."
-          style={{
-            ...fieldStyle(!!errors.thoughts),
-            resize: "vertical",
-            minHeight: 100,
-          }}
+          id="fb-thoughts"
+          rows={6}
+          className={`fb-input fb-textarea${errors.thoughts ? " err" : ""}`}
+          placeholder="What's missing, what broke, what you'd want it to do."
           {...register("thoughts")}
         />
         {errors.thoughts && (
-          <p style={{ fontSize: 11, color: "#f87171", margin: 0 }}>
-            {errors.thoughts.message}
-          </p>
+          <span className="fb-err">{errors.thoughts.message}</span>
         )}
       </div>
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-          padding: "13px 24px",
-          background: isSubmitting ? "rgba(6,182,212,0.5)" : "#06b6d4",
-          color: "#111",
-          border: "none",
-          borderRadius: 10,
-          fontSize: 13,
-          fontWeight: 700,
-          cursor: isSubmitting ? "not-allowed" : "pointer",
-          transition: "all 0.2s",
-          letterSpacing: "0.05em",
-        }}
-      >
-        {isSubmitting ? (
-          <>
-            <span
-              style={{
-                width: 14,
-                height: 14,
-                border: "2px solid rgba(0,0,0,0.3)",
-                borderTopColor: "#111",
-                borderRadius: "50%",
-                animation: "fb-spin 0.8s linear infinite",
-              }}
-            />
-            Sending…
-          </>
-        ) : (
-          "Send Feedback →"
-        )}
+
+      <button type="submit" className="fb-submit" disabled={isSubmitting}>
+        <span>{isSubmitting ? "Sending…" : "Send it"}</span>
+        <span className="fb-submit-arrow" aria-hidden="true">
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M7 17 17 7M9 7h8v8" />
+          </svg>
+        </span>
       </button>
-      <p
-        style={{
-          fontSize: 10,
-          color: "rgba(255,255,255,0.2)",
-          textAlign: "center",
-          fontFamily: "monospace",
-          marginTop: 4,
-        }}
-      >
-        No spam. No follow-ups unless you want them.
-      </p>
     </form>
   );
 }
 
-// ── Main export ───────────────────────────────────────────────
+// ── Section ───────────────────────────────────────────────────
 export default function Feedback() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const [vis, setVis] = useState(false);
@@ -461,367 +162,186 @@ export default function Feedback() {
   return (
     <>
       <style>{`
-        @keyframes fb-spin { to { transform: rotate(360deg); } }
-        @keyframes checkPulse {
-          0% { transform: scale(0.8); opacity: 0; }
-          50% { transform: scale(1.05); }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        .testimonial-card { transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1); }
-        .testimonial-card:hover {
-          border-color: rgba(6,182,212,0.2) !important;
-          transform: translateY(-2px) !important;
+        .fb-sec { background: var(--gx-bg); }
+        .fb-wrap { max-width: 1100px; margin: 0 auto; padding: 96px 24px; }
+
+        .fb-eyebrow { display:flex; align-items:center; gap:12px; margin-bottom:24px; }
+        .fb-eyebrow span.r { height:1px; width:32px; background:var(--gx-line-strong); }
+        .fb-eyebrow span.t {
+          font-family:var(--gx-mono); font-size:12px; color:var(--gx-fg-faint);
         }
 
-        /* ── RESPONSIVE ── */
-        .fb-layout {
-          display: grid;
-          grid-template-columns: 1fr 420px;
-          gap: 48px;
-          align-items: start;
-        }
-        .fb-testimonial-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 18px;
-        }
-        .fb-name-email-grid {
-          grid-template-columns: 1fr 1fr;
+        .fb-grid {
+          display:grid; grid-template-columns: 1fr 1fr; gap:64px;
+          align-items:start;
         }
 
-        @media (max-width: 1023px) {
-          .fb-layout {
-            grid-template-columns: 1fr !important;
-            gap: 40px !important;
-          }
-          .fb-form-sticky {
-            position: static !important;
-          }
+        .fb-h2 {
+          font-family:var(--gx-display); font-weight:400;
+          font-size:clamp(2.4rem,4.6vw,3.6rem); line-height:1.08;
+          letter-spacing:-0.015em; color:var(--gx-fg); margin:0 0 20px;
         }
-        @media (max-width: 639px) {
-          .fb-testimonial-grid {
-            grid-template-columns: 1fr !important;
-          }
-          .fb-name-email-grid {
-            grid-template-columns: 1fr !important;
-          }
-          .fb-section-inner {
-            padding: 0 16px !important;
-          }
-          .fb-section-outer {
-            padding: 64px 0 72px !important;
-          }
+        .fb-lede {
+          font-size:16px; line-height:1.6; color:var(--gx-fg-muted);
+          max-width:400px; margin:0 0 32px;
+        }
+        .fb-notes { list-style:none; margin:0; padding:0; border-top:1px solid var(--gx-line); }
+        .fb-notes li {
+          font-size:14px; line-height:1.5; color:var(--gx-fg-muted);
+          padding:14px 0; border-bottom:1px solid var(--gx-line);
+          display:grid; grid-template-columns:auto 1fr; gap:14px;
+        }
+        .fb-notes b {
+          font-family:var(--gx-mono); font-size:12px; font-weight:400;
+          color:var(--gx-fg-faint); padding-top:2px;
+        }
+
+        /* ── Form ── */
+        .fb-panel {
+          border:1px solid var(--gx-line);
+          border-radius:var(--gx-r-lg);
+          padding:28px;
+          background:rgba(255,255,255,0.02);
+        }
+        .fb-panel-title {
+          font-family:var(--gx-display); font-weight:400; font-size:26px;
+          letter-spacing:-0.01em; color:var(--gx-fg); margin:0 0 6px;
+        }
+        .fb-panel-sub {
+          font-size:14px; color:var(--gx-fg-muted); margin:0 0 24px; line-height:1.5;
+        }
+
+        .fb-form { display:flex; flex-direction:column; gap:18px; }
+        .fb-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        .fb-field { display:flex; flex-direction:column; gap:7px; min-width:0; }
+        .fb-label-row { display:flex; align-items:baseline; justify-content:space-between; }
+        .fb-label {
+          font-family:var(--gx-mono); font-size:12px; letter-spacing:0;
+          color:var(--gx-fg-faint);
+        }
+        .fb-count { font-family:var(--gx-mono); font-size:12px; color:var(--gx-fg-faint); }
+
+        .fb-input {
+          width:100%; box-sizing:border-box;
+          background:var(--gx-bg);
+          border:1px solid var(--gx-line);
+          border-radius:var(--gx-r-md);
+          color:var(--gx-fg);
+          font-family:var(--gx-sans); font-size:15px;
+          padding:11px 14px; outline:none;
+          transition:border-color 0.18s;
+        }
+        .fb-input::placeholder { color:var(--gx-fg-faint); }
+        .fb-input:focus { border-color:var(--gx-accent-line); }
+        .fb-input.err { border-color:${ROSE}; }
+        .fb-textarea { resize:vertical; line-height:1.55; }
+
+        .fb-err { font-family:var(--gx-mono); font-size:12px; color:${ROSE}; }
+        .fb-servererr {
+          font-family:var(--gx-mono); font-size:13px; color:${ROSE};
+          border:1px solid ${ROSE}55; border-radius:var(--gx-r-md);
+          padding:10px 14px;
+        }
+
+        .fb-submit {
+          align-self:flex-start;
+          display:inline-flex; align-items:center; gap:10px;
+          height:42px; padding:0 8px 0 18px;
+          border:none; border-radius:var(--gx-r-md); cursor:pointer;
+          background:var(--gx-accent); color:var(--gx-accent-ink);
+          font-family:var(--gx-sans); font-size:15px; font-weight:500;
+          transition:opacity 0.18s;
+        }
+        .fb-submit:hover:not(:disabled) { opacity:0.88; }
+        .fb-submit:disabled { opacity:0.5; cursor:default; }
+        .fb-submit-arrow {
+          display:inline-flex; align-items:center; justify-content:center;
+          width:26px; height:26px;
+          border:1px solid rgba(12,12,10,0.30); border-radius:4px;
+        }
+        .fb-submit-arrow svg { transition:transform 0.25s cubic-bezier(.22,1,.36,1); }
+        .fb-submit:hover:not(:disabled) .fb-submit-arrow svg { transform:translate(1.5px,-1.5px); }
+
+        .fb-done { padding:32px 0; }
+        .fb-done-title {
+          font-family:var(--gx-display); font-weight:400; font-size:28px;
+          color:var(--gx-fg); margin:0 0 10px; letter-spacing:-0.01em;
+        }
+        .fb-done-body {
+          font-size:15px; color:var(--gx-fg-muted); line-height:1.6; margin:0; max-width:320px;
+        }
+
+        @media (max-width: 900px) {
+          .fb-wrap { padding:64px 18px; }
+          .fb-grid { grid-template-columns:1fr; gap:40px; }
+        }
+        @media (max-width: 520px) {
+          .fb-row { grid-template-columns:1fr; }
+          .fb-panel { padding:20px; }
         }
       `}</style>
 
-      <section
-        className="fb-section-outer"
-        style={{
-          background: "radial-gradient(ellipse at 30% 40%, #111314, #080909)",
-          padding: "110px 0 100px",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        {/* Gradient orbs */}
-        <div
-          style={{
-            position: "absolute",
-            top: "-15%",
-            left: "-10%",
-            width: "500px",
-            height: "500px",
-            background:
-              "radial-gradient(circle, rgba(6,182,212,0.12), transparent 70%)",
-            borderRadius: "50%",
-            filter: "blur(80px)",
-            pointerEvents: "none",
-            animation: "gradientShift 12s ease infinite",
-          }}
-        />
-        <div
-          style={{
-            position: "absolute",
-            bottom: "-20%",
-            right: "-5%",
-            width: "550px",
-            height: "550px",
-            background:
-              "radial-gradient(circle, rgba(168,85,247,0.1), transparent 70%)",
-            borderRadius: "50%",
-            filter: "blur(90px)",
-            pointerEvents: "none",
-          }}
-        />
-        {/* Grid */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            backgroundImage:
-              "linear-gradient(rgba(6,182,212,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(6,182,212,0.02) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-            pointerEvents: "none",
-          }}
-        />
-
+      <section className="fb-sec" id="feedback">
         <div
           ref={sectionRef}
-          className="fb-section-inner"
+          className="fb-wrap"
           style={{
-            maxWidth: 1280,
-            margin: "0 auto",
-            padding: "0 32px",
-            position: "relative",
+            opacity: vis ? 1 : 0,
+            transform: vis ? "none" : "translateY(20px)",
+            transition: "opacity 0.7s ease, transform 0.7s ease",
           }}
         >
-          {/* Header */}
-          <div
-            style={{
-              textAlign: "center",
-              marginBottom: 64,
-              opacity: vis ? 1 : 0,
-              transform: vis ? "translateY(0)" : "translateY(30px)",
-              transition:
-                "opacity 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1), transform 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1)",
-            }}
-          >
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "6px 18px",
-                borderRadius: 100,
-                border: "1px solid rgba(6,182,212,0.25)",
-                background: "rgba(6,182,212,0.06)",
-                backdropFilter: "blur(8px)",
-                marginBottom: 24,
-              }}
-            >
-              <span
-                style={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  background: "#06b6d4",
-                  display: "inline-block",
-                  boxShadow: "0 0 6px #06b6d4",
-                }}
-              />
-              <span
-                style={{
-                  fontFamily: "monospace",
-                  fontSize: 11,
-                  color: "#06b6d4",
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
-                  fontWeight: 600,
-                }}
-              >
-                What users say
-              </span>
-            </div>
-            <h2
-              style={{
-                fontSize: "clamp(2.2rem, 5vw, 3.5rem)",
-                fontWeight: 800,
-                background: "linear-gradient(135deg, #ffffff 30%, #94a3b8 80%)",
-                backgroundClip: "text",
-                WebkitBackgroundClip: "text",
-                color: "transparent",
-                letterSpacing: "-0.02em",
-                lineHeight: 1.15,
-                margin: "0 0 16px",
-              }}
-            >
-              Real feedback. Real impact.
-            </h2>
-            <p
-              style={{
-                fontSize: 15,
-                color: "rgba(255,255,255,0.4)",
-                maxWidth: 480,
-                margin: "0 auto",
-                lineHeight: 1.7,
-              }}
-            >
-              Every feature in Graphix started as someone's frustration. Here's
-              what they said after.
-            </p>
+          <div className="fb-eyebrow">
+            <span className="r" />
+            <span className="t">03 / feedback</span>
+            <span className="r" />
           </div>
 
-          {/* Two-column layout */}
-          <div className="fb-layout">
-            {/* Testimonial grid */}
-            <div className="fb-testimonial-grid">
-              {TESTIMONIALS.map((t, i) => (
-                <TestimonialCard key={i} t={t} index={i} visible={vis} />
-              ))}
+          <div className="fb-grid">
+            {/* Left: the honest framing */}
+            <div>
+              <h2 className="fb-h2">
+                No testimonials here.{" "}
+                <span style={{ fontStyle: "italic" }}>Not yet.</span>
+              </h2>
+              <p className="fb-lede">
+                Graphix is live but early. Nobody has used it long enough to
+                have an opinion worth quoting, so there is nothing on this page
+                pretending otherwise.
+              </p>
+
+              <ul className="fb-notes">
+                <li>
+                  <b>01</b>
+                  <span>
+                    Your message goes to the people building this, not a support
+                    queue.
+                  </span>
+                </li>
+                <li>
+                  <b>02</b>
+                  <span>
+                    Leave an email and you get a reply from one of us.
+                  </span>
+                </li>
+                <li>
+                  <b>03</b>
+                  <span>
+                    Right now the roadmap is small enough that a single request
+                    can move it.
+                  </span>
+                </li>
+              </ul>
             </div>
 
-            {/* Feedback form */}
-            <div
-              className="fb-form-sticky"
-              style={{
-                opacity: vis ? 1 : 0,
-                transform: vis ? "translateY(0)" : "translateY(30px)",
-                transition:
-                  "opacity 0.7s cubic-bezier(0.2, 0.9, 0.4, 1.1) 0.2s, transform 0.6s cubic-bezier(0.2, 0.9, 0.4, 1.1) 0.2s",
-                position: "sticky",
-                top: 100,
-              }}
-            >
-              <div
-                style={{
-                  background: "rgba(18, 19, 20, 0.75)",
-                  backdropFilter: "blur(16px)",
-                  border: "1px solid rgba(6,182,212,0.15)",
-                  borderRadius: 24,
-                  overflow: "hidden",
-                  boxShadow: "0 25px 40px -12px rgba(0,0,0,0.5)",
-                }}
-              >
-                <div
-                  style={{
-                    padding: "28px 28px 20px",
-                    borderBottom: "1px solid rgba(255,255,255,0.05)",
-                    background:
-                      "linear-gradient(135deg, rgba(6,182,212,0.05), transparent)",
-                  }}
-                >
-                  <h3
-                    style={{
-                      fontSize: 20,
-                      fontWeight: 700,
-                      background: "linear-gradient(135deg, #fff, #cbd5e1)",
-                      backgroundClip: "text",
-                      WebkitBackgroundClip: "text",
-                      color: "transparent",
-                      marginBottom: 6,
-                      letterSpacing: "-0.3px",
-                    }}
-                  >
-                    Share your feedback
-                  </h3>
-                  <p
-                    style={{
-                      fontSize: 13,
-                      color: "rgba(255,255,255,0.4)",
-                      margin: 0,
-                      lineHeight: 1.5,
-                    }}
-                  >
-                    Three fields. Two minutes. Your words shape the next
-                    release.
-                  </p>
-                </div>
-                <div style={{ padding: "28px" }}>
-                  <FeedbackForm />
-                </div>
-              </div>
-
-              {/* Why it matters */}
-              <div
-                style={{
-                  marginTop: 20,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 10,
-                }}
-              >
-                {[
-                  {
-                    icon: "📬",
-                    title: "We read every word",
-                    desc: "No bot. A real person reads your message within hours.",
-                  },
-                  {
-                    icon: "💬",
-                    title: "We reply — often",
-                    desc: "Leave your email. There's a real chance you'll hear back.",
-                  },
-                  {
-                    icon: "🚀",
-                    title: "Features ship from feedback",
-                    desc: "Every chart type you see today started as someone's request.",
-                  },
-                ].map((item) => (
-                  <div
-                    key={item.title}
-                    style={{
-                      display: "flex",
-                      gap: 12,
-                      padding: "12px 16px",
-                      background: "rgba(255,255,255,0.02)",
-                      border: "1px solid rgba(255,255,255,0.05)",
-                      borderRadius: 12,
-                    }}
-                  >
-                    <span style={{ fontSize: 18, flexShrink: 0 }}>
-                      {item.icon}
-                    </span>
-                    <div>
-                      <div
-                        style={{
-                          fontSize: 13,
-                          fontWeight: 600,
-                          color: "#fff",
-                          marginBottom: 3,
-                        }}
-                      >
-                        {item.title}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 12,
-                          color: "rgba(255,255,255,0.35)",
-                          lineHeight: 1.5,
-                        }}
-                      >
-                        {item.desc}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Trust badge */}
-              <div
-                style={{
-                  marginTop: 16,
-                  textAlign: "center",
-                  padding: "8px 12px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 6,
-                    background: "rgba(6,182,212,0.08)",
-                    padding: "4px 12px",
-                    borderRadius: 100,
-                    border: "1px solid rgba(6,182,212,0.15)",
-                  }}
-                >
-                  <span style={{ fontSize: 10, color: "#06b6d4" }}>✦</span>
-                  <span
-                    style={{
-                      fontSize: 10,
-                      color: "rgba(255,255,255,0.5)",
-                      fontFamily: "monospace",
-                    }}
-                  >
-                    trusted by 2,000+ teams
-                  </span>
-                </div>
-              </div>
+            {/* Right: the form */}
+            <div className="fb-panel">
+              <h3 className="fb-panel-title">Tell us what&apos;s missing</h3>
+              <p className="fb-panel-sub">
+                Bugs, gaps, chart types we don&apos;t support yet. All of it
+                helps.
+              </p>
+              <FeedbackForm />
             </div>
           </div>
         </div>

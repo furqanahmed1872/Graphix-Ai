@@ -5,13 +5,13 @@ import { useEffect, useRef, useState, useCallback } from "react";
 // ── Chart groups for step 2 selector ──────────────────────────
 const CHART_CATS = [
   { label: "Line & Scatter", color: "#3b82f6", count: 14 },
-  { label: "Bar Charts", color: "#10b981", count: 12 },
-  { label: "Pie & Bubble", color: "#ec4899", count: 8 },
-  { label: "Statistical", color: "#f59e0b", count: 9 },
+  { label: "Bar Charts", color: "#E8FF5A", count: 12 },
+  { label: "Pie & Bubble", color: "#FF8A5B", count: 8 },
+  { label: "Statistical", color: "#6ED4C8", count: 9 },
   { label: "Histograms", color: "#8b5cf6", count: 8 },
-  { label: "3D Charts", color: "#a855f7", count: 9 },
-  { label: "Financial", color: "#f97316", count: 8 },
-  { label: "Contour & Heat", color: "#06b6d4", count: 7 },
+  { label: "3D Charts", color: "#B8A6F2", count: 9 },
+  { label: "Financial", color: "#FF6B8A", count: 8 },
+  { label: "Contour & Heat", color: "#9BE564", count: 7 },
 ];
 
 const DEMO_PROMPT = "Show Q4 sales by region as a grouped bar chart";
@@ -43,9 +43,9 @@ function StepPrompt({ active }: { active: boolean }) {
   return (
     <div
       style={{
-        background: "#fff",
+        background: "#F4F2EA",
         borderRadius: 10,
-        border: "1px solid #e5e7eb",
+        border: "1px solid rgba(26,26,22,0.14)",
         overflow: "hidden",
         boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
       }}
@@ -55,8 +55,8 @@ function StepPrompt({ active }: { active: boolean }) {
           display: "flex",
           gap: 6,
           padding: "10px 14px",
-          background: "#f9fafb",
-          borderBottom: "1px solid #e5e7eb",
+          background: "#EAE7DA",
+          borderBottom: "1px solid rgba(26,26,22,0.14)",
         }}
       >
         {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
@@ -72,9 +72,9 @@ function StepPrompt({ active }: { active: boolean }) {
         ))}
         <span
           style={{
-            fontFamily: "monospace",
+            fontFamily: "var(--gx-mono)",
             fontSize: 10,
-            color: "#9ca3af",
+            color: "#8A8A7C",
             marginLeft: 8,
           }}
         >
@@ -85,8 +85,8 @@ function StepPrompt({ active }: { active: boolean }) {
         <div
           style={{
             fontSize: 11,
-            color: "#9ca3af",
-            fontFamily: "monospace",
+            color: "#8A8A7C",
+            fontFamily: "var(--gx-mono)",
             marginBottom: 10,
           }}
         >
@@ -99,7 +99,7 @@ function StepPrompt({ active }: { active: boolean }) {
               padding: "10px 12px",
               background: "#f3f4f6",
               borderRadius: 7,
-              fontFamily: "monospace",
+              fontFamily: "var(--gx-mono)",
               fontSize: 12,
               color: "#111827",
               minHeight: 40,
@@ -113,7 +113,7 @@ function StepPrompt({ active }: { active: boolean }) {
                 style={{
                   width: 2,
                   height: 14,
-                  background: "#06b6d4",
+                  background: "var(--gx-accent)",
                   display: "inline-block",
                   marginLeft: 1,
                   opacity: cursor ? 1 : 0,
@@ -152,9 +152,9 @@ function StepPrompt({ active }: { active: boolean }) {
             <span
               key={hint}
               style={{
-                fontSize: 9,
-                fontFamily: "monospace",
-                color: "#9ca3af",
+                fontSize: 12,
+                fontFamily: "var(--gx-mono)",
+                color: "#8A8A7C",
                 padding: "3px 7px",
                 background: "#f3f4f6",
                 borderRadius: 4,
@@ -189,9 +189,9 @@ function StepSelector({ active }: { active: boolean }) {
   return (
     <div
       style={{
-        background: "#fff",
+        background: "#F4F2EA",
         borderRadius: 10,
-        border: "1px solid #e5e7eb",
+        border: "1px solid rgba(26,26,22,0.14)",
         overflow: "hidden",
         boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
       }}
@@ -199,20 +199,20 @@ function StepSelector({ active }: { active: boolean }) {
       <div
         style={{
           padding: "10px 14px",
-          background: "#f9fafb",
-          borderBottom: "1px solid #e5e7eb",
+          background: "#EAE7DA",
+          borderBottom: "1px solid rgba(26,26,22,0.14)",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
         <span
-          style={{ fontFamily: "monospace", fontSize: 10, color: "#6b7280" }}
+          style={{ fontFamily: "var(--gx-mono)", fontSize: 10, color: "#6E6E62" }}
         >
           Select chart type
         </span>
         <span
-          style={{ fontFamily: "monospace", fontSize: 9, color: "#9ca3af" }}
+          style={{ fontFamily: "var(--gx-mono)", fontSize: 12, color: "#8A8A7C" }}
         >
           140+ types · 16 categories
         </span>
@@ -231,7 +231,7 @@ function StepSelector({ active }: { active: boolean }) {
             style={{
               padding: "8px 10px",
               borderRadius: 7,
-              border: `1px solid ${i === highlighted ? cat.color + "50" : "#e5e7eb"}`,
+              border: `1px solid ${i === highlighted ? cat.color + "50" : "rgba(26,26,22,0.14)"}`,
               background: i === highlighted ? cat.color + "08" : "#fafafa",
               transition: "all 0.2s",
               display: "flex",
@@ -244,7 +244,7 @@ function StepSelector({ active }: { active: boolean }) {
                 width: 6,
                 height: 6,
                 borderRadius: "50%",
-                background: i === highlighted ? cat.color : "#d1d5db",
+                background: i === highlighted ? cat.color : "rgba(26,26,22,0.20)",
                 transition: "background 0.2s",
                 flexShrink: 0,
               }}
@@ -254,7 +254,7 @@ function StepSelector({ active }: { active: boolean }) {
                 style={{
                   fontSize: 10,
                   fontWeight: 600,
-                  color: i === highlighted ? "#111" : "#6b7280",
+                  color: i === highlighted ? "#1A1A16" : "#6E6E62",
                   transition: "color 0.2s",
                 }}
               >
@@ -262,9 +262,9 @@ function StepSelector({ active }: { active: boolean }) {
               </div>
               <div
                 style={{
-                  fontSize: 9,
-                  color: "#9ca3af",
-                  fontFamily: "monospace",
+                  fontSize: 12,
+                  color: "#8A8A7C",
+                  fontFamily: "var(--gx-mono)",
                 }}
               >
                 {cat.count} types
@@ -295,26 +295,43 @@ function StepProcessing({ active }: { active: boolean }) {
       label: "Mapping data",
       detail: "x: Region · y: Revenue · group: Quarter",
     },
-    { icon: "✦", label: "Rendering", detail: "Applying style & interactions" },
+    { icon: "◇", label: "Rendering", detail: "Applying style & interactions" },
   ];
+  const TOTAL = STEPS.length;
 
+  /* The timers used to leak: nothing cleared them, so toggling `active` while
+     scrolling stacked overlapping sequences that fought over `step`. The run
+     also ended on the last item, which left "Rendering" on screen forever
+     instead of ever reaching a finished state. */
   useEffect(() => {
     if (!active) {
       setStep(0);
       return;
     }
-    setStep(0);
-    STEPS.forEach((_, i) => {
-      setTimeout(() => setStep(i + 1), 500 + i * 900);
-    });
-  }, [active]);
+    const timers: ReturnType<typeof setTimeout>[] = [];
+    const run = () => {
+      setStep(0);
+      for (let i = 0; i <= TOTAL; i++) {
+        // one extra tick past the last row so it lands on "complete"
+        timers.push(setTimeout(() => setStep(i + 1), 500 + i * 900));
+      }
+    };
+    run();
+    const loop = setInterval(run, 500 + (TOTAL + 1) * 900 + 2200);
+    return () => {
+      timers.forEach(clearTimeout);
+      clearInterval(loop);
+    };
+  }, [active, TOTAL]);
+
+  const complete = step > TOTAL;
 
   return (
     <div
       style={{
-        background: "#fff",
+        background: "#F4F2EA",
         borderRadius: 10,
-        border: "1px solid #e5e7eb",
+        border: "1px solid rgba(26,26,22,0.14)",
         overflow: "hidden",
         boxShadow: "0 4px 24px rgba(0,0,0,0.06)",
       }}
@@ -322,8 +339,8 @@ function StepProcessing({ active }: { active: boolean }) {
       <div
         style={{
           padding: "10px 14px",
-          background: "#f9fafb",
-          borderBottom: "1px solid #e5e7eb",
+          background: "#EAE7DA",
+          borderBottom: "1px solid rgba(26,26,22,0.14)",
           display: "flex",
           alignItems: "center",
           gap: 8,
@@ -334,15 +351,16 @@ function StepProcessing({ active }: { active: boolean }) {
             width: 8,
             height: 8,
             borderRadius: "50%",
-            background: "#06b6d4",
+            background: "var(--gx-accent)",
             display: "inline-block",
-            animation: active ? "hiw-pulse 1.2s ease infinite" : "none",
+            animation:
+              active && !complete ? "hiw-pulse 1.2s ease infinite" : "none",
           }}
         />
         <span
-          style={{ fontFamily: "monospace", fontSize: 10, color: "#6b7280" }}
+          style={{ fontFamily: "var(--gx-mono)", fontSize: 10, color: "#6E6E62" }}
         >
-          AI is working…
+          {complete ? "Chart ready" : "Working…"}
         </span>
       </div>
       <div style={{ padding: 4 }}>
@@ -357,15 +375,15 @@ function StepProcessing({ active }: { active: boolean }) {
                 alignItems: "center",
                 gap: 12,
                 padding: "10px 12px",
-                background: current ? "rgba(6,182,212,0.04)" : "transparent",
-                borderRadius: 7,
+                background: current ? "rgba(232,255,90,0.10)" : "transparent",
+                borderRadius: 0,
                 transition: "background 0.3s",
               }}
             >
               <span
                 style={{
                   fontSize: 14,
-                  color: done || current ? "#06b6d4" : "#d1d5db",
+                  color: done || current ? "var(--gx-accent-ink)" : "rgba(26,26,22,0.20)",
                   transition: "color 0.3s",
                   flexShrink: 0,
                 }}
@@ -377,7 +395,7 @@ function StepProcessing({ active }: { active: boolean }) {
                   style={{
                     fontSize: 11,
                     fontWeight: 600,
-                    color: done || current ? "#111" : "#9ca3af",
+                    color: done || current ? "#1A1A16" : "#8A8A7C",
                     transition: "color 0.3s",
                   }}
                 >
@@ -386,8 +404,8 @@ function StepProcessing({ active }: { active: boolean }) {
                 <div
                   style={{
                     fontSize: 10,
-                    color: "#9ca3af",
-                    fontFamily: "monospace",
+                    color: "#8A8A7C",
+                    fontFamily: "var(--gx-mono)",
                   }}
                 >
                   {s.detail}
@@ -399,7 +417,7 @@ function StepProcessing({ active }: { active: boolean }) {
                     width: 6,
                     height: 6,
                     borderRadius: "50%",
-                    background: "#06b6d4",
+                    background: "var(--gx-accent)",
                     animation: "hiw-pulse 1s ease infinite",
                     flexShrink: 0,
                   }}
@@ -412,15 +430,15 @@ function StepProcessing({ active }: { active: boolean }) {
       <div
         style={{
           padding: "10px 14px",
-          borderTop: "1px solid #e5e7eb",
-          background: "#f9fafb",
+          borderTop: "1px solid rgba(26,26,22,0.14)",
+          background: "#EAE7DA",
         }}
       >
         <div
           style={{
             height: 4,
-            background: "#e5e7eb",
-            borderRadius: 999,
+            background: "rgba(26,26,22,0.14)",
+            borderRadius: 0,
             overflow: "hidden",
           }}
         >
@@ -428,8 +446,8 @@ function StepProcessing({ active }: { active: boolean }) {
             style={{
               height: "100%",
               width: `${(step / STEPS.length) * 100}%`,
-              background: "linear-gradient(90deg, #06b6d4, #0891b2)",
-              borderRadius: 999,
+              background: "var(--gx-accent)",
+              borderRadius: 0,
               transition: "width 0.7s ease",
             }}
           />
@@ -442,15 +460,15 @@ function StepProcessing({ active }: { active: boolean }) {
           }}
         >
           <span
-            style={{ fontSize: 9, color: "#9ca3af", fontFamily: "monospace" }}
+            style={{ fontSize: 12, color: "#8A8A7C", fontFamily: "var(--gx-mono)" }}
           >
             Generating chart
           </span>
           <span
             style={{
-              fontSize: 9,
-              color: "#06b6d4",
-              fontFamily: "monospace",
+              fontSize: 12,
+              color: "var(--gx-accent)",
+              fontFamily: "var(--gx-mono)",
               fontWeight: 700,
             }}
           >
@@ -470,42 +488,45 @@ type ChartType = "bar" | "line" | "scatter" | "area" | "pie" | "radar";
 type Tab = "type" | "style" | "axes" | "export";
 
 // ─── Palettes ─────────────────────────────────────────────────
+/* The palette picker in the editor demo. First entry is the site palette so
+   the default state matches the rest of the page; the others are deliberate
+   families rather than stock framework hues. */
 const PALETTES = [
   {
-    id: "aurora",
-    name: "Aurora",
-    colors: ["#6366f1", "#8b5cf6", "#a78bfa", "#c4b5fd"],
-    accent: "#6366f1",
+    id: "graphix",
+    name: "Graphix",
+    colors: ["#E8FF5A", "#FF8A5B", "#6ED4C8", "#B8A6F2"],
+    accent: "#E8FF5A",
   },
   {
-    id: "ocean",
-    name: "Ocean",
-    colors: ["#06b6d4", "#0891b2", "#0e7490", "#155e75"],
-    accent: "#06b6d4",
+    id: "ember",
+    name: "Ember",
+    colors: ["#FF6B3D", "#FF9E4F", "#FFC96B", "#E8DF8A"],
+    accent: "#FF6B3D",
   },
   {
-    id: "sunset",
-    name: "Sunset",
-    colors: ["#f43f5e", "#fb923c", "#fbbf24", "#a3e635"],
-    accent: "#f43f5e",
+    id: "tide",
+    name: "Tide",
+    colors: ["#3FA9B8", "#5FC7C0", "#8FE0C4", "#C2F0D8"],
+    accent: "#3FA9B8",
   },
   {
-    id: "forest",
-    name: "Forest",
-    colors: ["#10b981", "#34d399", "#6ee7b7", "#059669"],
-    accent: "#10b981",
+    id: "moss",
+    name: "Moss",
+    colors: ["#4F7A22", "#7A9E33", "#A8C246", "#D2E07A"],
+    accent: "#7A9E33",
   },
   {
-    id: "neon",
-    name: "Neon",
-    colors: ["#a855f7", "#ec4899", "#06b6d4", "#84cc16"],
-    accent: "#a855f7",
+    id: "dusk",
+    name: "Dusk",
+    colors: ["#5B4B8A", "#8A6FB0", "#B99CD1", "#E0C7E8"],
+    accent: "#8A6FB0",
   },
   {
-    id: "fire",
-    name: "Fire",
-    colors: ["#ef4444", "#f97316", "#eab308", "#84cc16"],
-    accent: "#ef4444",
+    id: "mono",
+    name: "Mono",
+    colors: ["#E8FF5A", "#F2F1EC", "#8A8A82", "#57574F"],
+    accent: "#E8FF5A",
   },
 ];
 
@@ -515,7 +536,7 @@ const CHART_TYPES: {
   icon: string;
   desc: string;
 }[] = [
-  { id: "radar", label: "Radar", icon: "✦✦✦", desc: "Multi-dimension" },
+  { id: "radar", label: "Radar", icon: "◈◈◈", desc: "Multi-dimension" },
   { id: "bar", label: "Bar", icon: "▊▊▊", desc: "Compare categories" },
   { id: "line", label: "Line", icon: "∿∿∿", desc: "Show trends over time" },
   { id: "scatter", label: "Scatter", icon: "∴∴∴", desc: "Find correlations" },
@@ -524,10 +545,10 @@ const CHART_TYPES: {
 ];
 
 const THEMES = [
-  { id: "dark", label: "Dark", bg: "#0d0d14", plot: "#0d0d14" },
-  { id: "midnight", label: "Midnight", bg: "#040818", plot: "#040818" },
-  { id: "slate", label: "Slate", bg: "#0f172a", plot: "#0f172a" },
-  { id: "light", label: "Light", bg: "#ffffff", plot: "#f8fafc" },
+  { id: "dark", label: "Dark", bg: "#0C0C0A", plot: "#0C0C0A" },
+  { id: "ink", label: "Ink", bg: "#14150F", plot: "#14150F" },
+  { id: "slate", label: "Slate", bg: "#16161A", plot: "#16161A" },
+  { id: "paper", label: "Paper", bg: "#F4F2EA", plot: "#F4F2EA" },
 ];
 
 // ─── Raw data per chart type ───────────────────────────────────
@@ -726,7 +747,7 @@ function buildLayout(
   const base: Record<string, unknown> = {
     paper_bgcolor: theme.bg,
     plot_bgcolor: theme.plot,
-    font: { family: "monospace", color: tickColor, size: 10 },
+    font: { family: "DM Mono, monospace", color: tickColor, size: 10 },
     margin: { t: title ? 36 : 16, b: 44, l: 52, r: 16 },
     showlegend: showLegend,
     legend: {
@@ -742,7 +763,7 @@ function buildLayout(
     title: title
       ? {
           text: title,
-          font: { size: 13, color: textColor, family: "monospace" },
+          font: { size: 13, color: textColor, family: "DM Mono, monospace" },
           x: 0.5,
           y: 0.97,
         }
@@ -890,7 +911,7 @@ function buildLayout(
           background: transparent;
           border: none;
           cursor: pointer;
-          font-family: monospace;
+          font-family: var(--gx-mono);
           transition: all 0.18s;
           display: flex;
           align-items: center;
@@ -945,7 +966,7 @@ function buildLayout(
         .theme-btn.active { border-color: rgba(255,255,255,0.3); }
         .ctrl-label {
           font-size: 9px;
-          font-family: monospace;
+          font-family: var(--gx-mono);
           color: rgba(255,255,255,0.3);
           letter-spacing: 0.15em;
           text-transform: uppercase;
@@ -963,7 +984,7 @@ function buildLayout(
         .toggle-label {
           font-size: 11px;
           color: rgba(255,255,255,0.55);
-          font-family: monospace;
+          font-family: var(--gx-mono);
         }
         .toggle-track {
           width: 32px;
@@ -989,7 +1010,7 @@ function buildLayout(
           border: 1px solid rgba(255,255,255,0.1);
           border-radius: 6px;
           color: rgba(255,255,255,0.8);
-          font-family: monospace;
+          font-family: var(--gx-mono);
           font-size: 11px;
           padding: 7px 10px;
           outline: none;
@@ -999,7 +1020,7 @@ function buildLayout(
         .axis-input:focus { border-color: rgba(255,255,255,0.25); }
         .range-slider {
           width: 100%;
-          accent-color: var(--p-accent, #06b6d4);
+          accent-color: var(--p-accent, #E8FF5A);
         }
         .export-btn {
           width: 100%;
@@ -1008,7 +1029,7 @@ function buildLayout(
           border: 1px solid rgba(255,255,255,0.1);
           background: rgba(255,255,255,0.04);
           color: rgba(255,255,255,0.7);
-          font-family: monospace;
+          font-family: var(--gx-mono);
           font-size: 11px;
           font-weight: 700;
           cursor: pointer;
@@ -1019,7 +1040,7 @@ function buildLayout(
           letter-spacing: 0.05em;
         }
         .export-btn:hover { background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.2); color: #fff; }
-        .export-btn.primary { background: var(--p-accent, #06b6d4); border-color: var(--p-accent, #06b6d4); color: #fff; }
+        .export-btn.primary { background: var(--gx-accent); border-color: var(--gx-accent); color: var(--gx-accent-ink); font-weight: 500; }
         .export-btn.primary:hover { opacity: 0.9; }
         .section-divider { height: 1px; background: rgba(255,255,255,0.05); margin: 10px 0; }
         .seg-btn {
@@ -1029,7 +1050,7 @@ function buildLayout(
           border: none;
           background: transparent;
           color: rgba(255,255,255,0.35);
-          font-family: monospace;
+          font-family: var(--gx-mono);
           font-size: 10px;
           font-weight: 700;
           cursor: pointer;
@@ -1040,13 +1061,12 @@ function buildLayout(
 
       <div
         style={{
-          background: "#0d0d14",
-          borderRadius: 14,
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "#14150F",
+          borderRadius: 0,
+          border: "1px solid var(--gx-line)",
           overflow: "hidden",
-          boxShadow:
-            "0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset",
-          fontFamily: "monospace",
+          boxShadow: "none",
+          fontFamily: "var(--gx-mono)",
           // CSS var for palette accent
           ["--p-accent" as string]: palette.accent,
           ["--p-bg" as string]: palette.accent + "14",
@@ -1095,7 +1115,7 @@ function buildLayout(
                 opacity: 0.8,
               }}
             />
-            <span style={{ fontSize: 9, color: "rgba(255,255,255,0.2)" }}>
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>
               {palette.name}
             </span>
           </div>
@@ -1164,7 +1184,7 @@ function buildLayout(
                             chartType === ct.id
                               ? palette.accent
                               : "rgba(255,255,255,0.25)",
-                          fontFamily: "monospace",
+                          fontFamily: "var(--gx-mono)",
                           letterSpacing: "0.05em",
                           flexShrink: 0,
                         }}
@@ -1186,7 +1206,7 @@ function buildLayout(
                         </div>
                         <div
                           style={{
-                            fontSize: 9,
+                            fontSize: 12,
                             color: "rgba(255,255,255,0.2)",
                           }}
                         >
@@ -1238,7 +1258,7 @@ function buildLayout(
                               {pal.name}
                             </span>
                             {selectedPalette === i && (
-                              <span style={{ fontSize: 9, color: pal.accent }}>
+                              <span style={{ fontSize: 12, color: pal.accent }}>
                                 ● active
                               </span>
                             )}
@@ -1279,12 +1299,12 @@ function buildLayout(
                         >
                           <span
                             style={{
-                              fontSize: 8,
+                              fontSize: 11,
                               color:
                                 selectedTheme === i
                                   ? "#fff"
                                   : "rgba(255,255,255,0.3)",
-                              fontFamily: "monospace",
+                              fontFamily: "var(--gx-mono)",
                               display: "block",
                             }}
                           >
@@ -1490,7 +1510,7 @@ function buildLayout(
                         <div style={{ fontSize: 11, fontWeight: 700 }}>
                           {fmt}
                         </div>
-                        <div style={{ fontSize: 9, opacity: 0.5 }}>{desc}</div>
+                        <div style={{ fontSize: 12, opacity: 0.5 }}>{desc}</div>
                       </div>
                     </button>
                   ))}
@@ -1505,7 +1525,7 @@ function buildLayout(
                   >
                     <div
                       style={{
-                        fontSize: 9,
+                        fontSize: 12,
                         color: "rgba(255,255,255,0.3)",
                         marginBottom: 4,
                       }}
@@ -1514,7 +1534,7 @@ function buildLayout(
                     </div>
                     <code
                       style={{
-                        fontSize: 9,
+                        fontSize: 12,
                         color: palette.accent,
                         lineHeight: 1.6,
                         display: "block",
@@ -1562,7 +1582,7 @@ function buildLayout(
                 />
                 <span
                   style={{
-                    fontSize: 9,
+                    fontSize: 12,
                     color: "rgba(255,255,255,0.3)",
                     letterSpacing: "0.1em",
                   }}
@@ -1573,9 +1593,9 @@ function buildLayout(
               <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                 <span
                   style={{
-                    fontSize: 9,
+                    fontSize: 12,
                     color: "rgba(255,255,255,0.2)",
-                    fontFamily: "monospace",
+                    fontFamily: "var(--gx-mono)",
                     marginRight: 4,
                   }}
                 >
@@ -1622,7 +1642,7 @@ function buildLayout(
                     style={{
                       fontSize: 10,
                       color: "rgba(255,255,255,0.2)",
-                      fontFamily: "monospace",
+                      fontFamily: "var(--gx-mono)",
                     }}
                   >
                     Rendering…
@@ -1645,12 +1665,12 @@ function buildLayout(
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ color: palette.accent, fontSize: 12 }}>✦</span>
+            
             <span
               style={{
-                fontSize: 9,
+                fontSize: 12,
                 color: "rgba(255,255,255,0.2)",
-                fontFamily: "monospace",
+                fontFamily: "var(--gx-mono)",
               }}
             >
               All changes update live · no save needed
@@ -1658,9 +1678,9 @@ function buildLayout(
           </div>
           <span
             style={{
-              fontSize: 8,
+              fontSize: 11,
               color: "rgba(255,255,255,0.15)",
-              fontFamily: "monospace",
+              fontFamily: "var(--gx-mono)",
             }}
           >
             6 chart types · 6 palettes · 4 themes
@@ -1675,36 +1695,36 @@ const STEPS = [
   {
     num: "01",
     tag: "Input",
-    color: "#06b6d4",
+    color: "var(--gx-accent)",
     headline: "Type what you want to see",
-    body: "Write a plain-English request, drop a CSV, or paste raw data. No SQL, no formulas, no setup. Graphix understands your intent.",
+    body: "Write a plain-English request, drop a CSV, or paste raw data. No SQL and no formulas.",
     extras: ["Natural language", "CSV / JSON upload", "Paste raw data"],
     component: StepPrompt,
   },
   {
     num: "02",
     tag: "Selection",
-    color: "#a855f7",
-    headline: "Pick a chart type — or let AI choose",
-    body: "Browse 140+ chart types across 16 categories. Or skip it entirely — Graphix AI selects the most effective visualization for your data automatically.",
+    color: "var(--gx-accent)",
+    headline: "Pick a chart type, or let Graphix choose",
+    body: "Browse the full catalogue, or skip the step and let Graphix pick the encoding that fits your data.",
     extras: ["140+ chart types", "16 categories", "AI auto-selection"],
     component: StepSelector,
   },
   {
     num: "03",
     tag: "Processing",
-    color: "#10b981",
+    color: "var(--gx-accent)",
     headline: "AI parses, maps and renders",
-    body: "Graphix maps every dimension of your data to an optimal visual encoding and generates a fully interactive chart in under 3 seconds.",
+    body: "Every dimension of your data is mapped to a visual encoding, then rendered as a fully interactive chart in under three seconds.",
     extras: ["< 3 second render", "Auto axis labels", "Smart color selection"],
     component: StepProcessing,
   },
   {
     num: "04",
     tag: "Editing",
-    color: "#f59e0b",
+    color: "var(--gx-accent)",
     headline: "Customize with the visual editor",
-    body: "Fine-tune every aspect of your chart with our powerful visual editor. Change chart types, swap color palettes, adjust axes, add annotations, and export in any format — all with live preview.",
+    body: "Change chart types, swap palettes, adjust axes and add annotations, with the preview redrawing as you go.",
     extras: [
       "Full chart editor",
       "12 color palettes",
@@ -1714,10 +1734,100 @@ const STEPS = [
   },
 ];
 
+/* Each row drives its own demo. Previously a single scroll-spy picked one
+   "active" step and the other three sat frozen — fine when they were dimmed
+   to 40%, obviously broken now that they're all at full strength. */
+function StepRow({
+  step,
+  isLast,
+}: {
+  step: (typeof STEPS)[number];
+  isLast: boolean;
+}) {
+  const ref = useRef<HTMLElement>(null);
+  const [inView, setInView] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => setInView(e.isIntersecting),
+      { rootMargin: "-12% 0px -12% 0px", threshold: 0.01 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  const Comp = step.component;
+
+  return (
+    <article
+      ref={ref}
+      className={`hiw-step${inView ? " is-active" : ""}${isLast ? " is-last" : ""}`}
+    >
+      <div className="hiw-rail">
+        <span className="hiw-rail-num">{step.num}</span>
+      </div>
+
+      <div className="hiw-copy">
+        <h3
+          style={{
+            fontFamily: "var(--gx-display)",
+            fontSize: "clamp(1.6rem, 2.4vw, 2.2rem)",
+            fontWeight: 400,
+            color: "var(--gx-fg)",
+            letterSpacing: "-0.015em",
+            lineHeight: 1.15,
+            margin: "0 0 14px",
+          }}
+        >
+          {step.headline}
+        </h3>
+        <p
+          style={{
+            fontSize: 16,
+            color: "var(--gx-fg-muted)",
+            lineHeight: 1.6,
+            margin: "0 0 22px",
+            maxWidth: 400,
+          }}
+        >
+          {step.body}
+        </p>
+        <ul
+          style={{
+            listStyle: "none",
+            margin: 0,
+            padding: 0,
+            borderTop: "1px solid var(--gx-line)",
+          }}
+        >
+          {step.extras.map((e) => (
+            <li
+              key={e}
+              style={{
+                fontFamily: "var(--gx-mono)",
+                fontSize: 13,
+                color: "var(--gx-fg-faint)",
+                padding: "9px 0",
+                borderBottom: "1px solid var(--gx-line)",
+              }}
+            >
+              {e}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="hiw-visual">
+        <Comp active={inView} />
+      </div>
+    </article>
+  );
+}
+
 // ─── Main ──────────────────────────────────────────────────────
 export default function HowItWorks() {
-  const [activeStep, setActiveStep] = useState(0);
-  const stepRefs = useRef<(HTMLDivElement | null)[]>([]);
   const headerRef = useRef<HTMLDivElement>(null);
   const [headerVis, setHeaderVis] = useState(false);
 
@@ -1737,84 +1847,80 @@ export default function HowItWorks() {
     return () => obs.disconnect();
   }, []);
 
-  useEffect(() => {
-    const observers: IntersectionObserver[] = [];
-    stepRefs.current.forEach((el, i) => {
-      if (!el) return;
-      let fired = false;
-      const obs = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((e) => {
-            if (!fired) {
-              fired = true;
-              return;
-            }
-            if (e.isIntersecting) setActiveStep(i);
-          });
-        },
-        { rootMargin: "-30% 0px -50% 0px", threshold: 0 },
-      );
-      obs.observe(el);
-      observers.push(obs);
-    });
-    return () => observers.forEach((o) => o.disconnect());
-  }, []);
 
   return (
     <>
       <style>{`
         @keyframes hiw-spin  { to { transform: rotate(360deg); } }
-        @keyframes hiw-pulse { 0%,100%{opacity:0.4;transform:scale(1)} 50%{opacity:1;transform:scale(1.4)} }
-        @keyframes hiw-up    { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes hiw-pulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
 
-        /* ── RESPONSIVE STEP GRID ── */
-        .hiw-step-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 48px;
-          align-items: center;
-        }
         .hiw-inner-wrap {
-          max-width: 1120px;
+          max-width: 1160px;
           margin: 0 auto;
-          padding: 96px 24px 80px;
+          padding: 96px 24px 88px;
           position: relative;
         }
 
-        @media (max-width: 767px) {
-          .hiw-step-grid {
-            grid-template-columns: 1fr !important;
-            gap: 24px !important;
-            padding: 36px 0 !important;
-          }
-          /* Always show text first, visual second on mobile */
-          .hiw-text-side { order: 1 !important; }
-          .hiw-visual-side { order: 2 !important; }
-          .hiw-inner-wrap {
-            padding: 56px 16px 48px !important;
-          }
-          .hiw-step-nav {
-            gap: 6px !important;
-          }
-          .hiw-step-nav button {
-            padding: 5px 10px !important;
-            font-size: 10px !important;
-          }
+        /* Rail | copy | visual. No alternating sides — the eye keeps one path. */
+        .hiw-step {
+          display: grid;
+          grid-template-columns: 72px minmax(0, 0.85fr) minmax(0, 1.15fr);
+          gap: 0 40px;
+          padding: 56px 0;
+          border-top: 1px solid var(--gx-line);
+          align-items: start;
         }
-        @media (min-width: 768px) and (max-width: 1023px) {
-          .hiw-step-grid {
-            gap: 28px !important;
+        .hiw-step:first-child { border-top: none; }
+
+        /* The rail: a serif numeral with a hairline running to the next step */
+        .hiw-rail {
+          position: relative;
+          align-self: stretch;
+          display: flex;
+          justify-content: center;
+        }
+        .hiw-rail-num {
+          font-family: var(--gx-display);
+          font-weight: 400;
+          font-size: 34px;
+          line-height: 1;
+          color: var(--gx-fg-faint);
+          transition: color 0.35s ease;
+          position: relative;
+          z-index: 1;
+          background: var(--gx-bg);
+          padding-bottom: 12px;
+        }
+        .hiw-step.is-active .hiw-rail-num { color: var(--gx-accent); }
+        .hiw-rail::after {
+          content: "";
+          position: absolute;
+          top: 6px; bottom: -56px; left: 50%;
+          width: 1px;
+          background: var(--gx-line);
+        }
+        .hiw-step.is-last .hiw-rail::after { display: none; }
+
+        .hiw-copy { padding-top: 2px; }
+        .hiw-visual { min-width: 0; }
+
+        @media (max-width: 900px) {
+          .hiw-step {
+            grid-template-columns: 1fr;
+            gap: 20px;
+            padding: 44px 0;
           }
-          .hiw-inner-wrap {
-            padding: 72px 20px 60px !important;
-          }
+          .hiw-rail { justify-content: flex-start; }
+          .hiw-rail::after { display: none; }
+          .hiw-rail-num { font-size: 26px; padding-bottom: 0; }
+          .hiw-inner-wrap { padding: 64px 18px 56px; }
         }
       `}</style>
 
       <section
         id="how-it-works"
         style={{
-          background: "#111212",
+          background: "#0C0C0A",
           position: "relative",
           overflow: "hidden",
         }}
@@ -1845,262 +1951,63 @@ export default function HowItWorks() {
           >
             <div
               style={{
-                display: "inline-flex",
+                display: "flex",
                 alignItems: "center",
-                gap: 8,
-                padding: "5px 14px",
-                borderRadius: 999,
-                border: "1px solid rgba(6,182,212,0.2)",
-                background: "rgba(6,182,212,0.05)",
-                marginBottom: 18,
+                justifyContent: "center",
+                gap: 12,
+                marginBottom: 24,
               }}
             >
               <span
-                style={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: "50%",
-                  background: "#06b6d4",
-                  display: "inline-block",
-                }}
+                style={{ height: 1, width: 32, background: "var(--gx-line-strong)" }}
               />
               <span
                 style={{
-                  fontFamily: "monospace",
-                  fontSize: 10,
-                  color: "rgba(6,182,212,0.8)",
-                  letterSpacing: "0.2em",
-                  textTransform: "uppercase",
+                  fontFamily: "var(--gx-mono)",
+                  fontSize: 12,
+                  color: "var(--gx-fg-faint)",
                 }}
               >
-                How it works
+                01 / how it works
               </span>
+              <span
+                style={{ height: 1, width: 32, background: "var(--gx-line-strong)" }}
+              />
             </div>
             <h2
               style={{
-                fontSize: "clamp(2rem, 4.5vw, 3.2rem)",
-                fontWeight: 900,
-                color: "#fff",
-                letterSpacing: "-0.03em",
-                lineHeight: 1.1,
-                margin: "0 0 14px",
+                fontFamily: "var(--gx-display)",
+                fontSize: "clamp(2.4rem, 4.8vw, 3.8rem)",
+                fontWeight: 400,
+                color: "var(--gx-fg)",
+                letterSpacing: "-0.015em",
+                lineHeight: 1.08,
+                margin: "0 0 18px",
               }}
             >
-              From prompt to chart.
-              <br />
-              <span style={{ color: "rgba(6,182,212,0.65)" }}>
-                Four steps, under a minute.
-              </span>
+              From prompt to chart in{" "}
+              <span style={{ fontStyle: "italic" }}>four steps.</span>
             </h2>
             <p
               style={{
-                fontSize: 14,
-                color: "rgba(255,255,255,0.35)",
-                maxWidth: 420,
+                fontSize: 16,
+                color: "var(--gx-fg-muted)",
+                maxWidth: 440,
                 margin: "0 auto",
-                lineHeight: 1.7,
-                fontFamily: "monospace",
+                lineHeight: 1.6,
               }}
             >
-              No code. No config. No learning curve. Scroll through each step to
+              Scroll through each step to
               see it live.
             </p>
           </div>
 
-          {/* Step nav pills */}
-          <div
-            className="hiw-step-nav"
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 8,
-              marginBottom: 60,
-              flexWrap: "wrap",
-            }}
-          >
+          {/* Steps — no tab strip: the rail and the scroll position already
+              say where you are, a third indicator was just noise. */}
+          <div>
             {STEPS.map((s, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveStep(i)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 7,
-                  padding: "6px 14px",
-                  borderRadius: 999,
-                  border: `1px solid ${i === activeStep ? s.color + "60" : "rgba(255,255,255,0.08)"}`,
-                  background: i === activeStep ? s.color + "12" : "transparent",
-                  cursor: "pointer",
-                  transition: "all 0.2s",
-                }}
-              >
-                <span
-                  style={{
-                    fontFamily: "monospace",
-                    fontSize: 9,
-                    fontWeight: 700,
-                    color:
-                      i === activeStep ? s.color : "rgba(255,255,255,0.25)",
-                    letterSpacing: "0.1em",
-                  }}
-                >
-                  {s.num}
-                </span>
-                <span
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: i === activeStep ? "#fff" : "rgba(255,255,255,0.35)",
-                  }}
-                >
-                  {s.tag}
-                </span>
-              </button>
+              <StepRow key={i} step={s} isLast={i === STEPS.length - 1} />
             ))}
-          </div>
-
-          {/* Steps */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-            {STEPS.map((s, i) => {
-              const Comp = s.component;
-              const isActive = activeStep === i;
-              const isEven = i % 2 === 0;
-              return (
-                <div
-                  key={i}
-                  ref={(el) => {
-                    stepRefs.current[i] = el;
-                  }}
-                  className="hiw-step-grid"
-                  style={{
-                    borderTop:
-                      i > 0 ? "1px solid rgba(255,255,255,0.05)" : "none",
-                    padding: "64px 0",
-                  }}
-                >
-                  {/* Text side */}
-                  <div
-                    className="hiw-text-side"
-                    style={{ order: isEven ? 1 : 2, padding: "0 16px" }}
-                  >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        marginBottom: 20,
-                      }}
-                    >
-                      <span
-                        style={{
-                          fontFamily: "monospace",
-                          fontSize: 11,
-                          fontWeight: 700,
-                          color: isActive ? s.color : "rgba(255,255,255,0.2)",
-                          letterSpacing: "0.1em",
-                          transition: "color 0.3s",
-                        }}
-                      >
-                        {s.num}
-                      </span>
-                      <span
-                        style={{
-                          padding: "3px 10px",
-                          borderRadius: 999,
-                          fontSize: 10,
-                          fontWeight: 700,
-                          letterSpacing: "0.1em",
-                          background: isActive
-                            ? s.color + "18"
-                            : "rgba(255,255,255,0.04)",
-                          border: `1px solid ${isActive ? s.color + "40" : "rgba(255,255,255,0.08)"}`,
-                          color: isActive ? s.color : "rgba(255,255,255,0.25)",
-                          transition: "all 0.3s",
-                          fontFamily: "monospace",
-                        }}
-                      >
-                        {s.tag}
-                      </span>
-                    </div>
-                    <h3
-                      style={{
-                        fontSize: "clamp(1.4rem, 2.5vw, 2rem)",
-                        fontWeight: 800,
-                        color: "#fff",
-                        letterSpacing: "-0.025em",
-                        lineHeight: 1.2,
-                        marginBottom: 14,
-                      }}
-                    >
-                      {s.headline}
-                    </h3>
-                    <p
-                      style={{
-                        fontSize: 14,
-                        color: "rgba(255,255,255,0.4)",
-                        lineHeight: 1.75,
-                        marginBottom: 24,
-                      }}
-                    >
-                      {s.body}
-                    </p>
-                    <div
-                      style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 8,
-                      }}
-                    >
-                      {s.extras.map((e) => (
-                        <div
-                          key={e}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 10,
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: 5,
-                              height: 5,
-                              borderRadius: "50%",
-                              background: s.color,
-                              flexShrink: 0,
-                            }}
-                          />
-                          <span
-                            style={{
-                              fontSize: 12,
-                              color: "rgba(255,255,255,0.5)",
-                              fontFamily: "monospace",
-                            }}
-                          >
-                            {e}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Visual side */}
-                  <div
-                    className="hiw-visual-side"
-                    style={{ order: isEven ? 2 : 1 }}
-                  >
-                    <div
-                      style={{
-                        opacity: isActive ? 1 : 0.4,
-                        transform: isActive ? "scale(1)" : "scale(0.97)",
-                        transition: "all 0.4s ease",
-                      }}
-                    >
-                      <Comp active={isActive} />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
           </div>
         </div>
       </section>

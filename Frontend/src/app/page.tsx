@@ -25,7 +25,7 @@ export default function Home() {
     // NO mx-20, NO border-x on mobile. On desktop only: side margins + borders.
     <div
       style={{
-        background: "#111212",
+        background: "#0C0C0A",
         position: "relative",
         overflowX: "hidden",
         width: "100%",
