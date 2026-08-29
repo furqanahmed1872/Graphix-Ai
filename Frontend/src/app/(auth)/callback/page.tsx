@@ -1,10 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppStore } from "@/store/appStore";
 
-export default function AuthCallbackPage() {
+function CallbackScreen({ label }: { label: string }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+        background: "#090b0e",
+        color: "rgba(255,255,255,0.4)",
+        fontSize: 14,
+        fontFamily: "monospace",
+      }}
+    >
+      {label}
+    </div>
+  );
+}
+
+function AuthCallback() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setToken, bootstrap } = useAppStore();
@@ -28,20 +47,15 @@ export default function AuthCallbackPage() {
     });
   }, []);
 
+  return <CallbackScreen label="Signing you in…" />;
+}
+
+export default function AuthCallbackPage() {
+  // useSearchParams() needs a Suspense boundary, otherwise the whole route
+  // opts out of static prerendering and `next build` fails.
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        height: "100vh",
-        background: "#090b0e",
-        color: "rgba(255,255,255,0.4)",
-        fontSize: 14,
-        fontFamily: "monospace",
-      }}
-    >
-      Signing you in…
-    </div>
+    <Suspense fallback={<CallbackScreen label="Signing you in…" />}>
+      <AuthCallback />
+    </Suspense>
   );
 }

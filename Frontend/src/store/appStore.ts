@@ -256,11 +256,25 @@ export const useAppStore = create<AppState>()(
       storage: createJSONStorage(() => localStorage),
       onRehydrateStorage: () => (state) => {
         state?.setHasHydrated(true);
+
+        // The middleware guards routes using the `graphix_token` cookie while the
+        // store reads localStorage. If they ever disagree (cleared site data,
+        // expired storage, manual edit) the cookie sends you to /dashboard while
+        // the store thinks you are logged out — and /signin bounces you straight
+        // back. Drop the stale cookie so the guard agrees with the store.
+        if (typeof document !== "undefined" && !state?.token) {
+          document.cookie = "graphix_token=; path=/; max-age=0; SameSite=Strict";
+        }
       },
+      // NOTE: `user` and the rest of the loaded data are deliberately NOT
+      // persisted — they are refetched by bootstrap() on every load. That means
+      // `isBootstrapped` must not be persisted either: a stored `true` would
+      // outlive the data it describes, AppBootstrapper would skip bootstrap(),
+      // and the app would render with `user === null` forever (the "…'s
+      // workspace" greeting, zeroed stats, empty templates).
       partialize: (state) => ({
         token: state.token,
         isAuthenticated: state.isAuthenticated,
-        isBootstrapped: state.isBootstrapped,
       }),
     },
   ),

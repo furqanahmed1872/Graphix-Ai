@@ -1,75 +1,55 @@
-# Graph AI 📊
+# Graphix — Backend
 
-AI-powered data visualization app. Describe a chart in plain English → get a beautiful interactive Plotly chart.
+Express API for Graphix: auth (JWT + optional Google OAuth), saved charts,
+feedback, and AI chart generation via Groq. Data access is Prisma 7 over
+PostgreSQL.
 
-## Stack
-- **Frontend**: React + Vite
-- **Backend**: Express.js
-- **AI**: Google Gemini 1.5 Flash (free tier — 1,500 req/day, no credit card)
-- **Charts**: Plotly.js
+**To run the whole stack locally, follow [../LOCAL_DEV.md](../LOCAL_DEV.md).**
 
-## Project Structure
-```
-graph-ai/
-├── client/          ← React frontend (Vite)
-│   └── src/
-│       ├── App.jsx
-│       ├── components/
-│       │   ├── Sidebar.jsx
-│       │   ├── ChatArea.jsx
-│       │   ├── InputBar.jsx
-│       │   ├── StarField.jsx
-│       │   └── WaveHero.jsx
-│       └── utils/
-│           └── conversations.js
-└── server/          ← Express backend (holds API key)
-    ├── index.js
-    └── .env         ← YOU CREATE THIS
-```
+## Quick start
 
-## Setup
-
-### 1. Get your free Gemini API key
-Go to https://aistudio.google.com → sign in with Google → Get API Key  
-It's free forever, no credit card needed.
-
-### 2. Setup the server
 ```bash
-cd server
+cp .env.example .env      # then fill in GROQ_API_KEY
+docker compose -f ../docker-compose.dev.yml up -d
 npm install
-
-# Create your .env file
-cp .env.example .env
-# Edit .env and paste your Gemini key:
-# GEMINI_API_KEY=AIza...your key here...
+npm run db:setup          # generate + push schema + seed
+npm run dev               # http://localhost:5000
 ```
 
-### 3. Setup the client
-```bash
-cd client
-npm install
-```
+## Scripts
 
-### 4. Run both (two terminals)
+| Script             | Description                                     |
+| ------------------ | ----------------------------------------------- |
+| `npm run dev`      | Start with `node --watch` (auto-restart)        |
+| `npm start`        | Start without watching                          |
+| `npm run db:push`  | Sync `prisma/schema.prisma` to the database     |
+| `npm run db:seed`  | Seed global templates + feedback (idempotent)   |
+| `npm run db:setup` | `generate` + `db:push` + `db:seed`              |
+| `npm run db:studio`| Open Prisma Studio                              |
 
-**Terminal 1 — Backend:**
-```bash
-cd server
-npm run dev
-# Running on http://localhost:3001
-```
+## Routes
 
-**Terminal 2 — Frontend:**
-```bash
-cd client
-npm run dev
-# Running on http://localhost:5173
-```
+| Method | Path                        | Auth | Purpose                       |
+| ------ | --------------------------- | ---- | ----------------------------- |
+| GET    | `/api/status`               | –    | Health check                  |
+| POST   | `/api/auth/signup`          | –    | Create account                |
+| POST   | `/api/auth/login`           | –    | Log in                        |
+| GET    | `/api/auth/me`              | ✓    | Current user                  |
+| GET    | `/api/auth/google`          | –    | Start Google OAuth            |
+| GET    | `/api/auth/google/callback` | –    | OAuth redirect target         |
+| GET    | `/api/user/bootstrap`       | ✓    | User + subscription + charts  |
+| PATCH  | `/api/user/profile`         | ✓    | Update profile                |
+| POST   | `/api/charts`               | ✓    | Save a chart                  |
+| GET    | `/api/charts/:id`           | ✓    | Read one chart                |
+| PATCH  | `/api/charts/:id`           | ✓    | Update a chart                |
+| POST   | `/api/charts/:id/star`      | ✓    | Toggle star                   |
+| POST   | `/api/charts/:id/share`     | ✓    | Issue a public share token    |
+| DELETE | `/api/charts/:id`           | ✓    | Delete a chart                |
+| GET    | `/api/charts/share/:token`  | –    | Read a shared chart           |
+| GET    | `/api/feedback`             | –    | List feedback                 |
+| POST   | `/api/feedback`             | ✓    | Submit feedback               |
+| GET    | `/api/feedback/mine`        | ✓    | Own feedback                  |
+| DELETE | `/api/feedback/:id`         | ✓    | Delete own feedback           |
+| POST   | `/api/graph`                | ✓    | Generate a chart from a prompt|
 
-Open http://localhost:5173 and start chatting!
-
-## Usage
-- Type any chart description: *"Show monthly sales for 2024 as a bar chart"*
-- Attach a CSV or JSON file and ask: *"Visualize this data as a heatmap"*
-- Each conversation is saved in the sidebar
-- Start new conversations with the "+ New conversation" button
+Environment variables are documented in [../ENV.md](../ENV.md) and `.env.example`.

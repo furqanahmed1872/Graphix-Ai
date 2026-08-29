@@ -209,7 +209,7 @@ export default function SignupForm() {
         </div>
       </form>
 
-      <AuthDivider showGithub onGoogleClick={handleGoogleLogin} />
+      <AuthDivider showGithub onGoogleClick={handleGoogleSignup} />
     </AuthCard>
   );
 }

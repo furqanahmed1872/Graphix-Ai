@@ -12,6 +12,10 @@ import {
   markKeyExhausted,
 } from "./keyRotation.js";
 
+// llama-3.3-70b-versatile was decommissioned by Groq. Override with GROQ_MODEL
+// if this default is retired too — see https://console.groq.com/docs/models
+const GROQ_MODEL = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
+
 const router = Router();
 const upload = multer();
 
@@ -71,7 +75,7 @@ router.post("/", requireAuth, upload.single("file"), async (req, res) => {
             Authorization: `Bearer ${key}`,
           },
           body: JSON.stringify({
-            model: "llama-3.3-70b-versatile",
+            model: GROQ_MODEL,
             messages: [
               { role: "system", content: systemPrompt },
               { role: "user", content: fullPrompt },

@@ -8,7 +8,8 @@ const nextConfig: NextConfig = {
   experimental: {
     staleTimes: {
       dynamic: 0,
-      static: 0,
+      // Next.js requires >= 30 for the static client cache; 30 is the minimum.
+      static: 30,
     },
   },
 

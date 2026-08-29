@@ -20,18 +20,22 @@ interface Props {
 }
 
 export default function AppBootstrapper({ children }: Props) {
-  const { isAuthenticated, isBootstrapped, isBootstrapping, bootstrapError, bootstrap, logout } =
+  const { isAuthenticated, isBootstrapped, isBootstrapping, bootstrapError, bootstrap, logout, user } =
     useAppStore();
 
   const bootstrapped = useRef(false);
 
+  // `user` is never persisted, so "bootstrapped but no user" means the flag is
+  // stale and the data has to be fetched again.
+  const needsData = !isBootstrapped || !user;
+
   useEffect(() => {
     // Only run bootstrap once per mount, and only if authenticated
-    if (isAuthenticated && !isBootstrapped && !isBootstrapping && !bootstrapped.current) {
+    if (isAuthenticated && needsData && !isBootstrapping && !bootstrapped.current) {
       bootstrapped.current = true;
       bootstrap();
     }
-  }, [isAuthenticated, isBootstrapped, isBootstrapping, bootstrap]);
+  }, [isAuthenticated, needsData, isBootstrapping, bootstrap]);
 
   // Not logged in — just render children (they'll hit the route guard)
   if (!isAuthenticated) {
@@ -39,7 +43,7 @@ export default function AppBootstrapper({ children }: Props) {
   }
 
   // Logged in but bootstrap still loading — show splash
-  if (!isBootstrapped) {
+  if (needsData) {
     return (
       <div
         style={{

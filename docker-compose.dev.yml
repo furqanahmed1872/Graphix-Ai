@@ -1,0 +1,30 @@
+# Local development database only.
+# The app itself is run on the host with `npm run dev` in Backend/ and Frontend/.
+#
+#   docker compose -f docker-compose.dev.yml up -d
+#
+# Matches DATABASE_URL in Backend/.env:
+#   postgresql://graphix_user:graphix_pass@localhost:5432/graphix_db
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: graphix-db-dev
+    environment:
+      POSTGRES_USER: graphix_user
+      POSTGRES_PASSWORD: graphix_pass
+      POSTGRES_DB: graphix_db
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - graphix-db-data:/var/lib/postgresql/data
+      - ./Backend/db/dev-init:/docker-entrypoint-initdb.d:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U graphix_user -d graphix_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  graphix-db-data:

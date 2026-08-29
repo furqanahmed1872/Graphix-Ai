@@ -42,7 +42,6 @@ const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many attempts. Please try again in 15 minutes." },
-  keyGenerator: (req) => req.ip,
 });
 
 // General API: 300 requests per minute per IP (prevents scraping)
@@ -52,7 +51,6 @@ const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests. Please slow down." },
-  keyGenerator: (req) => req.ip,
 });
 
 // Apply general limiter to all /api routes
@@ -94,6 +92,38 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT;
-app.listen(PORT, () =>
+
+// `node --watch` can spawn the replacement process before the previous one has
+// released the socket — on Windows it terminates the child without delivering a
+// signal, so the old process can't always close it first. Retry briefly instead
+// of dying on EADDRINUSE and leaving an orphan serving stale code.
+const MAX_BIND_RETRIES = 10;
+let bindRetries = 0;
+
+const server = app.listen(PORT, () =>
   console.log(`✅ Graphix server running on http://localhost:${PORT}`),
 );
+
+server.on("error", (err) => {
+  if (err.code !== "EADDRINUSE") throw err;
+  if (bindRetries++ >= MAX_BIND_RETRIES) {
+    console.error(
+      `FATAL: port ${PORT} is still in use after ${MAX_BIND_RETRIES} retries. ` +
+        `Another process is holding it.`,
+    );
+    process.exit(1);
+  }
+  console.warn(`Port ${PORT} busy, retrying (${bindRetries}/${MAX_BIND_RETRIES})…`);
+  setTimeout(() => server.listen(PORT), 300);
+});
+
+// Close the socket on Ctrl+C / SIGTERM so the next start binds immediately.
+let shuttingDown = false;
+for (const signal of ["SIGINT", "SIGTERM"]) {
+  process.on(signal, () => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    server.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 3000).unref();
+  });
+}
