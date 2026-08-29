@@ -1,218 +1,483 @@
 "use client";
 
-/**
- * Live specimens — five real, interactive Plotly figures on the blue field.
- * Themed to the two-colour system: white and pale-blue series, hairline
- * axes, mono tick figures.
- */
-
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Arrow } from "./Nav";
 
 interface ChartDef {
-  id: string;
-  name: string;
   query: string;
+  badge: string;
+  accentClass: string;
+  accentHex: string;
   build: (Plotly: any, el: HTMLDivElement) => Promise<void>;
 }
 
-const MONO = '"IBM Plex Mono", ui-monospace, Menlo, monospace';
-const W = "#ffffff";
-const DIM = "rgba(255,255,255,0.62)";
-const HAIR = "rgba(255,255,255,0.18)";
-const B1 = "#ffffff";
-const B2 = "#8fb4ff";
-const B3 = "#4b7fe0";
-const CLEAR = "rgba(0,0,0,0)";
-
-const RAMP: [number, string][] = [
-  [0, "#062a6e"],
-  [0.35, "#0b4cc4"],
-  [0.62, "#4b7fe0"],
-  [0.84, "#8fb4ff"],
-  [1, "#ffffff"],
-];
-
-const TICK = { family: MONO, size: 10, color: DIM };
-const AXIS = {
-  gridcolor: HAIR,
-  zerolinecolor: HAIR,
-  linecolor: "rgba(255,255,255,0.45)",
-  tickfont: TICK,
-  showline: true,
-  ticks: "outside" as const,
-  tickcolor: HAIR,
-};
-const CFG = { displayModeBar: false, responsive: true };
-const BASE = {
-  paper_bgcolor: CLEAR,
-  plot_bgcolor: CLEAR,
-  font: { family: MONO, size: 10, color: DIM },
-  margin: { t: 14, b: 36, l: 48, r: 18 },
-  showlegend: false,
-  hoverlabel: {
-    bgcolor: "#0c0c0d",
-    bordercolor: W,
-    font: { family: MONO, size: 11, color: W },
-  },
-};
-
-function rng(seed: number) {
-  let s = seed;
-  return () => {
-    s = (s * 1664525 + 1013904223) % 4294967296;
-    return s / 4294967296;
-  };
-}
+/* ─── Shared layout helpers ─── */
+const FONT = { family: "'JetBrains Mono', 'Fira Code', monospace", size: 11 };
+const TRANSPARENT = "rgba(0,0,0,0)";
+const GRID = "rgba(255,255,255,0.06)";
+const TICK = { color: "rgba(255,255,255,0.4)", size: 10, family: FONT.family };
+const NO_BAR = { displayModeBar: false, responsive: true };
 
 const CHARTS: ChartDef[] = [
+  /* ── 1. 3-D SURFACE ─────────────────────────────────────────────── */
   {
-    id: "surface",
-    name: "3D surface",
-    query: "revenue landscape across product lines and quarters, as a surface",
+    query: "3D revenue landscape across product lines and quarters",
+    badge: "3D SURFACE",
+    accentClass: "text-violet-400 border-violet-500/40 bg-violet-500/10",
+    accentHex: "#a78bfa",
     build: async (Plotly, el) => {
       const size = 30;
-      const z = Array.from({ length: size }, (_, i) =>
+      const z: number[][] = Array.from({ length: size }, (_, i) =>
         Array.from({ length: size }, (_, j) => {
           const x = (i / size) * 4 - 2;
           const y = (j / size) * 4 - 2;
           return (
             Math.sin(Math.sqrt(x * x + y * y) * 2.5) *
-              Math.exp(-0.18 * (x * x + y * y)) * 60 +
-            Math.sin(x * 1.8) * Math.cos(y * 1.4) * 20
+              Math.exp(-0.18 * (x * x + y * y)) *
+              60 +
+            Math.sin(x * 1.8) * Math.cos(y * 1.4) * 20 +
+            Math.random() * 3
           );
         }),
       );
-      const ax = { gridcolor: HAIR, showbackground: false, tickfont: TICK, zerolinecolor: HAIR };
-      await Plotly.react(el, [{
-        type: "surface", z, colorscale: RAMP, showscale: false,
-        contours: { z: { show: true, usecolormap: true, project: { z: true }, width: 1 } },
-        lighting: { ambient: 0.8, diffuse: 0.6, specular: 0.1, roughness: 0.8 },
-      }], {
-        ...BASE, margin: { t: 0, b: 0, l: 0, r: 0 },
-        scene: {
-          bgcolor: CLEAR,
-          xaxis: { ...ax, title: { text: "Product", font: { family: MONO, size: 10, color: DIM } } },
-          yaxis: { ...ax, title: { text: "Quarter", font: { family: MONO, size: 10, color: DIM } } },
-          zaxis: { ...ax, title: { text: "Revenue", font: { family: MONO, size: 10, color: DIM } } },
-          camera: { eye: { x: 1.6, y: 1.6, z: 1.05 } },
+      await Plotly.react(
+        el,
+        [
+          {
+            type: "surface",
+            z,
+            colorscale: [
+              [0, "#1e1b4b"],
+              [0.25, "#4c1d95"],
+              [0.5, "#7c3aed"],
+              [0.7, "#a78bfa"],
+              [0.85, "#c4b5fd"],
+              [1, "#ede9fe"],
+            ],
+            showscale: false,
+            opacity: 0.95,
+            contours: {
+              z: {
+                show: true,
+                usecolormap: true,
+                highlightcolor: "#c4b5fd",
+                project: { z: true },
+                width: 1,
+              },
+            },
+            lighting: {
+              ambient: 0.6,
+              diffuse: 0.8,
+              specular: 0.4,
+              roughness: 0.5,
+              fresnel: 0.5,
+            },
+            lightposition: { x: 100, y: 200, z: 150 },
+          },
+        ],
+        {
+          paper_bgcolor: TRANSPARENT,
+          scene: {
+            bgcolor: TRANSPARENT,
+            xaxis: {
+              gridcolor: GRID,
+              showbackground: false,
+              tickfont: TICK,
+              title: {
+                text: "Product Line",
+                font: { ...FONT, color: "rgba(255,255,255,0.4)" },
+              },
+            },
+            yaxis: {
+              gridcolor: GRID,
+              showbackground: false,
+              tickfont: TICK,
+              title: {
+                text: "Quarter",
+                font: { ...FONT, color: "rgba(255,255,255,0.4)" },
+              },
+            },
+            zaxis: {
+              gridcolor: GRID,
+              showbackground: false,
+              tickfont: TICK,
+              title: {
+                text: "Revenue ($k)",
+                font: { ...FONT, color: "rgba(255,255,255,0.4)" },
+              },
+            },
+            camera: { eye: { x: 1.6, y: 1.6, z: 1.1 } },
+          },
+          margin: { t: 0, b: 0, l: 0, r: 0 },
         },
-      }, CFG);
+        NO_BAR,
+      );
     },
   },
+
+  /* ── 2. SANKEY FLOW ──────────────────────────────────────────────── */
   {
-    id: "sankey",
-    name: "Sankey flow",
-    query: "customer journey from sessions through to revenue",
+    query: "Customer journey funnel — sessions to revenue flow",
+    badge: "SANKEY FLOW",
+    accentClass: "text-cyan-400 border-cyan-500/40 bg-cyan-500/10",
+    accentHex: "#22d3ee",
     build: async (Plotly, el) => {
-      await Plotly.react(el, [{
-        type: "sankey", orientation: "h",
-        node: {
-          pad: 18, thickness: 14, line: { color: "rgba(255,255,255,0.5)", width: 1 },
-          label: ["Sessions", "Signups", "Trial", "Churned", "Paid", "Expansion"],
-          color: [B3, B3, B2, "rgba(255,255,255,0.28)", B1, B1],
-          font: { family: MONO, size: 10, color: W },
+      await Plotly.react(
+        el,
+        [
+          {
+            type: "sankey",
+            orientation: "h",
+            arrangement: "snap",
+            node: {
+              pad: 18,
+              thickness: 22,
+              line: { color: "rgba(0,0,0,0)", width: 0 },
+              label: [
+                "Organic",
+                "Paid",
+                "Referral",
+                "Direct",
+                "Landing Page",
+                "Product Page",
+                "Cart",
+                "Checkout",
+                "Revenue",
+              ],
+              color: [
+                "#22d3ee",
+                "#06b6d4",
+                "#0891b2",
+                "#0e7490",
+                "#a78bfa",
+                "#7c3aed",
+                "#34d399",
+                "#10b981",
+                "#f59e0b",
+              ],
+              x: [0.01, 0.01, 0.01, 0.01, 0.28, 0.28, 0.55, 0.55, 0.99],
+              y: [0.1, 0.35, 0.6, 0.85, 0.2, 0.65, 0.3, 0.7, 0.5],
+            },
+            link: {
+              source: [0, 0, 1, 1, 2, 3, 4, 4, 5, 5, 6, 7],
+              target: [4, 5, 4, 5, 4, 5, 6, 7, 6, 7, 8, 8],
+              value: [
+                3200, 800, 1800, 400, 900, 600, 2100, 1800, 600, 700, 3900,
+                1300,
+              ],
+              color: [
+                "rgba(34,211,238,0.2)",
+                "rgba(34,211,238,0.12)",
+                "rgba(6,182,212,0.2)",
+                "rgba(6,182,212,0.12)",
+                "rgba(8,145,178,0.18)",
+                "rgba(14,116,144,0.18)",
+                "rgba(167,139,250,0.22)",
+                "rgba(167,139,250,0.18)",
+                "rgba(124,58,237,0.2)",
+                "rgba(124,58,237,0.18)",
+                "rgba(52,211,153,0.25)",
+                "rgba(245,158,11,0.2)",
+              ],
+            },
+          },
+        ],
+        {
+          paper_bgcolor: TRANSPARENT,
+          font: { color: "rgba(255,255,255,0.6)", ...FONT },
+          margin: { t: 10, b: 10, l: 10, r: 10 },
         },
-        link: {
-          source: [0, 0, 1, 2, 2, 4], target: [1, 3, 2, 4, 3, 5],
-          value: [820, 380, 640, 410, 230, 180],
-          color: [
-            "rgba(143,180,255,0.34)", "rgba(255,255,255,0.12)", "rgba(143,180,255,0.26)",
-            "rgba(255,255,255,0.34)", "rgba(255,255,255,0.12)", "rgba(255,255,255,0.22)",
-          ],
-        },
-      }], { ...BASE, margin: { t: 14, b: 14, l: 8, r: 8 } }, CFG);
+        NO_BAR,
+      );
     },
   },
+
+  /* ── 3. CANDLESTICK + VOLUME ─────────────────────────────────────── */
   {
-    id: "ohlc",
-    name: "Candlestick",
-    query: "60-day OHLC candlestick with a volume track underneath",
+    query: "60-day OHLC candlestick with volume overlay",
+    badge: "CANDLESTICK",
+    accentClass: "text-emerald-400 border-emerald-500/40 bg-emerald-500/10",
+    accentHex: "#34d399",
     build: async (Plotly, el) => {
-      const rand = rng(7);
-      const n = 60;
-      const dates: string[] = [], open: number[] = [], high: number[] = [],
-        low: number[] = [], close: number[] = [], vol: number[] = [];
-      let price = 100;
-      const start = Date.UTC(2025, 0, 1);
-      for (let i = 0; i < n; i++) {
-        const o = price, c = o + (rand() - 0.47) * 5;
-        high.push(Math.max(o, c) + rand() * 2.2);
-        low.push(Math.min(o, c) - rand() * 2.2);
-        dates.push(new Date(start + i * 86400000).toISOString().slice(0, 10));
-        open.push(o); close.push(c); vol.push(400 + rand() * 900);
+      const days = 60;
+      let price = 142;
+      const dates: string[] = [];
+      const open: number[] = [];
+      const high: number[] = [];
+      const low: number[] = [];
+      const close: number[] = [];
+      const vol: number[] = [];
+      const base = new Date("2024-01-01");
+      for (let i = 0; i < days; i++) {
+        const d = new Date(base);
+        d.setDate(base.getDate() + i);
+        dates.push(d.toISOString().slice(0, 10));
+        const o = price + (Math.random() - 0.5) * 3;
+        const c = o + (Math.random() - 0.47) * 5;
+        const h = Math.max(o, c) + Math.random() * 3;
+        const l = Math.min(o, c) - Math.random() * 3;
+        open.push(+o.toFixed(2));
+        high.push(+h.toFixed(2));
+        low.push(+l.toFixed(2));
+        close.push(+c.toFixed(2));
+        vol.push(Math.round(500000 + Math.random() * 1500000));
         price = c;
       }
-      await Plotly.react(el, [
+      await Plotly.react(
+        el,
+        [
+          {
+            type: "candlestick",
+            x: dates,
+            open,
+            high,
+            low,
+            close,
+            name: "GRFX",
+            increasing: {
+              line: { color: "#34d399", width: 1.5 },
+              fillcolor: "#34d399",
+            },
+            decreasing: {
+              line: { color: "#f87171", width: 1.5 },
+              fillcolor: "#f87171",
+            },
+            whiskerwidth: 0.3,
+            xaxis: "x",
+            yaxis: "y",
+          },
+          {
+            type: "bar",
+            x: dates,
+            y: vol,
+            name: "Volume",
+            marker: {
+              color: close.map((c, i) =>
+                i === 0 || c >= open[i]
+                  ? "rgba(52,211,153,0.25)"
+                  : "rgba(248,113,113,0.25)",
+              ),
+            },
+            xaxis: "x",
+            yaxis: "y2",
+          },
+        ],
         {
-          type: "candlestick", x: dates, open, high, low, close,
-          increasing: { line: { color: W, width: 1 }, fillcolor: W },
-          decreasing: { line: { color: B3, width: 1 }, fillcolor: B3 },
-          yaxis: "y",
+          paper_bgcolor: TRANSPARENT,
+          plot_bgcolor: TRANSPARENT,
+          font: { color: "rgba(255,255,255,0.5)", ...FONT },
+          margin: { t: 10, b: 48, l: 60, r: 12 },
+          showlegend: false,
+          xaxis: {
+            rangeslider: { visible: false },
+            gridcolor: GRID,
+            tickfont: TICK,
+            type: "date",
+          },
+          yaxis: {
+            gridcolor: GRID,
+            tickfont: TICK,
+            title: {
+              text: "Price ($)",
+              font: { ...FONT, color: "rgba(255,255,255,0.3)", size: 10 },
+            },
+            domain: [0.28, 1],
+          },
+          yaxis2: {
+            gridcolor: "rgba(255,255,255,0.03)",
+            tickfont: { ...TICK, size: 9 },
+            title: {
+              text: "Volume",
+              font: { ...FONT, color: "rgba(255,255,255,0.3)", size: 9 },
+            },
+            domain: [0, 0.22],
+          },
         },
-        { type: "bar", x: dates, y: vol, marker: { color: "rgba(255,255,255,0.2)" }, yaxis: "y2", hoverinfo: "skip" },
-      ], {
-        ...BASE, margin: { t: 12, b: 32, l: 50, r: 18 },
-        xaxis: { ...AXIS, type: "date", rangeslider: { visible: false }, showgrid: false },
-        yaxis: { ...AXIS, domain: [0.28, 1] },
-        yaxis2: { ...AXIS, domain: [0, 0.2], showgrid: false },
-      }, CFG);
+        NO_BAR,
+      );
     },
   },
+
+  /* ── 4. RADAR / SPIDER ──────────────────────────────────────────── */
   {
-    id: "radar",
-    name: "Radar",
-    query: "benchmark us against two competitors on seven dimensions",
+    query: "Competitive benchmarking across 7 product dimensions",
+    badge: "RADAR",
+    accentClass: "text-amber-400 border-amber-500/40 bg-amber-500/10",
+    accentHex: "#fbbf24",
     build: async (Plotly, el) => {
-      const dims = ["Speed", "Accuracy", "Formats", "Editing", "Export", "Price", "Support"];
-      const mk = (r: number[], color: string, fill: string) => ({
-        type: "scatterpolar" as const, r: [...r, r[0]], theta: [...dims, dims[0]],
-        fill: "toself" as const, fillcolor: fill, line: { color, width: 1.8 },
-        marker: { size: 4, color },
-      });
-      await Plotly.react(el, [
-        mk([62, 58, 70, 44, 66, 40, 55], B3, "rgba(75,127,224,0.16)"),
-        mk([48, 71, 52, 60, 50, 88, 44], B2, "rgba(143,180,255,0.14)"),
-        mk([92, 88, 95, 90, 86, 100, 78], W, "rgba(255,255,255,0.14)"),
-      ], {
-        ...BASE, margin: { t: 28, b: 28, l: 28, r: 28 },
-        polar: {
-          bgcolor: CLEAR,
-          radialaxis: { visible: true, range: [0, 100], gridcolor: HAIR, linecolor: HAIR, tickfont: { family: MONO, size: 9, color: DIM } },
-          angularaxis: { gridcolor: HAIR, linecolor: "rgba(255,255,255,0.4)", tickfont: { family: MONO, size: 10, color: W } },
+      const dims = [
+        "Performance",
+        "Scalability",
+        "UX",
+        "Integrations",
+        "Security",
+        "Support",
+        "Price",
+      ];
+      const closeArr = <T,>(a: T[]) => [...a, a[0]];
+      await Plotly.react(
+        el,
+        [
+          {
+            type: "scatterpolar",
+            r: closeArr([92, 78, 88, 95, 80, 70, 65]),
+            theta: closeArr(dims),
+            fill: "toself",
+            fillcolor: "rgba(251,191,36,0.12)",
+            line: { color: "#fbbf24", width: 2.5 },
+            name: "Graphix",
+            marker: { color: "#fbbf24", size: 6 },
+          },
+          {
+            type: "scatterpolar",
+            r: closeArr([70, 85, 60, 72, 88, 90, 75]),
+            theta: closeArr(dims),
+            fill: "toself",
+            fillcolor: "rgba(99,102,241,0.12)",
+            line: { color: "#818cf8", width: 2, dash: "dot" },
+            name: "Competitor A",
+            marker: { color: "#818cf8", size: 5 },
+          },
+          {
+            type: "scatterpolar",
+            r: closeArr([58, 65, 80, 60, 70, 55, 90]),
+            theta: closeArr(dims),
+            fill: "toself",
+            fillcolor: "rgba(236,72,153,0.1)",
+            line: { color: "#f472b6", width: 2, dash: "dash" },
+            name: "Competitor B",
+            marker: { color: "#f472b6", size: 5 },
+          },
+        ],
+        {
+          paper_bgcolor: TRANSPARENT,
+          polar: {
+            bgcolor: TRANSPARENT,
+            radialaxis: {
+              visible: true,
+              range: [0, 100],
+              gridcolor: "rgba(255,255,255,0.08)",
+              tickfont: TICK,
+              tickcolor: "transparent",
+            },
+            angularaxis: {
+              gridcolor: "rgba(255,255,255,0.1)",
+              tickfont: { ...FONT, size: 10.5, color: "rgba(255,255,255,0.6)" },
+              linecolor: "rgba(255,255,255,0.1)",
+            },
+          },
+          showlegend: true,
+          legend: {
+            orientation: "h",
+            y: -0.08,
+            font: { ...FONT, size: 10, color: "rgba(255,255,255,0.5)" },
+          },
+          margin: { t: 20, b: 50, l: 50, r: 50 },
         },
-      }, CFG);
+        NO_BAR,
+      );
     },
   },
+
+  /* ── 5. ANIMATED SCATTER BUBBLE ─────────────────────────────────── */
   {
-    id: "bubble",
-    name: "Bubble map",
-    query: "plot ARR against growth, size the points by headcount",
+    query: "Market bubble map — size = ARR, color = growth rate",
+    badge: "BUBBLE MAP",
+    accentClass: "text-rose-400 border-rose-500/40 bg-rose-500/10",
+    accentHex: "#fb7185",
     build: async (Plotly, el) => {
-      const rand = rng(21);
-      const x: number[] = [], y: number[] = [], s: number[] = [], c: number[] = [];
-      for (let i = 0; i < 34; i++) {
-        const gx = rand() * 100;
-        x.push(gx); y.push(gx * 0.55 + rand() * 45);
-        s.push(10 + rand() * 46); c.push(rand() * 100);
-      }
-      await Plotly.react(el, [{
-        type: "scatter", mode: "markers", x, y,
-        marker: {
-          size: s, color: c, colorscale: RAMP, showscale: false, opacity: 0.85,
-          line: { color: "rgba(255,255,255,0.7)", width: 1 },
+      const n = 55;
+      const rand = (a: number, b: number) => a + Math.random() * (b - a);
+      const x = Array.from({ length: n }, () => rand(5, 95));
+      const y = Array.from({ length: n }, () => rand(10, 90));
+      const size = Array.from({ length: n }, () => rand(8, 48));
+      const color = Array.from({ length: n }, () => rand(-20, 80));
+      const labels = Array.from({ length: n }, (_, i) => `Company ${i + 1}`);
+      await Plotly.react(
+        el,
+        [
+          {
+            type: "scatter",
+            mode: "markers+text",
+            x,
+            y,
+            text: labels.map((l, i) => (size[i] > 35 ? l : "")),
+            textfont: {
+              size: 8.5,
+              color: "rgba(255,255,255,0.7)",
+              family: FONT.family,
+            },
+            textposition: "middle center",
+            marker: {
+              size,
+              sizemode: "diameter",
+              color,
+              colorscale: [
+                [0, "#dc2626"],
+                [0.35, "#f97316"],
+                [0.6, "#facc15"],
+                [0.8, "#34d399"],
+                [1, "#22d3ee"],
+              ],
+              showscale: true,
+              colorbar: {
+                thickness: 10,
+                len: 0.75,
+                tickfont: TICK,
+                title: {
+                  text: "Growth %",
+                  font: { ...FONT, size: 9, color: "rgba(255,255,255,0.4)" },
+                  side: "right",
+                },
+                outlinewidth: 0,
+                bgcolor: "rgba(0,0,0,0)",
+              },
+              opacity: 0.82,
+              line: { color: "rgba(255,255,255,0.15)", width: 1 },
+            },
+            hovertemplate:
+              "<b>%{text}</b><br>NRR: %{x:.0f}%<br>CAC Payback: %{y:.0f}mo<br>ARR: $%{marker.size:.0f}M<extra></extra>",
+          },
+        ],
+        {
+          paper_bgcolor: TRANSPARENT,
+          plot_bgcolor: TRANSPARENT,
+          font: { color: "rgba(255,255,255,0.5)", ...FONT },
+          margin: { t: 12, b: 48, l: 50, r: 60 },
+          showlegend: false,
+          xaxis: {
+            title: {
+              text: "Net Revenue Retention (%)",
+              font: { ...FONT, size: 10, color: "rgba(255,255,255,0.35)" },
+            },
+            gridcolor: GRID,
+            tickfont: TICK,
+            zeroline: false,
+          },
+          yaxis: {
+            title: {
+              text: "CAC Payback (months)",
+              font: { ...FONT, size: 10, color: "rgba(255,255,255,0.35)" },
+            },
+            gridcolor: GRID,
+            tickfont: TICK,
+            zeroline: false,
+          },
         },
-      }], {
-        ...BASE,
-        xaxis: { ...AXIS, title: { text: "ARR ($m)", font: { family: MONO, size: 10, color: DIM } } },
-        yaxis: { ...AXIS, title: { text: "Growth (%)", font: { family: MONO, size: 10, color: DIM } } },
-      }, CFG);
+        NO_BAR,
+      );
     },
   },
 ];
 
-function PlotlyChart({ chart }: { chart: ChartDef }) {
+/* ─── Plotly wrapper component ─────────────────────────────────────────── */
+function PlotlyChart({
+  chart,
+  animating,
+}: {
+  chart: ChartDef;
+  animating: boolean;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
 
@@ -220,90 +485,288 @@ function PlotlyChart({ chart }: { chart: ChartDef }) {
     if (!ref.current) return;
     setReady(false);
     let cancelled = false;
-    const node = ref.current;
     import("plotly.js-dist-min").then(({ default: Plotly }) => {
-      if (cancelled || !node) return;
-      chart.build(Plotly, node).then(() => { if (!cancelled) setReady(true); });
+      if (cancelled || !ref.current) return;
+      chart.build(Plotly, ref.current).then(() => {
+        if (!cancelled) setReady(true);
+      });
     });
     return () => {
       cancelled = true;
       import("plotly.js-dist-min").then(({ default: Plotly }) => {
-        if (node) Plotly.purge(node);
+        if (ref.current) Plotly.purge(ref.current);
       });
     };
   }, [chart]);
 
   return (
-    <div ref={ref} style={{ width: "100%", height: "100%", opacity: ready ? 1 : 0, transition: "opacity .35s ease" }} />
+    <div
+      ref={ref}
+      className="w-full h-full transition-all duration-500"
+      style={{
+        opacity: animating || !ready ? 0 : 1,
+        transform: animating
+          ? "scale(0.97) translateY(8px)"
+          : "scale(1) translateY(0)",
+        transitionTimingFunction: "cubic-bezier(.16,1,.3,1)",
+      }}
+    />
   );
 }
 
+/* ─── Main export ──────────────────────────────────────────────────────── */
 export default function LiveDemoSection() {
-  const [active, setActive] = useState(0);
-  const chart = CHARTS[active];
+  const [activeIdx, setActiveIdx] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [visible, setVisible] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+
+  /* Intersection observer for entrance animation */
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        if (e.isIntersecting) {
+          setVisible(true);
+          obs.disconnect();
+        }
+      },
+      { threshold: 0.06 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+
+  /* Auto-rotate every 6s */
+  useEffect(() => {
+    const id = setInterval(() => {
+      setAnimating(true);
+      setTimeout(() => {
+        setActiveIdx((i) => (i + 1) % CHARTS.length);
+        setAnimating(false);
+      }, 440);
+    }, 6000);
+    return () => clearInterval(id);
+  }, []);
+
+  const switchTo = (i: number) => {
+    if (i === activeIdx) return;
+    setAnimating(true);
+    setTimeout(() => {
+      setActiveIdx(i);
+      setAnimating(false);
+    }, 340);
+  };
+
+  const chart = CHARTS[activeIdx];
 
   return (
-    <section className="gxl-blue gxl-band" id="specimens">
-      <div className="gxl-page">
-        <span className="gxl-tag">Live</span>
+    <section
+      id="demo"
+      ref={sectionRef}
+      className="relative overflow-hidden py-24 bg-[#111212]"
+    >
+      {/* Noise texture overlay */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.035]"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
+          backgroundRepeat: "repeat",
+        }}
+      />
 
-        <div className="gxl-split gxl-split--top" style={{ marginTop: 26 }}>
-          <h2 className="gxl-d2" style={{ maxWidth: "12ch" }}>
-            Rendering in this page
+      {/* Ambient glows */}
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[500px] rounded-full bg-cyan-600/10 blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-0 left-1/4 w-[400px] h-[300px] rounded-full bg-cyan-600/8 blur-[100px]" />
+
+      <div className="relative max-w-6xl mx-auto px-6">
+        {/* ── Header ── */}
+        <div
+          className="text-center mb-14"
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(28px)",
+            transition:
+              "opacity 0.7s ease, transform 0.7s cubic-bezier(.22,1,.36,1)",
+          }}
+        >
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/[0.08] mb-6">
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+            <span className="font-mono text-[10px] tracking-widest uppercase text-cyan-400">
+              Live demo
+            </span>
+          </div>
+
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white mb-4 leading-tight">
+            Charts that make people{" "}
+            <span className="bg-gradient-to-r from-sky-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+              stop scrolling
+            </span>
           </h2>
-          <p className="gxl-body" style={{ color: "rgba(255,255,255,0.82)" }}>
-            Not screenshots. Each figure below was produced from the sentence
-            printed under it, and runs on the same renderer the editor uses.
-            Rotate the surface, hover the candles, drag the axes.
+          <p className="text-white/40 text-lg max-w-xl mx-auto font-light">
+            Type a prompt. Get a publication-ready chart in seconds. Export,
+            share, embed.
           </p>
         </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", marginTop: 56, borderTop: "1px solid var(--hair)" }}>
-          {CHARTS.map((c, i) => {
-            const on = i === active;
-            return (
-              <button
-                key={c.id}
-                onClick={() => setActive(i)}
-                style={{
-                  appearance: "none",
-                  background: on ? "#fff" : "transparent",
-                  color: on ? "var(--blue)" : "rgba(255,255,255,0.72)",
-                  border: "none",
-                  borderRight: "1px solid var(--hair)",
-                  padding: "13px 20px",
-                  cursor: "pointer",
-                  fontFamily: MONO,
-                  fontSize: "0.7rem",
-                  letterSpacing: "0.1em",
-                  textTransform: "uppercase",
-                }}
-              >
-                <span style={{ opacity: 0.55, marginRight: 9 }}>
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                {c.name}
-              </button>
-            );
-          })}
+        {/* ── Tab strip ── */}
+        <div
+          className="flex justify-center gap-2 flex-wrap mb-8"
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(16px)",
+            transition:
+              "opacity 0.6s ease 0.15s, transform 0.6s cubic-bezier(.22,1,.36,1) 0.15s",
+          }}
+        >
+          {CHARTS.map((c, i) => (
+            <button
+              key={i}
+              onClick={() => switchTo(i)}
+              className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-widest uppercase font-mono border transition-all duration-200 cursor-pointer ${
+                i === activeIdx
+                  ? c.accentClass
+                  : "border-white/10 text-white/25 hover:text-white/50 hover:border-white/20"
+              }`}
+            >
+              {c.badge}
+            </button>
+          ))}
         </div>
 
-        <div style={{ border: "1px solid var(--hair)", borderTop: "none" }}>
-          <div style={{ height: "min(58vh, 500px)", padding: "14px 10px 0" }}>
-            <PlotlyChart chart={chart} />
-          </div>
-          <div style={{ borderTop: "1px solid var(--hair)", padding: "14px 18px" }}>
-            <span className="gxl-mono" style={{ textTransform: "none", letterSpacing: "0.04em" }}>
-              prompt — &ldquo;{chart.query}&rdquo;
+        {/* ── Main card ── */}
+        <div
+          className="rounded-2xl overflow-hidden border border-white/[0.07] shadow-[0_40px_120px_rgba(0,0,0,0.7)]"
+          style={{
+            background: "#111212",
+            opacity: visible ? 1 : 0,
+            transform: visible
+              ? "scale(1) translateY(0)"
+              : "scale(0.97) translateY(24px)",
+            transition:
+              "opacity 0.75s ease 0.25s, transform 0.75s cubic-bezier(.22,1,.36,1) 0.25s",
+          }}
+        >
+          {/* Mac titlebar */}
+          <div className="flex items-center gap-0 px-5 h-11 border-b border-white/[0.05] bg-white/[0.02]">
+            <div className="flex gap-1.5 mr-4">
+              {["#ff5f57", "#febc2e", "#28c840"].map((c) => (
+                <div
+                  key={c}
+                  className="w-2.5 h-2.5 rounded-full"
+                  style={{ background: c }}
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-2 flex-1">
+              <div className="flex items-center gap-2 h-7 max-w-xs flex-1 rounded-md bg-white/[0.03] border border-white/[0.06] px-3">
+                <span className="text-[8px] text-white/15">●</span>
+                <span className="font-mono text-[10px] text-white/25">
+                  graphix.ai/app
+                </span>
+              </div>
+            </div>
+            <span className="font-mono text-[10px] text-white/15 tracking-wider">
+              Graphix — Chart Editor
             </span>
           </div>
+
+          {/* Prompt bar */}
+          <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/[0.04] bg-white/[0.01]">
+            <div
+              className="w-2 h-2 rounded-full flex-shrink-0 transition-colors duration-300"
+              style={{
+                background: chart.accentHex,
+                boxShadow: `0 0 8px ${chart.accentHex}80`,
+              }}
+            />
+            <p
+              className="font-mono text-[12px] text-white/45 flex-1 transition-opacity duration-300"
+              style={{ opacity: animating ? 0 : 1 }}
+            >
+              <span className="text-white/15">→ </span>
+              {chart.query}
+            </p>
+            <span
+              className={`text-[9px] font-mono font-bold tracking-widest px-2.5 py-1 rounded-md border ${chart.accentClass}`}
+            >
+              {chart.badge}
+            </span>
+          </div>
+
+          {/* Chart area */}
+          <div className="h-[420px] px-3 py-4 relative">
+            {/* Subtle inner glow behind chart */}
+            <div
+              className="pointer-events-none absolute inset-0 opacity-20 rounded-xl"
+              style={{
+                background: `radial-gradient(ellipse at 50% 50%, ${chart.accentHex}18, transparent 70%)`,
+              }}
+            />
+            <PlotlyChart chart={chart} animating={animating} />
+          </div>
+
+          {/* Footer bar */}
+          <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.04] bg-white/[0.01]">
+            <div className="flex gap-4">
+              {["PNG", "SVG", "CSV", "JSON"].map((fmt) => (
+                <span
+                  key={fmt}
+                  className="font-mono text-[9px] text-white/20 font-bold tracking-widest uppercase hover:text-white/50 cursor-pointer transition-colors"
+                >
+                  ↓ {fmt}
+                </span>
+              ))}
+            </div>
+            <Link
+              href="/app"
+              // Instead of "hidden sm:flex", use:
+              className=" items-center gap-1.5 font-mono text-[11px] font-bold tracking-wide text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
+              Build yours free <span className="text-base leading-none">→</span>
+            </Link>
+          </div>
         </div>
 
-        <div style={{ marginTop: 28 }}>
-          <Link href="/signup" className="gxl-btn">
-            <span className="gxl-btn__label">Make one with your data</span>
-            <span className="gxl-btn__box"><Arrow /></span>
-          </Link>
+        {/* ── Dot pagination ── */}
+        <div className="flex justify-center gap-2 mt-6">
+          {CHARTS.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => switchTo(i)}
+              className="h-1.5 rounded-full border-none cursor-pointer transition-all duration-300 p-0"
+              style={{
+                width: i === activeIdx ? 20 : 6,
+                background:
+                  i === activeIdx ? "#22d3ee" : "rgba(255,255,255,0.15)",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* ── Stats row ── */}
+        <div
+          className="grid grid-cols-3 gap-6 mt-16 max-w-2xl mx-auto text-center"
+          style={{
+            opacity: visible ? 1 : 0,
+            transition: "opacity 0.8s ease 0.5s",
+          }}
+        >
+          {[
+            { val: "40+", label: "Chart types" },
+            { val: "<2s", label: "Render time" },
+            { val: "∞", label: "Customization" },
+          ].map(({ val, label }) => (
+            <div key={label} className="group">
+              <div className="text-3xl font-bold text-white tracking-tight group-hover:text-cyan-300 transition-colors duration-300">
+                {val}
+              </div>
+              <div className="text-white/35 text-xs font-mono tracking-widest uppercase mt-1">
+                {label}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </section>
